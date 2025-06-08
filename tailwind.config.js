@@ -16,6 +16,13 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            typography: (theme) => ({
+                DEFAULT: {
+                    css: {
+                        color: theme('colors.gray.300'),
+                    },
+                },
+            }),
         },
     },
 
@@ -24,6 +31,7 @@ export default {
     },
     plugins: [
         forms,
-        require("daisyui")
+        require("daisyui"),
+        require('@tailwindcss/typography'),
     ],
 };

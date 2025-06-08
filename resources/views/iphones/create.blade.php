@@ -1,17 +1,16 @@
-<x-app-layout>
+<x-create>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
+            {{ __('New iPhone') }}
         </h2>
     </x-slot>
-
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="lg:max-w-[77vw] max-w-4xl sm:px-6 lg:px-8 flex justify-center">
+            <div class="bg-white lg:w-3/4 w-full dark:bg-gray-800 shadow-sm sm:rounded-md min-h-[64vh]">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <livewire:iphones.create />
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-create>

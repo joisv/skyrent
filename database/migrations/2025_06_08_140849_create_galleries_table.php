@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('iphones', function (Blueprint $table) {
+        Schema::create('galleries', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->unsignedBigInteger('gallery_id');
-            $table->text('description')->nullable();
-            $table->foreign('gallery_id')->references('id')->on('galleries')->onDelete('cascade');
+            $table->string('image');
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('iphones');
+        Schema::dropIfExists('galleries');
     }
 };

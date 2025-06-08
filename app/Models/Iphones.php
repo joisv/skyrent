@@ -13,4 +13,9 @@ class Iphones extends Model
         'name',
         'description',
     ];
+
+    public function gallery()
+    {
+        return $this->belongsTo(Gallery::class);
+    }
 }

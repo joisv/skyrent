@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Gallery as ModelsGallery;
 use App\Models\Iphones;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             ])->assignRole($role);
         }
 
+        ModelsGallery::factory(10)->create();
         Iphones::factory(10)->create();
     }
 }
