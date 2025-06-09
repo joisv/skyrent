@@ -5,6 +5,7 @@ namespace App\Livewire\Galleries;
 use App\Models\Gallery as ModelsGallery;
 use Livewire\Component;
 use Illuminate\Support\Facades\Storage;
+use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 
@@ -33,7 +34,10 @@ class Gallery extends Component
                     ]);
                 }
 
-                $this->alert('success', 'upload success');
+                LivewireAlert::title('Item Saved')
+                    ->text('The item has been successfully saved to the database.')
+                    ->success()
+                    ->show();
                 $this->dispatch('re-render');
                 $this->images = [];
             } else {

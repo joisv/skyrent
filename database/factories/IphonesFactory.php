@@ -19,6 +19,7 @@ class IphonesFactory extends Factory
         return [
             'name' => $this->faker->unique()->word(),
             'description' => $this->faker->sentence(),
+            'slug' => $this->faker->unique()->slug(),
             'gallery_id' => \App\Models\Gallery::factory()->create()->id,
         ];
     }

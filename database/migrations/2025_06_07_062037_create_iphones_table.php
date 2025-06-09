@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->unsignedBigInteger('gallery_id');
             $table->text('description')->nullable();
+            $table->string('slug')->unique();
             $table->foreign('gallery_id')->references('id')->on('galleries')->onDelete('cascade');
             $table->timestamps();
         });

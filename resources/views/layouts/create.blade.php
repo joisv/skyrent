@@ -18,7 +18,6 @@
     </script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
-    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         [x-cloak] {
@@ -28,7 +27,7 @@
 </head>
 
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen bg-gray-100 dark:bg-gray-900" >
 
         <!-- Page Heading -->
         @if (isset($header))
@@ -44,7 +43,6 @@
             {{ $slot }}
         </main>
     </div>
-    @livewireScripts
     <script>
         $('#summernote').summernote({
             placeholder: 'Description ....',

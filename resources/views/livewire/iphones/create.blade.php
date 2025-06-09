@@ -1,7 +1,4 @@
-<div x-data="{ 
-                poster: false 
-
-}">
+<div x-data="{ poster: false }">
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
             <div class="flex items-center space-x-1 w-full">
@@ -50,7 +47,7 @@
                         Setelan Series</h1>
                 </div>
                 {{-- Poster --}}
-                <div class="space-y-2 pb-2" :class="poster ? 'border-b border-gray-400' : ''">
+                <div class="space-y-2 pb-2" :class="poster ? 'border-b border-gray-400' : ''" x-cloak>
                     <div :class="!poster ? ' border-b border-b-gray-400' : ''">
                         <button type="button" @click="poster = ! poster"
                             class="flex space-x-4 gray w-full py-2 cursor-pointer">
