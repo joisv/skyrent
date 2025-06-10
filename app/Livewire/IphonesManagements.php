@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Iphones;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class IphonesManagements extends Component
@@ -38,6 +39,82 @@ class IphonesManagements extends Component
         return view('livewire.iphones-managements', [
             'iphones' => $query,
         ]);
+    }
+
+    public function destroyAlert($value = '', $onConfirm = 'destroy')
+    {
+        LivewireAlert::title('Delete this posts ?')
+            ->warning()
+            ->toast()
+            ->position('top-end')
+            ->withConfirmButton('Delete')
+            ->confirmButtonColor('green')
+            ->cancelButtonColor('red')
+            ->withCancelButton('Cancel')
+            ->onConfirm($onConfirm, ['data' => $value])
+            ->show();
+    }
+
+    public function delete($data)
+    {
+        if (auth()->user()->can('delete')) {
+            $this->mySelected[] = $data['data'];
+            $this->bulkDelete('deleted successfully');
+        } else {
+            LivewireAlert::title('kamu tidak memiliki izin')
+                ->position('top-end')
+                ->text('tidak dapat menghapus data')
+                ->timer(5000)
+                ->error()
+                ->show();
+            $this->mySelected = [];
+            $this->selectedAll = false;
+        }
+    }
+
+    public function destroy()
+    {
+        // dd($this->mySelected);
+        if (auth()->user()->can('delete')) {
+            if ($this->mySelected) {
+                try {
+                    //code...
+                    // dd('masuk ke try');
+                    Iphones::whereIn('id', $this->mySelected)->delete();
+                    $this->mySelected = [];
+                    $this->selectedAll = false;
+                    LivewireAlert::title('Data berhasil dihapus')
+                        ->position('top-end')
+                        ->text('bulk delete data berhasil')
+                        ->timer(5000)
+                        ->success()
+                        ->show();
+                } catch (\Throwable $th) {
+                    LivewireAlert::title('iPhone tidak ditemukan 1')
+                        ->position('top-end')
+                        ->text('tidak dapat menghapus data')
+                        ->timer(5000)
+                        ->error()
+                        ->show();
+                }
+            } else {
+                LivewireAlert::title('iPhone tidak ditemukan 2')
+                    ->position('top-end')
+                    ->text('tidak dapat menghapus data')
+                    ->timer(5000)
+                    ->error()
+                    ->show();
+            }
+        } else {
+            LivewireAlert::title('kamu tidak memiliki izin')
+                ->position('top-end')
+                ->text('tidak dapat menghapus data')
+                ->timer(5000)
+                ->error()
+                ->show();
+            $this->mySelected = [];
+            $this->selectedAll = false;
+        }
     }
 
     public function getData()
