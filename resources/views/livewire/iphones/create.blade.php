@@ -1,4 +1,4 @@
-<div x-data="{ poster: false }">
+<div x-data="{ poster: false, permalink: false, }">
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
             <div class="flex items-center space-x-1 w-full">
@@ -88,6 +88,10 @@
                         </div>
                     </div>
                 </div>
+                {{-- Date picker --}}
+                <livewire:iphones.set-date wire:model="date" />
+                 {{-- Permalink --}}
+                <livewire:iphones.set-slug wire:model="slug" />
             </div>
         </div>
     </form>

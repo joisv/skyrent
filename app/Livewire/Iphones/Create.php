@@ -2,16 +2,69 @@
 
 namespace App\Livewire\Iphones;
 
+use App\Models\Iphones;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
+use Carbon\Carbon;
 use Livewire\Component;
+use Illuminate\Support\Str;
 
 class Create extends Component
 {
     public $name,
         $description,
         $urlPoster,
+        $date,
+        $slug,
         $gallery_id;
+
+    public function mount()
+    {
+        $this->date = Carbon::now();
+    }
+
+    public function save()
+    {
+        // dd($this->gallery_id, $this->urlPoster, $this->date, $this->slug);
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'gallery_id' => 'required|exists:galleries,id',
+            'slug' => 'required|string|max:255|unique:iphones,slug',
+        ]);
+
+        Iphones::create([
+            'name' => $this->name,
+            'description' => $this->description,
+            'gallery_id' => $this->gallery_id,
+            'slug' => $this->slug,
+            'published_day' => $this->date->format('l'),
+        ]);
+
+        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id']);
+        session()->flash('saved', [
+            'title' => 'Changes Saved!',
+            'text' => 'You can safely close the tab!',
+        ]);
+
+        $this->redirect(route('iphones'));
+    }
+
+    #[On('setslug')]
+    public function setSlugAttribute()
+    {
+        $slug = Str::slug($this->name);
+        $originalSlug = $slug;
+        $count = 2;
+
+        while (Iphones::where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $count;
+            $count++;
+        }
+
+        $this->slug = $slug;
+    }
+
 
     #[On('select-poster')]
     public function setSelectedposted($id, $url)

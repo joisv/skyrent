@@ -12,6 +12,9 @@ class Iphones extends Model
     protected $fillable = [
         'name',
         'description',
+        'gallery_id',
+        'slug',
+        'published_day',
     ];
 
     public function gallery()
