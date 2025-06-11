@@ -43,6 +43,7 @@ class IphonesManagements extends Component
 
     public function destroyAlert($value = '', $onConfirm = 'destroy')
     {
+        
         LivewireAlert::title('Delete this posts ?')
             ->warning()
             ->toast()
@@ -59,7 +60,7 @@ class IphonesManagements extends Component
     {
         if (auth()->user()->can('delete')) {
             $this->mySelected[] = $data['data'];
-            $this->bulkDelete('deleted successfully');
+            $this->destroy('deleted successfully');
         } else {
             LivewireAlert::title('kamu tidak memiliki izin')
                 ->position('top-end')
