@@ -28,14 +28,10 @@
                         wire:model.live="sortField">
                         <option selected>Filter by</option>
                         <option value="updated_at">All</option>
-                        <option value="finish">Finish</option>
-                        <option value="pending">Pending</option>
-                        <option value="ongoing">Ongoing</option>
-                        <option value="views">Most View</option>
+                        <option value="created_at">Updated</option>
                     </select>
                 </div>
             </div>
-
         </x-slot>
         <x-slot name="search">
             <x-search wire:model.live.debounce.500ms="search" />
@@ -82,7 +78,7 @@
             @endforeach
         </x-slot>
     </x-tables.table>
-    {{-- <div class="w-full mt-5">
-        {{ $serieses->links() }}
-    </div> --}}
+    <div class="w-full mt-5">
+        {{ $iphones->links() }}
+    </div>
 </div>
