@@ -18,6 +18,7 @@
 <body class="antialiased font-sans max-w-screen-2xl mx-auto dark:bg-gray-900">
     <livewire:layout.home-navigation/>
     <livewire:hero-section/>
+    <livewire:filter-section/>
 </body>
 
 </html>
