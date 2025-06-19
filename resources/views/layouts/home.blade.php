@@ -20,6 +20,11 @@
     <main>
         {{ $slot }}
     </main>
+    <footer>
+        <div class="bg-gray-800 text-white text-center py-4 mt-20">
+            <p>&copy; {{ date('Y') }} SkyRental. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 
 </html>
