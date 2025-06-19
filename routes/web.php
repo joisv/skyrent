@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')
     ->name('welcome');
 
+Route::view('detail', 'detail')
+    ->name('detail');
+
 Route::middleware(['auth', 'role:super-admin|admin'])
     ->group(function () {
         Route::view('dashboard', 'dashboard')
