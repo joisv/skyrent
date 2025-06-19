@@ -43,7 +43,7 @@
             </div>
             <div class="mt-14 space-y-2">
                 <span class="text-2xl font-bold">Rp 85.000.00</span>
-                <div class="flex justify-between items-center space-x-4 bg-white text-black text-xl p-3 font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900 p-3">
+                <div class="flex justify-between items-center space-x-4 bg-white text-black text-xl font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900 p-3">
                         <h1 class="text-xl font-bold">
                             Sewa Sekarang
                         </h1>
