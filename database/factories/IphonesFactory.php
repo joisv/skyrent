@@ -20,7 +20,6 @@ class IphonesFactory extends Factory
             'name' => $this->faker->unique()->word(),
             'description' => $this->faker->sentence(),
             'slug' => $this->faker->unique()->slug(),
-            'published_day' => $this->faker->randomElement(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']),
             'gallery_id' => \App\Models\Gallery::factory()->create()->id,
         ];
     }

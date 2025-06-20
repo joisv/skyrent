@@ -12,7 +12,10 @@
             <x-mary-menu-item title="main" :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate />
             <x-mary-menu-item title="analitycs" wire:navigate />
         </x-mary-menu-sub>
-        <x-mary-menu-item title="Iphones Management" icon="s-user-group" wire:navigate :href="route('iphones')" :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
+        <x-mary-menu-sub title="Iphones Management" icon="s-user-group">
+            <x-mary-menu-item title="New iPhone" wire:navigate :href="route('iphones')" :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
+            <x-mary-menu-item title="Orders" wire:navigate />
+        </x-mary-menu-sub>
         {{-- <x-mary-menu-sub title="Shops" icon="o-rectangle-group">
                 <x-mary-menu-item title="products" wire:navigate :href="route('products')" :active="request()->routeIs('products') ||
                     request()->routeIs('product.create') ||

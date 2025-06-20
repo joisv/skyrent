@@ -14,7 +14,7 @@ class Iphones extends Model
         'description',
         'gallery_id',
         'slug',
-        'published_day',
+        'created',
     ];
 
     public function gallery()

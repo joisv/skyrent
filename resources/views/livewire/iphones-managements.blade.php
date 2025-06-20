@@ -67,9 +67,9 @@
                     <x-tables.td>{{ $iphone->updated_at->format('d M Y') }}</x-tables.td> 
                     {{-- <x-tables.td>{{ $iphone->category->name }}</x-tables.td> --}}
                     <x-tables.td>
-                         {{-- <a href="{{ route('series.edit', $iphone->id) }}" wire:navigate>
+                         <a href="{{ route('iphones.edit', $iphone->id) }}" wire:navigate>
                             <x-primary-button type="button">edit</x-primary-button>
-                        </a> --}}
+                        </a>
                         <x-danger-button type="button"
                             wire:click="destroyAlert({{ $iphone->id }}, 'delete')">delete</x-danger-button>
                     </x-tables.td>

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('gallery_id');
             $table->text('description')->nullable();
             $table->string('slug')->unique();
-            $table->string('published_day')->nullable();
+            $table->string('created')->default(now());
             $table->decimal('price_per_hour', 10, 2)->default(0.00);
             $table->foreign('gallery_id')->references('id')->on('galleries')->onDelete('cascade');
             $table->timestamps();
