@@ -63,11 +63,11 @@
                     {{-- <x-tables.td>
                         {{ $iphone->status }}
                     </x-tables.td>--}}
-                    <x-tables.td>{{ $iphone->created_at->format('d M Y') }}</x-tables.td>
+                    <x-tables.td>{{ Carbon\Carbon::createFromFormat('Y-m-d', $iphone->created)->format('F j, Y') }}</x-tables.td>
                     <x-tables.td>{{ $iphone->updated_at->format('d M Y') }}</x-tables.td> 
                     {{-- <x-tables.td>{{ $iphone->category->name }}</x-tables.td> --}}
                     <x-tables.td>
-                         <a href="{{ route('iphones.edit', $iphone->id) }}" wire:navigate>
+                         <a href="{{ route('iphones.edit', $iphone->id) }}" >
                             <x-primary-button type="button">edit</x-primary-button>
                         </a>
                         <x-danger-button type="button"

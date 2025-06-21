@@ -95,6 +95,37 @@
             </div>
         </div>
     </form>
+    <script>
+        window.addEventListener('livewire:init', function() {
+
+            $('#summernote').summernote({
+                tabsize: 2,
+                height: 500, // set editor height
+                minHeight: null, // set minimum height of editor
+                maxHeight: null, // set maximum height of editor
+                focus: true,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    //   ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                 callbacks: {
+                    onInit: function() {
+                        $('#summernote').summernote('code', @json($description));
+                        $('.note-group-select-from-files').first().remove();
+                    },
+                    onChange: function(contents, $editable) {
+                        @this.set('description', contents, true);
+                    }
+                }
+            });
+
+        })
+    </script>
     <x-modal name="add-poster" :show="$errors->isNotEmpty()">
        <livewire:galleries.gallery />
     </x-modal>

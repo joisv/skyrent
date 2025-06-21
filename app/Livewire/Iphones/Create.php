@@ -25,6 +25,7 @@ class Create extends Component
 
     public function save()
     {
+        dd($this->description);
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -37,6 +38,7 @@ class Create extends Component
             'description' => $this->description,
             'gallery_id' => $this->gallery_id,
             'slug' => $this->slug,
+            'created' => $this->date->format('Y-m-d'),
             'published_day' => $this->date->format('l'),
         ]);
 

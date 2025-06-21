@@ -15,7 +15,8 @@
                 </h2>
             </div>
         </x-primary-button>
-        <button type="button" class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
+        <button type="button"
+            class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
             @click="toggleSetting">
             <x-icons.setting />
         </button>
@@ -25,14 +26,15 @@
                     <div class="w-full">
                         <input type="text"
                             class="border-x-0 border-t-0 w-full placeholder:text-gray-400 border-b-2 border-b-gray-300 focus:ring-0 py-2 px-1 focus:border-t-0 focus:border-b-red-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:border-blue-500"
-                            placeholder="iPhone 16 pro MAX" id="name" wire:model="name" x-on:blur="$dispatch('setslug')">
+                            placeholder="iPhone 16 pro MAX" id="name" wire:model="name"
+                            x-on:blur="$dispatch('setslug')">
                         @error('name')
                             <span class="error">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
                 <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600">
-                    <div id="summernote" ></div>
+                    <div id="summernote"></div>
                 </div>
             </div>
             {{-- Setting series --}}
@@ -73,8 +75,8 @@
                                 @enderror
                                 @if ($urlPoster)
                                     <div class="w-full relative">
-                                        <img src="{{ asset('storage/' . $urlPoster) }}" alt=""
-                                            srcset="" class="w-1/2 h-20 object-contain object-left">
+                                        <img src="{{ asset('storage/' . $urlPoster) }}" alt="" srcset=""
+                                            class="w-1/2 h-20 object-contain object-left">
                                         <div wire:click="removePoster"
                                             class="absolute h-5 w-5 rounded-lg flex items-center justify-center -top-3 right-1/2 bg-gray-400 text-white hover:bg-rose-500">
                                             x</div>
@@ -90,12 +92,44 @@
                 </div>
                 {{-- Date picker --}}
                 <livewire:iphones.set-date wire:model="date" />
-                 {{-- Permalink --}}
+                {{-- Permalink --}}
                 <livewire:iphones.set-slug wire:model="slug" />
             </div>
         </div>
     </form>
+    <script>
+        window.addEventListener('livewire:init', function() {
+
+            $('#summernote').summernote({
+                placeholder: 'Description ....',
+                tabsize: 2,
+                height: 500, // set editor height
+                minHeight: null, // set minimum height of editor
+                maxHeight: null, // set maximum height of editor
+                focus: true,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    //   ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                 callbacks: {
+                    onInit: function() {
+                        $('#summernote').summernote('code', @json($description));
+                        $('.note-group-select-from-files').first().remove();
+                    },
+                    onChange: function(contents, $editable) {
+                        @this.set('description', contents, true);
+                    }
+                }
+            });
+
+        })
+    </script>
     <x-modal name="add-poster" :show="$errors->isNotEmpty()">
-       <livewire:galleries.gallery />
+        <livewire:galleries.gallery />
     </x-modal>
 </div>

@@ -46,7 +46,7 @@
             {{ $slot }}
         </main>
     </div>
-    <script>
+    {{-- <script>
         $('#summernote').summernote({
             placeholder: 'Description ....',
             tabsize: 2,
@@ -64,7 +64,7 @@
                 ['view', ['fullscreen', 'codeview', 'help']]
             ]
         });
-    </script>
+    </script> --}}
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
