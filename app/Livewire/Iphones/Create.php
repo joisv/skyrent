@@ -25,7 +25,6 @@ class Create extends Component
 
     public function save()
     {
-        dd($this->description);
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',

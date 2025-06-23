@@ -46,25 +46,6 @@
             {{ $slot }}
         </main>
     </div>
-    {{-- <script>
-        $('#summernote').summernote({
-            placeholder: 'Description ....',
-            tabsize: 2,
-            height: 500, // set editor height
-            minHeight: null, // set minimum height of editor
-            maxHeight: null, // set maximum height of editor
-            focus: true,
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'underline', 'clear']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],
-                //   ['insert', ['link', 'picture', 'video']],
-                ['view', ['fullscreen', 'codeview', 'help']]
-            ]
-        });
-    </script> --}}
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
