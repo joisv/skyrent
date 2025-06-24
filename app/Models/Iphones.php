@@ -13,6 +13,7 @@ class Iphones extends Model
         'name',
         'description',
         'gallery_id',
+        'user_id',
         'slug',
         'created',
     ];
@@ -20,5 +21,10 @@ class Iphones extends Model
     public function gallery()
     {
         return $this->belongsTo(Gallery::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

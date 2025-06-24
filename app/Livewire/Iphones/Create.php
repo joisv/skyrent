@@ -36,6 +36,7 @@ class Create extends Component
             'name' => $this->name,
             'description' => $this->description,
             'gallery_id' => $this->gallery_id,
+            'user_id' => auth()->id(),
             'slug' => $this->slug,
             'created' => $this->date->format('Y-m-d'),
             'published_day' => $this->date->format('l'),

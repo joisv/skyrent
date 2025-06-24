@@ -27,8 +27,8 @@
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 px-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         wire:model.live="sortField">
                         <option selected>Filter by</option>
-                        <option value="updated_at">All</option>
-                        <option value="created_at">Updated</option>
+                        <option value="created_at">All</option>
+                        <option value="updated_at">Updated</option>
                     </select>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                     {{-- <input type="hidden" wire:model.live="firstId" value="{{ $serieses[0]->id }}"> --}}
             </x-tables.th>
             <x-tables.th>Title</x-tables.th>
-            <x-tables.th>status</x-tables.th>
+            <x-tables.th>Name</x-tables.th>
             <x-tables.th>Created</x-tables.th>
             <x-tables.th>Updated</x-tables.th>
             <x-tables.th>Action</x-tables.th>
@@ -59,6 +59,9 @@
                     </x-tables.td>
                     <x-tables.td>
                         {{ $iphone->name }}
+                    </x-tables.td>
+                    <x-tables.td>
+                        {{ $iphone->user->name }}
                     </x-tables.td>
                     {{-- <x-tables.td>
                         {{ $iphone->status }}
