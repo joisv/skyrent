@@ -17,6 +17,9 @@ Route::middleware(['auth', 'role:super-admin|admin'])
         Route::view('iphones', 'iphones')
             ->name('iphones');
 
+        Route::view('bookings', 'bookings')
+            ->name('bookings');
+
         Route::get('iphones/edit/{iphone:id}', function (Iphones $iphone) {
             return view('iphones.edit', [
                 'iphone' => $iphone
