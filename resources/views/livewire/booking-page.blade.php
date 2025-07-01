@@ -89,7 +89,7 @@
     <div class="w-full mt-5">
         {{-- {{ $iphones->links() }} --}}
     </div>
-    <x-modal name="booking-create" :show="$errors->isNotEmpty()">
+    <x-modal name="booking-create" :show="true">
         <livewire:booking.create />
     </x-modal>
 </div>
