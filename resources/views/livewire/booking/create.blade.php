@@ -38,9 +38,10 @@
                 close: function() {
                     this.state = false;
                 },
-
-                selectIphone: function(value) {
+            
+                selectIphone: function(id, value) {
                     $wire.selectedIphone = value; // update the Livewire property
+                    $wire.selectedIphoneId = id; // update the Livewire property
                     this.close();
                 }
             
@@ -69,7 +70,8 @@
                         @foreach ($iphonesQuery as $iphone)
                             <li
                                 class="relative py-1 pl-3 mb-1 text-gray-900 select-none pr-9 hover:bg-gray-100 cursor-pointer rounded-md">
-                                <span class="block font-normal truncate" @click="selectIphone('{{$iphone->name}}')">{{ $iphone->name }}</span>
+                                <span class="block font-normal truncate"
+                                    @click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}')">{{ $iphone->name }}</span>
                                 <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-700">
                                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd"
@@ -84,5 +86,7 @@
                 </div>
             </div>
         </div>
+        {{-- Date picker --}}
+        <livewire:booking.set-date wire:model="date" />
     </div>
 </div>

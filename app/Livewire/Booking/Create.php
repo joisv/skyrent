@@ -3,6 +3,7 @@
 namespace App\Livewire\Booking;
 
 use App\Models\Iphones;
+use Carbon\Carbon;
 use Livewire\Component;
 
 class Create extends Component
@@ -13,7 +14,18 @@ class Create extends Component
     public $sortDirection = 'desc';
     public $paginate = 10;
     public $selectedIphone = null;
+    public $selectedIphoneId = null;
+    public $date;
 
+    public function updatedDate($value)
+    {
+       dd($this->date);
+    }
+    
+    public function mount()
+    {
+        $this->date = Carbon::now('Asia/Jakarta');
+    }
     
     public function getData() 
     {

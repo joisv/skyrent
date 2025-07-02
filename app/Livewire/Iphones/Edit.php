@@ -22,21 +22,23 @@ class Edit extends Component
 
     public function save()
     {
+        // dd('save');
         // dd($this->gallery_id);
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'gallery_id' => 'required|exists:galleries,id',
-            'slug' => 'required|string|max:255|unique:iphones,slug',
-        ]);
+        // $this->validate([
+        //     'name' => 'required|string|max:255',
+        //     'description' => 'nullable|string|max:1000',
+        //     'gallery_id' => 'required|exists:galleries,id',
+        //     'slug' => 'required|string|max:255|unique:iphones,slug',
+        // ]);
 
         $this->iphone->update([
             'name' => $this->name,
             'description' => $this->description,
             'gallery_id' => $this->gallery_id,
+            'user_id' => auth()->id(),
             'slug' => $this->slug,
             'created' => Carbon::parse($this->date)->format('Y-m-d'),
-            'published_day' => Carbon::parse($this->date)->format('l'),
+            // 'published_day' => Carbon::parse($this->date)->format('l'),
         ]);
 
         $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id']);

@@ -92,6 +92,9 @@
                 <livewire:iphones.set-date wire:model="date" :isEdit="true" />
                  {{-- Permalink --}}
                 <livewire:iphones.set-slug wire:model="slug" />
+                @error('slug')
+                    <span class="error">{{ $message }}</span>
+                @enderror
             </div>
         </div>
     </form>

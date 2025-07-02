@@ -39,7 +39,7 @@ class Create extends Component
             'user_id' => auth()->id(),
             'slug' => $this->slug,
             'created' => $this->date->format('Y-m-d'),
-            'published_day' => $this->date->format('l'),
+            // 'published_day' => $this->date->format('l'),
         ]);
 
         $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id']);
