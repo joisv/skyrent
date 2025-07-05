@@ -88,6 +88,9 @@
                         </div>
                     </div>
                 </div>
+                 @error('gallery_id')
+                    <span class="error">{{ $message }}</span>
+                @enderror
                 {{-- Date picker --}}
                 <livewire:iphones.set-date wire:model="date" :isEdit="true" />
                  {{-- Permalink --}}

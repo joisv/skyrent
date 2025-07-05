@@ -9,7 +9,7 @@
     }
 @endphp
 
-<div :class="!date ? 'border-b border-b-gray-400' : ''" x-data="{
+<div x-cloak :class="!date ? 'border-b border-b-gray-400' : ''" x-data="{
     date: false,
     currentDate: '',
     dataDate: @entangle('value'),

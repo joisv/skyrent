@@ -1,4 +1,21 @@
-<div x-data="{ poster: false, permalink: false, }">
+<div x-data="{
+    poster: false,
+    permalink: false,
+    duration: true,
+    durations: $wire.durations,
+
+    addDuration() {
+        this.durations.push({
+            id: this.durations.length + 1,
+            hours: null,
+            price: null
+        });
+    },
+
+    deleteDuration(index) {
+        this.durations.splice(index, 1);
+    },
+}">
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
             <div class="flex items-center space-x-1 w-full">
@@ -90,10 +107,75 @@
                         </div>
                     </div>
                 </div>
+
                 {{-- Date picker --}}
                 <livewire:iphones.set-date wire:model="date" />
                 {{-- Permalink --}}
                 <livewire:iphones.set-slug wire:model="slug" />
+                {{-- duration --}}
+                <div class="space-y-2 pb-2" :class="duration ? 'border-b border-gray-400' : ''" x-cloak wire:ignore>
+                    <div :class="!duration ? ' border-b border-b-gray-400' : ''">
+                        <button type="button" @click="duration = ! duration"
+                            class="flex space-x-4 gray w-full py-2 cursor-pointer">
+                            <div>
+                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
+                                    class="ease-in duration-200" :class="duration ? 'rotate-180' : ''"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                    </g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <path
+                                            d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                                            stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                                        </path>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="text-start w-full">
+                                <x-input-label for="poster">Duration </x-input-label>
+
+                            </div>
+                        </button>
+                        <div x-show="duration" x-collapse class="space-y-1">
+                            <template x-for="(item, index) in durations" :key="index">
+                                <div class="flex space-x-1">
+                                    <input class="rounded-sm border-gray-400 w-[40%]" type="number"
+                                        placeholder="24 (jam)" x-model="item.hours">
+                                    <input class="rounded-sm border-gray-400 w-[60%]" type="text"
+                                        placeholder="Rp. 100,000" x-model="item.price"
+                                        x-mask:dynamic="'Rp. ' + $money($input)"
+                                        @input="let cleaned = $event.target.value.replace(/[^\d]/g, '');
+                                                item.price = parseInt(cleaned) || 0;">
+                                    <button type="button" @click="addDuration"
+                                        class="rounded-sm bg-slate-900 px-1"><svg width="24px" height="24px"
+                                            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                                stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <path d="M6 12H18M12 6V18" stroke="#ffffff" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </g>
+                                        </svg></button>
+
+                                    <button :disabled="index === 0" type="button" @click="deleteDuration(index)"
+                                        class="rounded-sm border-2 px-1 border-slate-900 disabled:border-gray-300"><svg
+                                            width="22px" height="22px" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                                stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <path d="M6 12L18 12" stroke="#000000" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </g>
+                                        </svg></button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -116,7 +198,7 @@
                     //   ['insert', ['link', 'picture', 'video']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ],
-                 callbacks: {
+                callbacks: {
                     onInit: function() {
                         $('#summernote').summernote('code', @json($description));
                         $('.note-group-select-from-files').first().remove();

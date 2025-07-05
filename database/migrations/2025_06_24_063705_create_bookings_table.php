@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_email')->nullable();
+            $table->date('start_booking_date')->default(now()->toDateString());
+            $table->date('end_booking_date')->nullable();
 
             // Waktu & durasi
             $table->timestamp('start_time');

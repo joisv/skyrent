@@ -1,37 +1,33 @@
 @php
     if ($isEdit) {
-        $finalValue = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
-        if ($finalValue !== false) {
-            $inicialDate = $finalValue->format('F j, Y');
-        }
+        // $finalValue = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
+        // if ($finalValue !== false) {
+        //     $inicialDate = $finalValue->format('F j, Y');
+        // }
     } else {
         $inicialDate = $value->format('F j, Y');
     }
 @endphp
 
-<div :class="!date ? 'border-b border-b-gray-400' : ''" x-data="{
+<div x-data="{
     date: true,
     currentDate: '',
     dataDate: @entangle('value'),
     setDate: true,
     flatpickrInstance: null,
-    {{-- dateInit: @js($inicialDate), --}}
-    start_time: null,
 
     init() {
         let flat = document.querySelector('#flatpickr')
         this.flatpickrInstance = flatpickr(flat, {
-            enableTime: true, // Aktifkan jam
-            time_24hr: true, // Opsional: gunakan format 24 jam (ubah ke false untuk AM/PM)
             altInput: true,
             altFormat: 'F j, Y',
             dateFormat: 'Y-m-d',
             defaultDate: @js($value),
             onChange: (selectedDates, dateStr, instance) => {
+            console.log('Selected date:', dateStr);
                 $wire.date = dateStr;
                 let result = this.convertToCustomFormat(selectedDates);
                 this.dateInit = result.date; // Update tanggal yang ditampilkan
-                this.start_time = result.time; // Update waktu yang ditampilkan
             }
         })
     },
@@ -60,17 +56,8 @@
         };
     }
 }">
-{{ $value }}
-    <div x-show="date" x-collapse class="space-y-2">
-        <div wire:ignore class="dateShow"
-            @inisiasi.window="() => {
-            let wrapp = document.querySelector('.dateShow')
-            if($event.detail){
-                wrapp.classList.add('hidden')
-            } else {
-                wrapp.classList.remove('hidden')
-            }
-        }">
+    <div class="space-y-2">
+        <div >
             <input id="flatpickr" wire:model="value" wire:ignore type="text" placeholder="YYYY-MM-DD" class="w-full" />
         </div>
     </div>

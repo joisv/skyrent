@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Iphones;
 
+use App\Models\Duration;
 use App\Models\Iphones;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -18,6 +19,15 @@ class Create extends Component
         $slug,
         $gallery_id;
 
+
+    public $durations = [
+        [
+            'index' => 0,
+            'hours' => 24,
+            'price' => 100000,
+        ],
+    ];
+
     public function mount()
     {
         $this->date = Carbon::now();
@@ -25,24 +35,43 @@ class Create extends Component
 
     public function save()
     {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'gallery_id' => 'required|exists:galleries,id',
-            'slug' => 'required|string|max:255|unique:iphones,slug',
-        ]);
+        // $this->validate([
+        //     'name' => 'required|string|max:255',
+        //     'description' => 'nullable|string|max:1000',
+        //     'gallery_id' => 'required|exists:galleries,id',
+        //     'slug' => 'required|string|max:255|unique:iphones,slug',
+        // ]);
 
-        Iphones::create([
+        // 1. Simpan iPhone
+        $iphone = Iphones::create([
             'name' => $this->name,
             'description' => $this->description,
             'gallery_id' => $this->gallery_id,
             'user_id' => auth()->id(),
             'slug' => $this->slug,
             'created' => $this->date->format('Y-m-d'),
-            // 'published_day' => $this->date->format('l'),
         ]);
 
-        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id']);
+        // dd($this->durations);
+        // 2. Siapkan data attach [duration_id => ['price' => ...]]
+        $syncData = [];
+        foreach ($this->durations as $item) {
+            // Cek apakah duration dengan 'hours' tersebut sudah ada
+            $duration = Duration::firstOrCreate(
+                ['hours' => $item['hours']] // cari berdasarkan jam
+            );
+
+            // Lanjutkan attach dengan id hasil pencarian atau pembuatan
+            $syncData[$duration->id] = ['price' => $item['price']];
+        }
+
+        // dd($syncData);
+        // 3. Attach relasi
+        $iphone->durations()->attach($syncData);
+
+        // 4. Reset input dan beri feedback
+        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id', 'durations']);
+
         session()->flash('saved', [
             'title' => 'Changes Saved!',
             'text' => 'You can safely close the tab!',
@@ -50,6 +79,7 @@ class Create extends Component
 
         $this->redirect(route('iphones'));
     }
+
 
     #[On('setslug')]
     public function setSlugAttribute()

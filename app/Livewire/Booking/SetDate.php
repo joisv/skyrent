@@ -11,10 +11,6 @@ class SetDate extends Component
     public $value;
     public $isEdit = false;
 
-    public function updated()
-    {
-        dd($this->value);
-    }
     
     public function render()
     {

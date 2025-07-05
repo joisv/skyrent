@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Iphones extends Model
 {
@@ -17,6 +18,13 @@ class Iphones extends Model
         'slug',
         'created',
     ];
+
+    public function durations()
+    {
+        return $this->belongsToMany(Duration::class)
+            ->withPivot('price')
+            ->withTimestamps();
+    }
 
     public function gallery()
     {

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('iphones', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->unsignedBigInteger('gallery_id');
             $table->unsignedBigInteger('user_id');
             $table->text('description')->nullable();
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->date('created')->default(now()->toDateString());
             $table->decimal('price_per_hour', 10, 2)->default(0.00);
             $table->foreign('gallery_id')->references('id')->on('galleries')->onDelete('cascade');
