@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Iphones;
 
+use App\Models\Duration;
 use App\Models\Gallery;
 use App\Models\Iphones;
 use Carbon\Carbon;
@@ -19,6 +20,7 @@ class Edit extends Component
         $slug,
         $gallery_id;
 
+    public $durations = [];
 
     public function save()
     {
@@ -37,6 +39,23 @@ class Edit extends Component
             'slug' => $this->slug, // tidak perlu panggil setSlugAttribute
             'created' => Carbon::parse($this->date)->format('Y-m-d'),
         ]);
+
+        // Sinkronisasi ulang durasi dan harga (pivot)
+        $syncData = [];
+
+        foreach ($this->durations as $item) {
+            // Bersihkan nilai price jika masih string dari masking
+            $cleanPrice = (int) preg_replace('/[^\d]/', '', $item['price']);
+
+            // Cari duration berdasarkan hours
+            $duration = Duration::firstOrCreate(['hours' => $item['hours']]);
+
+            $syncData[$duration->id] = ['price' => $cleanPrice];
+        }
+
+        // Sinkronkan durasi ke iPhone (replace data lama)
+        $this->iphone->durations()->sync($syncData);
+
 
         $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id']);
         session()->flash('saved', [
@@ -80,6 +99,18 @@ class Edit extends Component
 
     public function mount($iphone)
     {
+        $this->durations = $iphone->durations->map(function ($duration, $index) {
+            return [
+                'index' => $index,
+                'hours' => $duration->hours,
+                'price' => (int) preg_replace('/[^\d]/', '', $duration->pivot->price),
+
+            ];
+        })->toArray();
+
+
+        // dd($this->durations);
+
         $this->iphone = $iphone;
         $this->name = $iphone->name;
         $this->description = $iphone->description;

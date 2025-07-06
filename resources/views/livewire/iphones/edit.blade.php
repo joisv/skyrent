@@ -1,4 +1,21 @@
-<div x-data="{ poster: false, permalink: false, }">
+<div x-data="{
+    poster: false,
+    permalink: false,
+    duration: true,
+    durations: $wire.durations,
+
+    addDuration() {
+        this.durations.push({
+            id: this.durations.length + 1,
+            hours: null,
+            price: null
+        });
+    },
+
+    deleteDuration(index) {
+        this.durations.splice(index, 1);
+    },
+}">
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
             <div class="flex items-center space-x-1 w-full">
@@ -15,7 +32,8 @@
                 </h2>
             </div>
         </x-primary-button>
-        <button type="button" class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
+        <button type="button"
+            class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
             @click="toggleSetting">
             <x-icons.setting />
         </button>
@@ -25,14 +43,15 @@
                     <div class="w-full">
                         <input type="text"
                             class="border-x-0 border-t-0 w-full placeholder:text-gray-400 border-b-2 border-b-gray-300 focus:ring-0 py-2 px-1 focus:border-t-0 focus:border-b-red-500 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:border-blue-500"
-                            placeholder="iPhone 16 pro MAX" id="name" wire:model="name" x-on:blur="$dispatch('setslug')">
+                            placeholder="iPhone 16 pro MAX" id="name" wire:model="name"
+                            x-on:blur="$dispatch('setslug')">
                         @error('name')
                             <span class="error">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
                 <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600">
-                    <div id="summernote" ></div>
+                    <div id="summernote"></div>
                 </div>
             </div>
             {{-- Setting series --}}
@@ -73,8 +92,8 @@
                                 @enderror
                                 @if ($urlPoster)
                                     <div class="w-full relative">
-                                        <img src="{{ asset('storage/' . $urlPoster) }}" alt=""
-                                            srcset="" class="w-1/2 h-20 object-contain object-left">
+                                        <img src="{{ asset('storage/' . $urlPoster) }}" alt="" srcset=""
+                                            class="w-1/2 h-20 object-contain object-left">
                                         <div wire:click="removePoster"
                                             class="absolute h-5 w-5 rounded-lg flex items-center justify-center -top-3 right-1/2 bg-gray-400 text-white hover:bg-rose-500">
                                             x</div>
@@ -88,16 +107,80 @@
                         </div>
                     </div>
                 </div>
-                 @error('gallery_id')
+                @error('gallery_id')
                     <span class="error">{{ $message }}</span>
                 @enderror
                 {{-- Date picker --}}
                 <livewire:iphones.set-date wire:model="date" :isEdit="true" />
-                 {{-- Permalink --}}
+                {{-- Permalink --}}
                 <livewire:iphones.set-slug wire:model="slug" />
                 @error('slug')
                     <span class="error">{{ $message }}</span>
                 @enderror
+                {{-- duration --}}
+                <div class="space-y-2 pb-2" :class="duration ? 'border-b border-gray-400' : ''" x-cloak wire:ignore>
+                    <div :class="!duration ? ' border-b border-b-gray-400' : ''">
+                        <button type="button" @click="duration = ! duration"
+                            class="flex space-x-4 gray w-full py-2 cursor-pointer">
+                            <div>
+                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
+                                    class="ease-in duration-200" :class="duration ? 'rotate-180' : ''"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                    </g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <path
+                                            d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                                            stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                                        </path>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="text-start w-full">
+                                <x-input-label for="poster">Duration </x-input-label>
+
+                            </div>
+                        </button>
+                        <div x-show="duration" x-collapse class="space-y-1">
+                            <template x-for="(item, index) in durations" :key="index">
+                                <div class="flex space-x-1">
+                                    <input class="rounded-sm border-gray-400 w-[40%]" type="number"
+                                        placeholder="24 (jam)" x-model="item.hours">
+                                    <input class="rounded-sm border-gray-400 w-[60%]" type="text"
+                                        placeholder="Rp. 100,000" x-model="item.price"
+                                        x-mask:dynamic="'Rp. ' + $money($input)"
+                                        @input="let cleaned = $event.target.value.replace(/[^\d]/g, '');
+                                                item.price = parseInt(cleaned) || 0;">
+                                    <button type="button" @click="addDuration"
+                                        class="rounded-sm bg-slate-900 px-1"><svg width="24px" height="24px"
+                                            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                                stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <path d="M6 12H18M12 6V18" stroke="#ffffff" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </g>
+                                        </svg></button>
+
+                                    <button :disabled="index === 0" type="button" @click="deleteDuration(index)"
+                                        class="rounded-sm border-2 px-1 border-slate-900 disabled:border-gray-300"><svg
+                                            width="22px" height="22px" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                                stroke-linejoin="round"></g>
+                                            <g id="SVGRepo_iconCarrier">
+                                                <path d="M6 12L18 12" stroke="#000000" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"></path>
+                                            </g>
+                                        </svg></button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
@@ -119,7 +202,7 @@
                     //   ['insert', ['link', 'picture', 'video']],
                     ['view', ['fullscreen', 'codeview', 'help']]
                 ],
-                 callbacks: {
+                callbacks: {
                     onInit: function() {
                         $('#summernote').summernote('code', @json($description));
                         $('.note-group-select-from-files').first().remove();
@@ -133,6 +216,6 @@
         })
     </script>
     <x-modal name="add-poster" :show="$errors->isNotEmpty()">
-       <livewire:galleries.gallery />
+        <livewire:galleries.gallery />
     </x-modal>
 </div>

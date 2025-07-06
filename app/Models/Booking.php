@@ -15,10 +15,13 @@ class Booking extends Model
         'customer_name',
         'customer_phone',
         'customer_email',
+        'start_booking_date',
+        'end_booking_date',
         'start_time',
         'end_time',
         'duration',
         'status',
+        'price',
     ];
 
     public function iphone()

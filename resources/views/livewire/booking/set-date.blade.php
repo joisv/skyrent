@@ -9,7 +9,7 @@
     }
 @endphp
 
-<div x-data="{
+<div wire:ignore x-data="{
     date: true,
     currentDate: '',
     dataDate: @entangle('value'),
@@ -56,7 +56,7 @@
         };
     }
 }">
-    <div class="space-y-2">
+    <div class="space-y-2" >
         <div >
             <input id="flatpickr" wire:model="value" wire:ignore type="text" placeholder="YYYY-MM-DD" class="w-full" />
         </div>

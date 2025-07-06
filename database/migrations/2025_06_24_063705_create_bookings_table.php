@@ -19,13 +19,15 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_email')->nullable();
-            $table->date('start_booking_date')->default(now()->toDateString());
-            $table->date('end_booking_date')->nullable();
+            $table->decimal('price', 12, 2)->default(0.00);
+            
 
             // Waktu & durasi
+            $table->date('start_booking_date')->default(now()->toDateString());
+            $table->date('end_booking_date')->nullable();
             $table->timestamp('start_time');
             $table->timestamp('end_time');
-            $table->enum('duration', [6, 12, 24]);
+            $table->integer('duration');
 
             $table->foreign('iphone_id')->references('id')->on('iphones')->onDelete('cascade');
             $table->enum('status', ['pending', 'confirmed', 'returned', 'cancelled'])->default('pending');

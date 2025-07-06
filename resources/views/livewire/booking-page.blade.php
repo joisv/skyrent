@@ -1,18 +1,18 @@
 <div x-data="{
-    createBooking(){
+    createBooking() {
         {{-- $dispatch('booking-create') --}}
         $dispatch('open-modal', 'booking-create')
     },
 }">
-    <x-tables.table name="Series" >
-        <x-slot name="secondBtn" >
+    <x-tables.table name="Booking">
+        <x-slot name="secondBtn">
             {{-- <button class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white" wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
                 <span>Bulk delete</span>
             </button> --}}
         </x-slot>
         <x-slot name="addBtn">
             <x-tables.addbtn type="button" x-data="" @click="createBooking()">
-                Add iPhone
+                Add Booking
             </x-tables.addbtn>
         </x-slot>
         <x-slot name="sort">
@@ -31,11 +31,16 @@
                     <select id="sort"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 px-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         wire:model.live="sortField">
-                        <option selected>Filter by</option>
-                        <option value="created_at">All</option>
+
+                        <option disabled selected>Sort by</option>
+                        <option value="created_at">Terbaru</option>
                         <option value="updated_at">Updated</option>
+                        <option value="start_booking_date">Tanggal Mulai</option>
+                        <option value="status">Status</option>
+                        <option value="price">Harga</option>
                     </select>
                 </div>
+
             </div>
         </x-slot>
         <x-slot name="search">
@@ -43,53 +48,63 @@
         </x-slot>
         <x-slot name="thead">
             <x-tables.th>
-                <input id="selectedAll"
-                    type="checkbox"class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                <input id="selectedAll" type="checkbox"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     wire:model.live="selectedAll">
-                    {{-- <input type="hidden" wire:model.live="firstId" value="{{ $serieses[0]->id }}"> --}}
             </x-tables.th>
-            <x-tables.th>Title</x-tables.th>
-            <x-tables.th>Name</x-tables.th>
-            <x-tables.th>Created</x-tables.th>
-            <x-tables.th>Updated</x-tables.th>
-            <x-tables.th>Action</x-tables.th>
+            <x-tables.th>Nama</x-tables.th>
+            <x-tables.th>Nomor HP</x-tables.th>
+            <x-tables.th>Email</x-tables.th>
+            <x-tables.th>iPhone</x-tables.th>
+            <x-tables.th>Tanggal Mulai</x-tables.th>
+            <x-tables.th>Status</x-tables.th>
+            <x-tables.th>Aksi</x-tables.th>
         </x-slot>
+
         <x-slot name="tbody">
-            {{-- @foreach ($iphones as $index => $iphone)
+            @foreach ($bookings as $index => $booking)
                 <tr>
                     <x-tables.td>
                         <input id="default-{{ $index }}" type="checkbox"
                             class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                            wire:model.live="mySelected" value="{{ $iphone->id }}">
-                    </x-tables.td>
-                    <x-tables.td>
-                        {{ $iphone->name }}
-                    </x-tables.td>
-                    <x-tables.td>
-                        {{ $iphone->user->name }}
-                    </x-tables.td>
-                    <x-tables.td>
-                        {{ $iphone->status }}
-                    </x-tables.td>
-                    <x-tables.td>{{ Carbon\Carbon::createFromFormat('Y-m-d', $iphone->created)->format('F j, Y') }}</x-tables.td>
-                    <x-tables.td>{{ $iphone->updated_at->format('d M Y') }}</x-tables.td> 
-                    <x-tables.td>{{ $iphone->category->name }}</x-tables.td>
-                    <x-tables.td>
-                         <a href="{{ route('iphones.edit', $iphone->id) }}" >
-                            <x-primary-button type="button">edit</x-primary-button>
-                        </a>
-                        <x-danger-button type="button"
-                            wire:click="destroyAlert({{ $iphone->id }}, 'delete')">delete</x-danger-button>
+                            wire:model.live="mySelected" value="{{ $booking->id }}">
                     </x-tables.td>
 
+                    <x-tables.td>{{ $booking->customer_name }}</x-tables.td>
+                    <x-tables.td>{{ $booking->customer_phone }}</x-tables.td>
+                    <x-tables.td>{{ $booking->customer_email ?? '-' }}</x-tables.td>
+                    <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
+                    <x-tables.td>{{ \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') }}</x-tables.td>
+                    <x-tables.td>
+                        <span
+                            class="px-2 py-1 rounded text-xs font-semibold 
+                    {{ $booking->status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : ($booking->status === 'confirmed'
+                            ? 'bg-green-100 text-green-700'
+                            : ($booking->status === 'cancelled'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-gray-100 text-gray-700')) }}">
+                            {{ ucfirst($booking->status) }}
+                        </span>
+                    </x-tables.td>
+
+                    <x-tables.td>
+                        {{-- <a href="{{ route('bookings.edit', $booking->id) }}">
+                            <x-primary-button type="button">edit</x-primary-button>
+                        </a> --}}
+                        <x-danger-button type="button"
+                            wire:click="destroyAlert({{ $booking->id }}, 'delete')">delete</x-danger-button>
+                    </x-tables.td>
                 </tr>
-            @endforeach --}}
+            @endforeach
         </x-slot>
+
     </x-tables.table>
     <div class="w-full mt-5">
         {{-- {{ $iphones->links() }} --}}
     </div>
-    <x-modal name="booking-create" :show="true">
+    <x-modal name="booking-create" :show="$errors->isNotEmpty()">
         <livewire:booking.create />
     </x-modal>
 </div>

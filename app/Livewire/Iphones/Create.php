@@ -58,12 +58,16 @@ class Create extends Component
         foreach ($this->durations as $item) {
             // Cek apakah duration dengan 'hours' tersebut sudah ada
             $duration = Duration::firstOrCreate(
-                ['hours' => $item['hours']] // cari berdasarkan jam
+                ['hours' => $item['hours']]
             );
 
-            // Lanjutkan attach dengan id hasil pencarian atau pembuatan
-            $syncData[$duration->id] = ['price' => $item['price']];
+            // Bersihkan price agar hanya angka
+            $cleanPrice = (int) preg_replace('/[^\d]/', '', $item['price']);
+
+            // Attach dengan price yang sudah dibersihkan
+            $syncData[$duration->id] = ['price' => $cleanPrice];
         }
+
 
         // dd($syncData);
         // 3. Attach relasi
