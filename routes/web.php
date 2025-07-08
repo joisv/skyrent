@@ -31,6 +31,9 @@ Route::middleware(['auth', 'role:super-admin|admin'])
 
         Route::view('profile', 'profile')
             ->name('profile');
+
+        Route::view('settings/basic', 'settings.basic')
+            ->name('settings.basic');
     });
 
 

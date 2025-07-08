@@ -14,8 +14,16 @@
         </x-mary-menu-sub>
         <x-mary-menu-sub title="Iphones Management" icon="s-user-group">
             <x-mary-menu-item title="New iPhone" wire:navigate :href="route('iphones')" :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
-            <x-mary-menu-item title="Bookings" wire:navigate :href="route('bookings')" :active="request()->routeIs('bookings')"/>
+            <x-mary-menu-item title="Bookings" wire:navigate :href="route('bookings')" :active="request()->routeIs('bookings')" />
         </x-mary-menu-sub>
+        <x-mary-menu-separator />
+
+        <x-mary-menu-sub title="Settings" icon="o-cog-6-tooth" icon-classes="text-warning">
+            <x-mary-menu-item title="Basic" icon="o-wifi" wire:navigate :href="route('settings.basic')" :active="request()->routeIs('settings.basic')" />
+            <x-mary-menu-item title="Archives" icon="o-archive-box" />
+        </x-mary-menu-sub>
+
+        <x-mary-menu-separator />
         {{-- <x-mary-menu-sub title="Shops" icon="o-rectangle-group">
                 <x-mary-menu-item title="products" wire:navigate :href="route('products')" :active="request()->routeIs('products') ||
                     request()->routeIs('product.create') ||
