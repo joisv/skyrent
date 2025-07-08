@@ -50,30 +50,55 @@ class Create extends Component
             'start_time' => 'required|date_format:H:i',
             'end_booking_date' => 'required|date',
             'end_time' => 'required|date_format:H:i',
-            'selectedDuration' => 'required|integer|min:1', // Assuming
+            'selectedDuration' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
         ]);
 
+        $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->start_booking_date)->format('Y-m-d') . ' ' . $this->start_time);
+        $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
+
+
+        // 🔍 Cek apakah ada booking bentrok
+        $bookings = Booking::where('iphone_id', $this->selectedIphoneId)->get();
+
+        $conflict = $bookings->contains(function ($booking) use ($start, $end) {
+            $bookingStart = Carbon::parse($booking->start_booking_date . ' ' . $booking->start_time);
+            $bookingEnd = Carbon::parse($booking->end_booking_date . ' ' . $booking->end_time);
+
+            return $bookingStart < $end && $bookingEnd > $start;
+        });
+
+        if ($conflict) {
+            LivewireAlert::title('Booking Gagal')
+                ->text('Tanggal dan waktu yang dipilih sudah dibooking.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+
+            return;
+        }
+
+        // Simpan booking baru
         Booking::create([
             'iphone_id' => $this->selectedIphoneId,
-            'customer_name' => $this->customer_name, // Replace with actual customer name
-            'customer_phone' => $this->countryCode.'-'.$this->customer_phone, // Replace with actual customer phone
-            'customer_email' => $this->customer_email, // Replace with actual customer email
-            'start_booking_date' => Carbon::parse($this->start_booking_date)->toDateString(),
-            'start_time' => $this->start_time,
-            'end_booking_date' => Carbon::parse($this->end_booking_date)->toDateString(),
-            'end_time' => $this->end_time,
+            'customer_name' => $this->customer_name,
+            'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
+            'customer_email' => $this->customer_email,
+            'start_booking_date' => $start->toDateString(),
+            'start_time' => $start->format('H:i'),
+            'end_booking_date' => $end->toDateString(),
+            'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
-            'price' => $this->selectedPrice, // Assuming you have a way to calculate or set this
-            'status' => 'pending', // Default status, can be changed later
-
+            'price' => $this->selectedPrice,
+            'status' => 'pending',
         ]);
 
-        // Logic to save the booking
-        // For example, you might create a new Booking model instance here
-        // and save it to the database.
+        // Reset
         $this->dispatch('close-modal');
         $this->reset([
+            'selectedDuration',
+            'selectedIphone',
             'selectedIphoneId',
             'customer_name',
             'customer_phone',
@@ -85,14 +110,16 @@ class Create extends Component
             'selectedDuration',
             'price'
         ]);
-        LivewireAlert::title('success')
-            ->text('Booking created successfully!')
+
+        LivewireAlert::title('Success!')
+            ->text('Booking berhasil disimpan.')
             ->success()
             ->toast()
             ->position('top-end')
             ->show();
-
     }
+
+
 
     public function getDuration()
     {

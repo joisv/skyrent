@@ -35,12 +35,12 @@ class Create extends Component
 
     public function save()
     {
-        // $this->validate([
-        //     'name' => 'required|string|max:255',
-        //     'description' => 'nullable|string|max:1000',
-        //     'gallery_id' => 'required|exists:galleries,id',
-        //     'slug' => 'required|string|max:255|unique:iphones,slug',
-        // ]);
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'gallery_id' => 'required|exists:galleries,id',
+            'slug' => 'required|string|max:255|unique:iphones,slug',
+        ]);
 
         // 1. Simpan iPhone
         $iphone = Iphones::create([

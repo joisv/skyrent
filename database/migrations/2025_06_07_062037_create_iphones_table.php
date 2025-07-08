@@ -18,8 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->text('description')->nullable();
             $table->string('slug');
+            $table->boolean('is_booked')->default(false);
             $table->date('created')->default(now()->toDateString());
-            $table->decimal('price_per_hour', 10, 2)->default(0.00);
             $table->foreign('gallery_id')->references('id')->on('galleries')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

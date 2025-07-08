@@ -1,13 +1,13 @@
-@php
+{{-- @php
     if ($isEdit) {
-        // $finalValue = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
-        // if ($finalValue !== false) {
-        //     $inicialDate = $finalValue->format('F j, Y');
-        // }
+        $finalValue = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
+        if ($finalValue !== false) {
+            $inicialDate = $finalValue->format('F j, Y');
+        }
     } else {
         $inicialDate = $value->format('F j, Y');
     }
-@endphp
+@endphp --}}
 
 <div wire:ignore x-data="{
     date: true,

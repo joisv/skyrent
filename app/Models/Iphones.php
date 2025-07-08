@@ -17,6 +17,7 @@ class Iphones extends Model
         'user_id',
         'slug',
         'created',
+        'booked',
     ];
 
     public function durations()

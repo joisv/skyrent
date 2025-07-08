@@ -6,9 +6,9 @@
 }">
     <x-tables.table name="Booking">
         <x-slot name="secondBtn">
-            {{-- <button class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white" wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
+            <button class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white" wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
                 <span>Bulk delete</span>
-            </button> --}}
+            </button>
         </x-slot>
         <x-slot name="addBtn">
             <x-tables.addbtn type="button" x-data="" @click="createBooking()">
@@ -53,10 +53,12 @@
                     wire:model.live="selectedAll">
             </x-tables.th>
             <x-tables.th>Nama</x-tables.th>
-            <x-tables.th>Nomor HP</x-tables.th>
-            <x-tables.th>Email</x-tables.th>
             <x-tables.th>iPhone</x-tables.th>
+            <x-tables.th>Durasi Sewa</x-tables.th>
             <x-tables.th>Tanggal Mulai</x-tables.th>
+            <x-tables.th>Tanggal Selesai</x-tables.th>
+            <x-tables.th>Waktu Mulai</x-tables.th>
+            <x-tables.th>Waktu Selesai</x-tables.th>
             <x-tables.th>Status</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
         </x-slot>
@@ -71,10 +73,12 @@
                     </x-tables.td>
 
                     <x-tables.td>{{ $booking->customer_name }}</x-tables.td>
-                    <x-tables.td>{{ $booking->customer_phone }}</x-tables.td>
-                    <x-tables.td>{{ $booking->customer_email ?? '-' }}</x-tables.td>
                     <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
+                    <x-tables.td>{{ $booking->duration }} jam</x-tables.td>
                     <x-tables.td>{{ \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') }}</x-tables.td>
+                    <x-tables.td>{{ \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') }}</x-tables.td>
+                    <x-tables.td>{{ $booking->start_time }}</x-tables.td>
+                    <x-tables.td>{{ $booking->end_time }}</x-tables.td>
                     <x-tables.td>
                         <span
                             class="px-2 py-1 rounded text-xs font-semibold 

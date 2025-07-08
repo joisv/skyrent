@@ -17,10 +17,10 @@ class IphonesManagements extends Component
     public $mySelected = [];
     public $selectedAll = false;
 
-    public function clicked()
-    {
-        $this->dispatch('showAlert', type: 'success', message: 'Data berhasil disimpan!');
-    }
+    // public function clicked()
+    // {
+    //     $this->dispatch('showAlert', type: 'success', message: 'Data berhasil disimpan!');
+    // }
 
     public function mount()
     {
