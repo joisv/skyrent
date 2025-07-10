@@ -20,7 +20,7 @@
 
         <x-mary-menu-sub title="Settings" icon="o-cog-6-tooth" icon-classes="text-warning">
             <x-mary-menu-item title="Basic" icon="o-wifi" wire:navigate :href="route('settings.basic')" :active="request()->routeIs('settings.basic')" />
-            <x-mary-menu-item title="Archives" icon="o-archive-box" />
+            <x-mary-menu-item title="Info" icon="o-archive-box" wire:navigate :href="route('settings.info')" :active="request()->routeIs('settings.info')"/>
         </x-mary-menu-sub>
 
         <x-mary-menu-separator />
