@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Settings;
 
+use App\Settings\GeneralSettings;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -15,6 +16,56 @@ class Basic extends Component
     public string $logo;
     public string $primary_color = '#000000';
     public string $wichImage;
+
+
+    public function mount(GeneralSettings $settings)
+    {
+        $this->site_name = $settings->site_name;
+        $this->primary_color = $settings->primary_color;
+        $this->logo_cms = $settings->logo_cms;
+        $this->logo = $settings->logo;
+        $this->favicon = $settings->favicon;
+        $this->description = $settings->description;
+    }
+
+    public function update()
+    {
+        if (auth()->user()->hasRole('admin') || auth()->user()->hasRole('super-admin')) {
+            $this->validate([
+                'logo_cms' => 'nullable|string',
+                'logo' => 'nullable|string',
+                'favicon' => 'nullable|string',
+                'description' => 'nullable|string',
+                'site_name' => 'nullable|string',
+                'primary_color' => 'required|string',
+            ]);
+
+            $settings = new GeneralSettings();
+
+            $settings->site_name = $this->site_name;
+            $settings->description = $this->description;
+            $settings->logo_cms = $this->logo_cms;
+            $settings->logo = $this->logo;
+            $settings->favicon = $this->favicon;
+            $settings->primary_color = $this->primary_color;
+
+            $settings->save();
+
+            LivewireAlert::title('Setelan berhasil diperbarui')
+                ->text('Setelan website kamu telah berhasil diperbarui.')
+                ->success()
+                ->toast()
+                ->position('top-end')
+                ->show();
+        } else {
+            LivewireAlert::title('Kamu tidak memiliki izin')
+                ->text('Kamu tidak memiliki izin untuk mengubah setelan ini.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+        }
+    }
 
     #[On('select-poster')]
     public function setSelectedposted($id, $url)

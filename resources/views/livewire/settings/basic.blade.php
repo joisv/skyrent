@@ -22,7 +22,7 @@
             {{ __('Perbarui setelan website kamu disini') }}
         </p>
     </header>
-    <form action="" class="mt-6 space-y-6">
+    <form wire:submit="update" class="mt-6 space-y-6">
         <div>
             <x-input-label for="site_name" :value="__('Nama website')" />
             <x-text-input wire:model="site_name" id="site_name" name="site_name" type="text" class="mt-1 block w-full"
@@ -203,6 +203,16 @@
                     </div>
                 </div>
             </div>
+        </div>
+         <div class="flex items-center gap-4">
+            <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
+                <div class="flex items-center space-x-1 w-full">
+                    <x-icons.loading wire:loading />
+                    <h2>
+                        Save
+                    </h2>
+                </div>
+            </x-primary-button>
         </div>
     </form>
     <x-modal name="add-logo" :show="$errors->isNotEmpty()">
