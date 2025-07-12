@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
+use App\Observers\BookingObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -21,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         Builder::macro('search', function ($fields, $string) {
+        Builder::macro('search', function ($fields, $string) {
             if (!is_array($fields)) {
                 $fields = [$fields];
             }
@@ -41,5 +43,7 @@ class AppServiceProvider extends ServiceProvider
                 }
             }) : $this;
         });
+
+        Booking::observe(BookingObserver::class);
     }
 }

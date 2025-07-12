@@ -10,7 +10,7 @@ class Booking extends Model
     /** @use HasFactory<\Database\Factories\BookingFactory> */
     use HasFactory;
 
-     protected $fillable = [
+    protected $fillable = [
         'iphone_id',
         'customer_name',
         'customer_phone',
@@ -23,6 +23,12 @@ class Booking extends Model
         'status',
         'price',
     ];
+
+    public function revenue()
+    {
+        return $this->hasOne(Revenue::class);
+    }
+
 
     public function iphone()
     {

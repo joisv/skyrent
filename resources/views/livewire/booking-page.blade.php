@@ -6,7 +6,9 @@
 }">
     <x-tables.table name="Booking">
         <x-slot name="secondBtn">
-            <button class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white" wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
+            <button
+                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
+                wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
                 <span>Bulk delete</span>
             </button>
         </x-slot>
@@ -80,17 +82,38 @@
                     <x-tables.td>{{ $booking->start_time }}</x-tables.td>
                     <x-tables.td>{{ $booking->end_time }}</x-tables.td>
                     <x-tables.td>
-                        <span
-                            class="px-2 py-1 rounded text-xs font-semibold 
+                        <x-dropdown align="top" width="48">
+                            {{-- Tombol pemicu dropdown --}}
+                            <x-slot name="trigger">
+                                <button
+                                    class="px-2 py-1 rounded text-xs font-semibold 
                     {{ $booking->status === 'pending'
                         ? 'bg-yellow-100 text-yellow-700'
                         : ($booking->status === 'confirmed'
                             ? 'bg-green-100 text-green-700'
                             : ($booking->status === 'cancelled'
                                 ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-100 text-gray-700')) }}">
-                            {{ ucfirst($booking->status) }}
-                        </span>
+                                : 'bg-gray-100 text-gray-700')) }}">{{ ucfirst($booking->status) }}
+                                </button>
+                            </x-slot>
+
+                            {{-- Konten dropdown --}}
+                            <x-slot name="content">
+                                <div class="p-1">
+                                    <button {{ $booking->status === 'pending' ? 'disabled' : '' }} class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-yellow-200" wire:click="updateStatusBooking({{ $booking->id }}, 'pending')">pending</button>
+                                </div>
+                                <div class="p-1">
+                                    <button {{ $booking->status === 'confirmed' ? 'disabled' : '' }} class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-green-200" wire:click="updateStatusBooking({{ $booking->id }}, 'confirmed')">confirmed</button>
+                                </div>
+                                <div class="p-1">
+                                    <button {{ $booking->status === 'returned' ? 'disabled' : '' }} class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-purple-200" wire:click="updateStatusBooking({{ $booking->id }}, 'returned')">returned</button>
+                                </div>
+                                <div class="p-1">
+                                    <button {{ $booking->status === 'cancelled' ? 'disabled' : '' }} class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-red-300" wire:click="updateStatusBooking({{ $booking->id }}, 'cancelled')">cancelled</button>
+                                </div>
+                            </x-slot>
+                        </x-dropdown>
+
                     </x-tables.td>
 
                     <x-tables.td>
