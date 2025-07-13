@@ -92,6 +92,8 @@ class Create extends Component
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
             'status' => 'pending',
+            'created' => Carbon::now('Asia/Jakarta')
+
         ]);
 
         // Reset

@@ -28,7 +28,8 @@ return new class extends Migration
             $table->timestamp('start_time');
             $table->timestamp('end_time');
             $table->integer('duration');
-
+            $table->timestamp('created');
+            
             $table->foreign('iphone_id')->references('id')->on('iphones')->onDelete('cascade');
             $table->enum('status', ['pending', 'confirmed', 'returned', 'cancelled'])->default('pending');
             $table->timestamps();

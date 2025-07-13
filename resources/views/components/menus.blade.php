@@ -9,7 +9,7 @@
 
         <!-- Navigation Links -->
         <x-mary-menu-sub title="Dashboard" icon="m-cursor-arrow-ripple">
-            <x-mary-menu-item title="main" :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate />
+            <x-mary-menu-item title="main" :href="route('dashboard')" :active="request()->routeIs('dashboard')" />
             <x-mary-menu-item title="analitycs" wire:navigate />
         </x-mary-menu-sub>
         <x-mary-menu-sub title="Iphones Management" icon="s-user-group">
