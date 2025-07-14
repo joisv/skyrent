@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Booking;
 use App\Models\Revenue;
+use Carbon\Carbon;
 
 class BookingObserver
 {
@@ -27,6 +28,7 @@ class BookingObserver
                 Revenue::create([
                     'booking_id' => $booking->id,
                     'amount' => $booking->price,
+                    'created' => Carbon::now('Asia/Jakarta')
                 ]);
             }
         }

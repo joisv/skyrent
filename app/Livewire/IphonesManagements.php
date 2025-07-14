@@ -17,21 +17,6 @@ class IphonesManagements extends Component
     public $mySelected = [];
     public $selectedAll = false;
 
-    // public function clicked()
-    // {
-    //     $this->dispatch('showAlert', type: 'success', message: 'Data berhasil disimpan!');
-    // }
-
-    public function mount()
-    {
-        if (session()->has('saved')) {
-            LivewireAlert::title(session('saved.title'))
-                ->text(session('saved.text'))
-                ->success()
-                ->show();
-        }
-    }
-
     public function render()
     {
         $query = $this->getData()->paginate($this->paginate);

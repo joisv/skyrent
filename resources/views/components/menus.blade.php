@@ -8,22 +8,33 @@
         </div>
 
         <!-- Navigation Links -->
-        <x-mary-menu-sub title="Dashboard" icon="m-cursor-arrow-ripple">
-            <x-mary-menu-item title="main" :href="route('dashboard')" :active="request()->routeIs('dashboard')" />
-            <x-mary-menu-item title="analitycs" wire:navigate />
+        <x-mary-menu-item title="Dashboard" icon="o-home" :href="route('dashboard')" :active="request()->routeIs('dashboard')" />
+
+        <x-mary-menu-sub title="Iphones Management" icon="o-device-phone-mobile">
+            <x-mary-menu-item title="New iPhone" icon="o-plus-circle" wire:navigate :href="route('iphones')"
+                :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
+            <x-mary-menu-item title="Bookings" icon="o-calendar-days" wire:navigate :href="route('bookings')"
+                :active="request()->routeIs('bookings')" />
         </x-mary-menu-sub>
-        <x-mary-menu-sub title="Iphones Management" icon="s-user-group">
-            <x-mary-menu-item title="New iPhone" wire:navigate :href="route('iphones')" :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
-            <x-mary-menu-item title="Bookings" wire:navigate :href="route('bookings')" :active="request()->routeIs('bookings')" />
+        <x-mary-menu-sub title="Report" icon="o-chart-bar">
+            <x-mary-menu-item title="Revenue" wire:navigate :href="route('reports.revenue')"
+                :active="request()->routeIs('reports.revenue')" icon="o-banknotes" wire:navigate />
+            <x-mary-menu-item title="Top Device" icon="o-trophy" wire:navigate />
+            <x-mary-menu-item title="Booking Sumary" icon="o-calendar-days" wire:navigate />
         </x-mary-menu-sub>
         <x-mary-menu-separator />
 
         <x-mary-menu-sub title="Settings" icon="o-cog-6-tooth" icon-classes="text-warning">
-            <x-mary-menu-item title="Basic" icon="o-wifi" wire:navigate :href="route('settings.basic')" :active="request()->routeIs('settings.basic')" />
-            <x-mary-menu-item title="Info" icon="o-archive-box" wire:navigate :href="route('settings.info')" :active="request()->routeIs('settings.info')"/>
+            <x-mary-menu-item title="Basic" icon="o-adjustments-horizontal" wire:navigate :href="route('settings.basic')"
+                :active="request()->routeIs('settings.basic')" />
+            <x-mary-menu-item title="Info" icon="o-information-circle" wire:navigate :href="route('settings.info')"
+                :active="request()->routeIs('settings.info')" />
+            <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
         </x-mary-menu-sub>
-
         <x-mary-menu-separator />
+        <x-mary-menu-item title="Roles & Permissions" icon="o-key" wire:navigate />
+        <x-mary-menu-item title="Notifications" icon="o-bell" wire:navigate />
+        <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate />
         {{-- <x-mary-menu-sub title="Shops" icon="o-rectangle-group">
                 <x-mary-menu-item title="products" wire:navigate :href="route('products')" :active="request()->routeIs('products') ||
                     request()->routeIs('product.create') ||
