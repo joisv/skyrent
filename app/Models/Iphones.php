@@ -20,6 +20,24 @@ class Iphones extends Model
         'booked',
     ];
 
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'iphone_id');
+    }
+
+    // Indirect relation ke Revenue
+    public function revenues()
+    {
+        return $this->hasManyThrough(
+            Revenue::class,
+            Booking::class,
+            'iphone_id',     // Foreign key di Booking
+            'booking_id',    // Foreign key di Revenue
+            'id',            // Local key di Iphone
+            'id'             // Local key di Booking
+        );
+    }
+
     public function durations()
     {
         return $this->belongsToMany(Duration::class)

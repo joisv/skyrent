@@ -17,9 +17,8 @@
                 :active="request()->routeIs('bookings')" />
         </x-mary-menu-sub>
         <x-mary-menu-sub title="Report" icon="o-chart-bar">
-            <x-mary-menu-item title="Revenue" wire:navigate :href="route('reports.revenue')"
-                :active="request()->routeIs('reports.revenue')" icon="o-banknotes" wire:navigate />
-            <x-mary-menu-item title="Top Device" icon="o-trophy" wire:navigate />
+            <x-mary-menu-item title="Revenue" wire:navigate :href="route('reports.revenue')" :active="request()->routeIs('reports.revenue')" icon="o-banknotes" />
+            <x-mary-menu-item title="Top Device" icon="o-trophy" wire:navigate :href="route('reports.topdevice')" :active="request()->routeIs('reports.topdevice')" />
             <x-mary-menu-item title="Booking Sumary" icon="o-calendar-days" wire:navigate />
         </x-mary-menu-sub>
         <x-mary-menu-separator />
@@ -35,21 +34,5 @@
         <x-mary-menu-item title="Roles & Permissions" icon="o-key" wire:navigate />
         <x-mary-menu-item title="Notifications" icon="o-bell" wire:navigate />
         <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate />
-        {{-- <x-mary-menu-sub title="Shops" icon="o-rectangle-group">
-                <x-mary-menu-item title="products" wire:navigate :href="route('products')" :active="request()->routeIs('products') ||
-                    request()->routeIs('product.create') ||
-                    request()->routeIs('product.edit')" />
-                <x-mary-menu-item title="categories" wire:navigate :href="route('categories')" :active="request()->routeIs('categories')" />
-                <x-mary-menu-item title="orders" wire:navigate />
-            </x-mary-menu-sub>
-            <x-mary-menu-sub title="Blog" icon="o-document">
-                <x-mary-menu-item title="posts" wire:navigate />
-            </x-mary-menu-sub>
-            <x-mary-menu-sub title="Settings" icon="c-cog-8-tooth">
-                <x-mary-menu-item title="basic" wire:navigate :href="route('basics')" :active="request()->routeIs('basics')" />
-                <x-mary-menu-item title="my account" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
-                <x-mary-menu-item title="feedback" wire:navigate />
-            </x-mary-menu-sub> --}}
-        {{-- <x-theme-toggle /> --}}
         </x-menu>
 </div>

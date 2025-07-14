@@ -40,6 +40,11 @@ Route::middleware(['auth', 'role:super-admin|admin'])
 
         Route::view('reports/revenue', 'reports.revenue')
             ->name('reports.revenue');
+
+        Route::view('reports/top-device', 'reports.top-device')
+            ->name('reports.topdevice');
+
+
     });
 
 
