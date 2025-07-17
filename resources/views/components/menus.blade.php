@@ -19,7 +19,6 @@
         <x-mary-menu-sub title="Report" icon="o-chart-bar">
             <x-mary-menu-item title="Revenue" wire:navigate :href="route('reports.revenue')" :active="request()->routeIs('reports.revenue')" icon="o-banknotes" />
             <x-mary-menu-item title="Top Device" icon="o-trophy" wire:navigate :href="route('reports.topdevice')" :active="request()->routeIs('reports.topdevice')" />
-            <x-mary-menu-item title="Booking Sumary" icon="o-calendar-days" wire:navigate />
         </x-mary-menu-sub>
         <x-mary-menu-separator />
 

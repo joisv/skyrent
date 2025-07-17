@@ -97,7 +97,7 @@
 
                          <x-tables.td>
                              <div class="w-[50%] bg-gray-200 rounded h-3">
-                                 <div class="bg-green-500 h-3 rounded" style="width: {{ $device['kontribusi'] }}%">
+                                 <div class="bg-violet-400 h-3 rounded" style="width: {{ $device['kontribusi'] }}%">
                                  </div>
                              </div>
                              <span class="text-sm">{{ $device['kontribusi'] }}%</span>

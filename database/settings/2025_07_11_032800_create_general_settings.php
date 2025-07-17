@@ -11,6 +11,7 @@ return new class extends SettingsMigration
         $this->migrator->add('general.logo', '');
         $this->migrator->add('general.logo_cms', '');
         $this->migrator->add('general.favicon', '');
+        $this->migrator->add('general.about_us', 'halo nama saya jois vanka, sekarang saya merasa tidak fit dan tidak <b>enak kontol&nbsp;</b>');
         $this->migrator->add('general.primary_color', '#350B75');
     }
 };

@@ -12,6 +12,7 @@ class GeneralSettings extends Settings
     public ?string $logo_cms;
     public ?string $logo;
     public ?string $favicon;
+    public ?string $about_us;
     public string $primary_color;
 
     public static function group(): string
