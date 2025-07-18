@@ -26,8 +26,8 @@ class Create extends Component
     public $customer_email;
     public $selectedIphoneId = null;
     public $requested_booking_date;
-    public $end_booking_date;
     public $requested_time;
+    public $end_booking_date;
     public $end_time;
     public $price = 0; // Assuming you have a way to calculate or set this
 
@@ -94,8 +94,8 @@ class Create extends Component
             'customer_email' => $this->customer_email,
             'requested_booking_date' => $this->requested_booking_date->toDateString(),
             'requested_time' => $this->requested_time,
-            'end_booking_date' => $end->toDateString(),
-            'end_time' => $end->format('H:i'),
+            // 'end_booking_date' => $end->toDateString(),
+            // 'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
             'status' => 'pending',

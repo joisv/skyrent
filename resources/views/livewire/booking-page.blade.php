@@ -80,7 +80,7 @@
                     <x-tables.td>
                         {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') : '' }}
                     </x-tables.td>
-                    <x-tables.td>{{ \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') }}</x-tables.td>
+                    <x-tables.td>{{ $booking->end_booking_date ? \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') : ''  }}</x-tables.td>
                     <x-tables.td>{{ $booking->start_time }}</x-tables.td>
                     <x-tables.td>{{ $booking->end_time }}</x-tables.td>
                     <x-tables.td>
