@@ -25,9 +25,9 @@ class Create extends Component
     public $customer_phone;
     public $customer_email;
     public $selectedIphoneId = null;
-    public $start_booking_date;
+    public $requested_booking_date;
     public $end_booking_date;
-    public $start_time;
+    public $requested_time;
     public $end_time;
     public $price = 0; // Assuming you have a way to calculate or set this
 
@@ -37,32 +37,40 @@ class Create extends Component
 
     public function save()
     {
-        if (!empty($this->start_booking_date) && !empty($this->start_time) && !empty($this->selectedDuration)) {
-            $this->calculateEndDateTime();
-        }
-
+        // Validasi input awal
         $this->validate([
             'selectedIphoneId' => 'required|exists:iphones,id',
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'required|string|max:15',
             'customer_email' => 'nullable|email|max:255',
-            'start_booking_date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_booking_date' => 'required|date',
-            'end_time' => 'required|date_format:H:i',
+            'requested_booking_date' => 'required|date',
+            'requested_time' => 'required|date_format:H:i',
             'selectedDuration' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
         ]);
 
-        $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->start_booking_date)->format('Y-m-d') . ' ' . $this->start_time);
-        $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
+        // 🔄 Hitung end_booking_date dan end_time terlebih dahulu
+        $this->calculateEndDateTime();
 
+        if (!$this->end_booking_date || !$this->end_time) {
+            LivewireAlert::title('Gagal Hitung Waktu')
+                ->text('Gagal menghitung waktu selesai booking.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+            return;
+        }
+
+        // Gabungkan tanggal dan waktu
+        $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d') . ' ' . $this->requested_time);
+        $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
 
         // 🔍 Cek apakah ada booking bentrok
         $bookings = Booking::where('iphone_id', $this->selectedIphoneId)->get();
 
         $conflict = $bookings->contains(function ($booking) use ($start, $end) {
-            $bookingStart = Carbon::parse($booking->start_booking_date . ' ' . $booking->start_time);
+            $bookingStart = Carbon::parse($booking->requested_booking_date . ' ' . $booking->requested_time);
             $bookingEnd = Carbon::parse($booking->end_booking_date . ' ' . $booking->end_time);
 
             return $bookingStart < $end && $bookingEnd > $start;
@@ -75,7 +83,6 @@ class Create extends Component
                 ->toast()
                 ->position('top-end')
                 ->show();
-
             return;
         }
 
@@ -85,15 +92,14 @@ class Create extends Component
             'customer_name' => $this->customer_name,
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
             'customer_email' => $this->customer_email,
-            'start_booking_date' => $start->toDateString(),
-            'start_time' => $start->format('H:i'),
+            'requested_booking_date' => $this->requested_booking_date->toDateString(),
+            'requested_time' => $this->requested_time,
             'end_booking_date' => $end->toDateString(),
             'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
             'status' => 'pending',
             'created' => Carbon::now('Asia/Jakarta')
-
         ]);
 
         // Reset
@@ -105,9 +111,9 @@ class Create extends Component
             'customer_name',
             'customer_phone',
             'customer_email',
-            'start_booking_date',
+            'requested_booking_date',
             'end_booking_date',
-            'start_time',
+            'requested_time',
             'end_time',
             'selectedDuration',
             'price'
@@ -120,6 +126,7 @@ class Create extends Component
             ->position('top-end')
             ->show();
     }
+
 
 
 
@@ -141,15 +148,15 @@ class Create extends Component
 
     public function calculateEndDateTime()
     {
-        if (!$this->start_booking_date || !$this->start_time || !$this->selectedDuration) {
+        if (!$this->requested_booking_date || !$this->requested_time || !$this->selectedDuration) {
             $this->end_booking_date = null;
             $this->end_time = null;
             return;
         }
 
         try {
-            $dateOnly = Carbon::parse($this->start_booking_date)->toDateString(); // pastikan hanya tanggal
-            $startDateTime = Carbon::parse("{$dateOnly} {$this->start_time}");
+            $dateOnly = Carbon::parse($this->requested_booking_date)->toDateString(); // pastikan hanya tanggal
+            $startDateTime = Carbon::parse("{$dateOnly} {$this->requested_time}");
 
             $endDateTime = $startDateTime->copy()->addHours($this->selectedDuration);
 
@@ -164,8 +171,8 @@ class Create extends Component
 
     public function mount()
     {
-        $this->start_booking_date = Carbon::now('Asia/Jakarta');
-        $this->start_time = Carbon::now('Asia/Jakarta')->format('H:i');
+        $this->requested_booking_date = Carbon::now('Asia/Jakarta');
+        $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
     }
 
     public function getData()

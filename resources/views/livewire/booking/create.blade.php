@@ -1,5 +1,14 @@
 <div class="p-5 max-h-[90vh] h-fit" @close-modal="show = false">
     <form wire:submit.prevent="save">
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <div class="text-xl font-semibold">
             <h1>Make new booking</h1>
         </div>
@@ -140,11 +149,11 @@
             </div>
             {{-- Date picker --}}
             <div>
-                <label for="start_booking_date"
+                <label for="requested_booking_date"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal booking</label>
-                <livewire:booking.set-date wire:model="start_booking_date" />
+                <livewire:booking.set-date wire:model="requested_booking_date" />
             </div>
-            @error('start_booking_date')
+            @error('requested_booking_date')
                 <span class="error">Pilih tanggal sewa</span>
             @enderror
             {{-- Time picker --}}
@@ -162,9 +171,9 @@
                             noCalendar: true,
                             dateFormat: 'H:i',
                             time_24hr: true,
-                            defaultDate: @js($start_time ? \Carbon\Carbon::parse($start_time)->format('H:i') : null),
+                            defaultDate: @js($requested_time ? \Carbon\Carbon::parse($requested_time)->format('H:i') : null),
                             onChange: (selectedDates, dateStr, instance) => {
-                                $wire.start_time = dateStr; // Update Livewire property
+                                $wire.requested_time = dateStr; // Update Livewire property
                                 {{-- $wire.setTime(dateStr); // Call Livewire method to set time --}}
                             }
                         })
@@ -173,7 +182,7 @@
                     <input id="timepicker" wire:ignore type="text" placeholder="YYYY-MM-DD"
                         class="w-full border-gray-300 rounded-sm" />
                 </div>
-                @error('start_time')
+                @error('requested_time')
                     <span class="error">Pilih jam sewa</span>
                 @enderror
             </div>

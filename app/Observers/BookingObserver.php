@@ -21,23 +21,24 @@ class BookingObserver
      */
     public function updated(Booking $booking): void
     {
-        // Cek apakah status berubah ke 'completed'
-        if ($booking->isDirty('status') && $booking->status === 'confirmed') {
-            // Hindari duplikasi revenue
-            if (!$booking->revenue) {
-                Revenue::create([
-                    'booking_id' => $booking->id,
-                    'amount' => $booking->price,
-                    'created' => Carbon::now('Asia/Jakarta')
-                ]);
-            }
+        if (!$booking->start_booking_date && $booking->requested_booking_date) {
+            $start = Carbon::createFromFormat('Y-m-d H:i', $booking->requested_booking_date . ' ' . $booking->requested_time);
+            $end = $start->copy()->addHours($booking->duration);
+
+            $booking->start_booking_date = $start->toDateString();
+            $booking->start_time = $start->format('H:i');
+            $booking->end_booking_date = $end->toDateString();
+            $booking->end_time = $end->format('H:i');
+
+            $booking->saveQuietly(); // agar tidak loop observer
         }
 
-        // Cek apakah status berubah ke 'cancelled'
-        if ($booking->isDirty('status') && $booking->status === 'cancelled') {
-            if ($booking->revenue) {
-                $booking->revenue->delete();
-            }
+        if (!$booking->revenue) {
+            Revenue::create([
+                'booking_id' => $booking->id,
+                'amount' => $booking->price,
+                'created' => now('Asia/Jakarta'),
+            ]);
         }
     }
 
