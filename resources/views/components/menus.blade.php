@@ -25,7 +25,7 @@
         <x-mary-menu-sub title="Settings" icon="o-cog-6-tooth" icon-classes="text-warning">
             <x-mary-menu-item title="Basic" icon="o-adjustments-horizontal" wire:navigate :href="route('settings.basic')"
                 :active="request()->routeIs('settings.basic')" />
-            <x-mary-menu-item title="Info" icon="o-information-circle" wire:navigate :href="route('settings.info')"
+            <x-mary-menu-item title="Info" icon="o-information-circle" :href="route('settings.info')"
                 :active="request()->routeIs('settings.info')" />
             <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
         </x-mary-menu-sub>

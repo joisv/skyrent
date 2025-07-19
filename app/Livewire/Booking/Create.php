@@ -62,7 +62,7 @@ class Create extends Component
             return;
         }
 
-        // Gabungkan tanggal dan waktu
+        // Gabungkan tanggal dan waktu dari booking sekarang
         $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d') . ' ' . $this->requested_time);
         $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
 
@@ -71,8 +71,11 @@ class Create extends Component
 
         $conflict = $bookings->contains(function ($booking) use ($start, $end) {
             $bookingStart = Carbon::parse($booking->requested_booking_date . ' ' . $booking->requested_time);
-            $bookingEnd = Carbon::parse($booking->end_booking_date . ' ' . $booking->end_time);
 
+            // Hitung bookingEnd berdasarkan requested + durasi
+            $bookingEnd = $bookingStart->copy()->addHours($booking->duration);
+
+            // Cek apakah waktu booking lama bertabrakan dengan booking baru
             return $bookingStart < $end && $bookingEnd > $start;
         });
 
@@ -85,7 +88,7 @@ class Create extends Component
                 ->show();
             return;
         }
-
+        // dd($this->requested_booking_date->toDateString());
         // Simpan booking baru
         Booking::create([
             'iphone_id' => $this->selectedIphoneId,
@@ -118,7 +121,8 @@ class Create extends Component
             'selectedDuration',
             'price'
         ]);
-
+        $this->requested_booking_date = Carbon::now('Asia/Jakarta');
+        $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
         LivewireAlert::title('Success!')
             ->text('Booking berhasil disimpan.')
             ->success()
@@ -127,13 +131,9 @@ class Create extends Component
             ->show();
     }
 
-
-
-
     public function getDuration()
     {
         if ($this->selectedIphoneId) {
-            // dd('Selected iPhone ID:', $this->selectedIphoneId);
             $iphone = Iphones::with('durations')->find($this->selectedIphoneId);
             $this->durations = $iphone->durations->map(function ($duration, $index) {
                 return [
@@ -142,7 +142,6 @@ class Create extends Component
                     'price' => (int) $duration->pivot->price, // dari pivot table
                 ];
             })->toArray();
-            // dd($this->durations);
         }
     }
 

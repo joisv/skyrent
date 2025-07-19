@@ -1,18 +1,23 @@
 <div>
-    <div class="space-y-4">
-        <div>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {{ __('About Us') }}
-            </h2>
+    <form wire:submit="update">
+        <div class="space-y-4">
+            <div>
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {{ __('About Us') }}
+                </h2>
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {{ __('Perbarui setelan Tentang Kami disini') }}
-            </p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('Perbarui setelan Tentang Kami disini') }}
+                </p>
+            </div>
+            <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600">
+                <div id="summernote_about"></div>
+            </div>
         </div>
-        <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600">
-            <div id="summernote_about"></div>
-        </div>
-    </div>
+        <x-primary-button class="mt-4" type="submit">
+            {{ __('Simpan') }}
+        </x-primary-button>
+    </form>
     <script>
         window.addEventListener('livewire:init', function() {
 

@@ -57,10 +57,9 @@
             <x-tables.th>Nama</x-tables.th>
             <x-tables.th>iPhone</x-tables.th>
             <x-tables.th>Durasi Sewa</x-tables.th>
-            <x-tables.th>Tanggal Mulai</x-tables.th>
-            <x-tables.th>Tanggal Selesai</x-tables.th>
-            <x-tables.th>Waktu Mulai</x-tables.th>
-            <x-tables.th>Waktu Selesai</x-tables.th>
+            <x-tables.th>Tanggal & Waktu Booking</x-tables.th>
+            <x-tables.th>Tanggal & Waktu Mulai</x-tables.th>
+            <x-tables.th>Tanggal & Waktu Selesai</x-tables.th>
             <x-tables.th>Status</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
         </x-slot>
@@ -78,11 +77,17 @@
                     <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
                     <x-tables.td>{{ $booking->duration }} jam</x-tables.td>
                     <x-tables.td>
-                        {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') : '' }}
+                        {{ $booking->requested_booking_date ? \Carbon\Carbon::parse($booking->requested_booking_date)->format('d M Y') . ' ' . $booking->requested_time : '-' }}
                     </x-tables.td>
-                    <x-tables.td>{{ $booking->end_booking_date ? \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') : ''  }}</x-tables.td>
-                    <x-tables.td>{{ $booking->start_time }}</x-tables.td>
-                    <x-tables.td>{{ $booking->end_time }}</x-tables.td>
+
+                    <x-tables.td>
+                        {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') . ' ' . $booking->start_time : '-' }}
+                    </x-tables.td>
+
+                    <x-tables.td>
+                        {{ $booking->end_booking_date ? \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') . ' ' . $booking->end_time : '-' }}
+                    </x-tables.td>
+
                     <x-tables.td>
                         <x-dropdown align="top" width="48">
                             {{-- Tombol pemicu dropdown --}}
