@@ -38,6 +38,9 @@ Route::middleware(['auth', 'role:super-admin|admin'])
         Route::view('settings/info', 'settings.info')
             ->name('settings.info');
 
+        Route::view('settings/permissions', 'settings.permissions')
+            ->name('settings.permissions');
+
         Route::view('reports/revenue', 'reports.revenue')
             ->name('reports.revenue');
 

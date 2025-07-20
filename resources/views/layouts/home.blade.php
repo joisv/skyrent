@@ -13,6 +13,11 @@
 
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body class="antialiased font-sans max-w-screen-2xl mx-auto dark:bg-gray-900">
