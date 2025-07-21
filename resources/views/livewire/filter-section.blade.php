@@ -11,14 +11,6 @@
         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ],
-    activeTab: null, // Default active tab
-    price: 0,
-
-    setActiveTab(hours, price) {
-        this.activeTab = hours;
-        this.price = price;
-        {{-- $wire.setDuration(hours, price); --}}
-    },
 
     init() {
         const today = new Date();
@@ -171,10 +163,41 @@
             <x-icons.search default="30px" />
         </button>
     </div>
-    <x-modal name="ipip" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-800" >
+    <x-modal name="ipip" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-800">
         @if (isset($iphoneByDate) && $iphoneByDate->isNotEmpty())
             @foreach ($iphoneByDate as $iphone)
-                <div class="p-3 space-y-2 w-full flex items-start justify-between relative border border-slate-400" >
+                @php
+                    $durationsData = $iphone->durations->map(function ($d) {
+                        return [
+                            'id' => $d->id,
+                            'hours' => $d->hours,
+                            'price' => $d->pivot->price,
+                        ];
+                    });
+                @endphp
+                <div class="p-3 space-y-2 w-full flex items-start justify-between relative border border-slate-400"
+                    x-data="{
+                        durations: {{ Js::from($durationsData) }},
+                        activeTab: {{ $durationsData->first()['id'] ?? 'null' }},
+                        price: {{ $durationsData->first()['price'] ?? 0 }},
+                    
+                        setActiveTab(id) {
+                            const selected = this.durations.find(d => d.id === id);
+                            if (selected) {
+                                this.activeTab = selected.id;
+                                this.price = selected.price;
+                            }
+                        },
+                    
+                        formatRupiah(number) {
+                            return new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0
+                            }).format(number);
+                        }
+                    
+                    }">
                     <div class="p-2">
                         <div class="space-y-1">
                             <h1 class="text-xl font-semibold">{{ $iphone->name }}</h1>
@@ -262,23 +285,25 @@
                             <button>Reschedule</button>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex gap-2 flex-wrap mb-4">
                         @foreach ($iphone->durations as $duration)
-                            <div @click="setActiveTab({{ $duration->hours }}, {{ $duration->pivot->price }}, )"
-                                :class="{ 'bg-black text-white': activeTab === {{ $duration->hours }} }"
-                                class="px-3 py-1 font-medium text-sm  text-center cursor-pointer border border-slate-400 text-black">
+                            <div @click="setActiveTab({{ $duration->id }})"
+                                :class="{ 'bg-black text-white': activeTab === {{ $duration->id }} }"
+                                class="px-3 py-1 font-medium text-sm text-center cursor-pointer border border-slate-400 text-black rounded">
                                 {{ $duration->hours }} jam
                             </div>
                         @endforeach
-
                     </div>
-                    <div class="">
+
+                    <div class="mb-4">
                         <div class="text-xl font-bold text-red-500">
                             <h1 x-text="formatRupiah(price)"></h1>
                         </div>
-                        <button
-                            class="absolute bottom-4 box-border bg-black py-2 px-4 text-white text-base font-semibold right-5">booking</button>
+                        <button class="mt-2 bg-black py-2 px-4 text-white text-base font-semibold rounded">
+                            Booking
+                        </button>
                     </div>
+
                 </div>
             @endforeach
         @else
