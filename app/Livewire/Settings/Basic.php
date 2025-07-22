@@ -63,6 +63,17 @@ class Basic extends Component
                 'site_name' => 'nullable|string',
                 'primary_color' => 'required|string',
                 'about_us' => 'nullable|string',
+                'tagline' => 'nullable|string',
+                'how_to_rent' => 'nullable|string',
+                'terms_conditions' => 'nullable|string',
+                'privacy_policy' => 'nullable|string',
+                'youtube' => 'nullable|string',
+                'tiktok' => 'nullable|string',
+                'instagram' => 'nullable|string',
+                'facebook' => 'nullable|string',
+                'twitter' => 'nullable|string',
+                'whatsapp' => 'nullable|string',
+                'telegram' => 'nullable|string',
             ]);
 
             $settings = new GeneralSettings();
@@ -74,6 +85,18 @@ class Basic extends Component
             $settings->favicon = $this->favicon;
             $settings->primary_color = $this->primary_color;
             $settings->about_us = $this->about_us;
+            $settings->tagline = $this->tagline;
+            $settings->how_to_rent = $this->how_to_rent;
+            $settings->terms_conditions = $this->terms_conditions;
+            $settings->privacy_policy = $this->privacy_policy;
+            // social media links
+            $settings->youtube = $this->youtube;
+            $settings->tiktok = $this->tiktok;
+            $settings->instagram = $this->instagram;
+            $settings->facebook = $this->facebook;
+            $settings->twitter = $this->twitter;
+            $settings->whatsapp = $this->whatsapp;
+            $settings->telegram = $this->telegram;  
 
             $settings->save();
 

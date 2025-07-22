@@ -3,6 +3,7 @@
     logo: false,
     favicon: false,
     about: false,
+    how_to_rent: false,
 
     setImage(img) {
         $dispatch('wich-image', { props: img });
@@ -206,7 +207,7 @@
             </div>
         </div>
         {{-- About us --}}
-        <div class="space-y-4">
+        <div class="space-y-4 border-b-2 border-gray-300 pb-4">
             <button type="button" @click="about = ! about" class="text-start">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                     {{ __('About Us') }}
@@ -216,42 +217,82 @@
                     {{ __('Perbarui setelan Tentang Kami disini') }}
                 </p>
             </button>
-            <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600" x-show="about" x-collapse>
+            <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600"
+                x-show="about" x-collapse>
                 <div id="summernote_about"></div>
             </div>
         </div>
-        <script>
-            window.addEventListener('livewire:init', function() {
+        {{-- How to rent --}}
+        <div class="space-y-4 border-b-2 border-gray-300 pb-4">
+            <button type="button" @click="how_to_rent = ! how_to_rent" class="text-start">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {{ __('Cara sewa') }}
+                </h2>
 
-                $('#summernote_about').summernote({
-                    tabsize: 2,
-                    height: 300, // set editor height
-                    minHeight: null, // set minimum height of editor
-                    maxHeight: null, // set maximum height of editor
-                    focus: true,
-                    toolbar: [
-                        ['style', ['style']],
-                        ['font', ['bold', 'underline', 'clear']],
-                        ['color', ['color']],
-                        ['para', ['ul', 'ol', 'paragraph']],
-                        ['table', ['table']],
-                        //   ['insert', ['link', 'picture', 'video']],
-                        ['view', ['fullscreen', 'codeview', 'help']]
-                    ],
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('Deskripsi bagaimana cara sewa') }}
+                </p>
+            </button>
+            <div wire:ignore class=" prose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600"
+                x-show="how_to_rent" x-collapse>
+                <div id="summernote_how_to_rent"></div>
+            </div>
+        </div>
+         {{-- Social Media --}}
+        <div class="space-y-4 border-b-2 border-gray-300 pb-4">
+            <div class="text-start">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {{ __('Sosial Media') }}
+                </h2>
 
-                    callbacks: {
-                        onInit: function() {
-                            $('#summernote_about').summernote('code', @json($about_us));
-                            $('.note-group-select-from-files').first().remove();
-                        },
-                        onChange: function(contents, $editable) {
-                            @this.set('about_us', contents, true);
-                        }
-                    }
-                });
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {{ __('Link Sosial Media') }}
+                </p>
+            </div>
+            <div>
+                <x-input-label for="tiktok" :value="__('Tiktok')" />
+                <x-text-input wire:model="tiktok" id="tiktok" name="tiktok" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="tiktok" placeholder="tiktok.com"/>
+                <x-input-error class="mt-2" :messages="$errors->get('tiktok')" />
+            </div>
+            <div>
+                <x-input-label for="instagram" :value="__('Instagram')" />
+                <x-text-input wire:model="instagram" id="instagram" name="instagram" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="instagram" placeholder="instagram.com"/>
+                <x-input-error class="mt-2" :messages="$errors->get('instagram')" />
+            </div>
+            <div>
+                <x-input-label for="facebook" :value="__('Facebook')" />
+                <x-text-input wire:model="facebook" id="facebook" name="facebook" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="facebook" placeholder="facebook.com"/>
+                <x-input-error class="mt-2" :messages="$errors->get('facebook')" />
+            </div>
+            <div>
+                <x-input-label for="whatsapp" :value="__('Whatsapp')" />
+                <x-text-input wire:model="whatsapp" id="whatsapp" name="whatsapp" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="whatsapp" placeholder="wa.me/628xxxxxxxxx"/>
+                <x-input-error class="mt-2" :messages="$errors->get('whatsapp')" />
+            </div>
+            <div>
+                <x-input-label for="youtube" :value="__('Youtube')" />
+                <x-text-input wire:model="youtube" id="youtube" name="youtube" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="youtube" placeholder="youtube.com"/>
+                <x-input-error class="mt-2" :messages="$errors->get('youtube')" />
+            </div>
+            <div>
+                <x-input-label for="telegram" :value="__('Telegrem')" />
+                <x-text-input wire:model="telegram" id="telegram" name="telegram" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="telegram" placeholder="telegram.com"/>
+                <x-input-error class="mt-2" :messages="$errors->get('telegram')" />
+            </div>
+            <div>
+                <x-input-label for="twitter" :value="__('Twitter')" />
+                <x-text-input wire:model="twitter" id="twitter" name="twitter" type="text"
+                    class="mt-1 block w-full" required autofocus autocomplete="twitter" placeholder="x.com"/>
+                <x-input-error class="mt-2" :messages="$errors->get('twitter')" />
+            </div>
 
-            })
-        </script>
+        </div>
         {{-- IZIN --}}
         <div>
             <div>
@@ -289,4 +330,73 @@
     <x-modal name="add-logo" :show="$errors->isNotEmpty()">
         <livewire:galleries.gallery />
     </x-modal>
+    <script>
+        document.addEventListener('livewire:init', function() {
+            initSummernotes();
+
+            Livewire.hook('message.processed', (message, component) => {
+                initSummernotes(); // Re-initialize jika DOM berubah
+            });
+
+            function initSummernotes() {
+                if ($('#summernote_how_to_rent').length) {
+                    $('#summernote_how_to_rent').summernote({
+                        tabsize: 2,
+                        height: 300,
+                        focus: true,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'underline', 'clear']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        callbacks: {
+                            onInit: function() {
+                                $('#summernote_how_to_rent').summernote('code',
+                                    @json($how_to_rent));
+                                $('.note-group-select-from-files').first().remove();
+                            },
+                            onChange: function(contents, $editable) {
+                                Livewire.dispatch('input', {
+                                    name: 'how_to_rent',
+                                    value: contents
+                                });
+                            }
+                        }
+                    });
+                }
+
+                if ($('#summernote_about').length) {
+                    $('#summernote_about').summernote({
+                        tabsize: 2,
+                        height: 300,
+                        focus: true,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'underline', 'clear']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        callbacks: {
+                            onInit: function() {
+                                $('#summernote_about').summernote('code', @json($about_us));
+                                $('.note-group-select-from-files').first().remove();
+                            },
+                            onChange: function(contents, $editable) {
+                                Livewire.dispatch('input', {
+                                    name: 'about_us',
+                                    value: contents
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+
 </div>
