@@ -25,6 +25,7 @@
         </p>
     </header>
     <form wire:submit="update" class="mt-6 space-y-6">
+        
         <div>
             <x-input-label for="site_name" :value="__('Nama website')" />
             <x-text-input wire:model="site_name" id="site_name" name="site_name" type="text" class="mt-1 block w-full"

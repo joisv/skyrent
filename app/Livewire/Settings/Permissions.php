@@ -15,7 +15,7 @@ class Permissions extends Component
 
     public function setRole($index, $role, $user_id)
     {
-        if (!auth()->user()->hasRole('admin') || !auth()->user()->hasRole('super-admin')) {
+        if (!auth()->user()->hasRole('super-admin')) {
             LivewireAlert::title('Unauthorized')
                 ->text('You do not have permission to perform this action.')
                 ->warning()
@@ -45,7 +45,7 @@ class Permissions extends Component
 
     public function getPermissionUser()
     {
-        $rolesToSearch = ['admin', 'editor', 'demo'];
+        $rolesToSearch = ['admin', 'super-admin'];
 
         $users = User::whereHas('roles', function ($query) use ($rolesToSearch) {
             $query->whereIn('name', $rolesToSearch);

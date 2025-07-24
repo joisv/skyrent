@@ -26,11 +26,13 @@
             <x-mary-menu-item title="Basic" icon="o-adjustments-horizontal" wire:navigate :href="route('settings.basic')"
                 :active="request()->routeIs('settings.basic')" />
             <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
+            <x-mary-menu-item title="Daftar User" icon="o-users" wire:navigate :href="route('settings.users')" :active="request()->routeIs('settings.users')" />
+
 
         </x-mary-menu-sub>
         <x-mary-menu-separator />
         <x-mary-menu-item title="Roles & Permissions" icon="o-key" wire:navigate />
         <x-mary-menu-item title="Notifications" icon="o-bell" wire:navigate />
-        <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate />
+        <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate :href="route('faq')" :active="request()->routeIs('faq')"/>
         </x-menu>
 </div>

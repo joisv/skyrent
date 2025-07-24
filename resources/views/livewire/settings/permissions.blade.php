@@ -35,9 +35,9 @@
                                 <select id="user-{{ $index }}"
                                     class="bg-transparent font-semibold px-6 border-0 text-gray-900 text-sm rounded-lg focus:ring-0 focus:border-0 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     x-on:change="$wire.setRole({{ $index }}, $event.target.value, '{{ $user->id }}')" wire:model="selectedRoles.{{ $index }}">
-                                    <option selected>{{ $user->getRoleNames()[0] }}</option>
+                                    <option selected>{{ $user->getRoleNames()->first() ?? '' }}</option>
                                     @foreach ($roles as $role)
-                                        @if ($role->name !== $user->getRoleNames()[0])
+                                        @if ($role->name !== $user->getRoleNames()->first())
                                             <option value="{{ $role->name }}">{{ $role->name }}</option>
                                         @endif
                                     @endforeach

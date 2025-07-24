@@ -41,7 +41,11 @@ Route::middleware(['auth', 'role:super-admin|admin'])
         Route::view('reports/top-device', 'reports.top-device')
             ->name('reports.topdevice');
 
+        Route::view('settings/users', 'settings.users')
+            ->name('settings.users');
 
+        Route::view('faq', 'faq')
+            ->name('faq');
     });
 
 
