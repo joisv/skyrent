@@ -6,8 +6,11 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')
     ->name('welcome');
 
-Route::view('detail', 'detail')
-    ->name('detail');
+Route::get('detail/{iphones:slug}', function (Iphones $iphones) {
+        return view('detail', [
+            'iphone' => $iphones->load(['gallery', 'bookings'])
+        ]);
+    })->name('detail');
 
 Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {

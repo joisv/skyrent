@@ -70,6 +70,24 @@
         return this.selectedDate.toDateString() === d.toDateString();
     },
 
+     pickDate(date) {
+        const picked = new Date(this.year, this.month, date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // buang jam agar akurat membandingkan tanggal
+
+        if (picked < today) return; // blokir jika tanggal sebelum hari ini
+
+        this.selectedDate = picked;
+        this.selectedDateFormatted = this.formatDate(this.selectedDate);
+    },
+
+    isPastDate(date) {
+        const picked = new Date(this.year, this.month, date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return picked < today;
+    },
+
     searchIphones() {
         this.$dispatch('open-modal', 'ipip');
         $wire.getIphoneByDate();
@@ -145,10 +163,13 @@
 
                                 <!-- Tanggal -->
                                 <template x-for="(date, index) in daysInMonth" :key="index">
-                                    <div @click="pickDate(date); $refs.dropdownButton?.click()" x-text="date"
-                                        class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent hover:border-slate-900"
+                                    <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()"
+                                        x-text="date"
+                                        class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
                                         :class="{
-                                            'bg-slate-900 text-white': isSelectedDate(date)
+                                            'bg-slate-900 text-white': isSelectedDate(date),
+                                            'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
+                                            'hover:border-slate-900': !isPastDate(date)
                                         }">
                                     </div>
                                 </template>

@@ -11,11 +11,13 @@ class Cards extends Component
 
     public function getIphones()
     {
-        $this->iphones = Iphones::with('gallery')->orderBy('created_at', 'desc')
+        $this->iphones = Iphones::with('gallery')
             ->withCount('bookings')
             ->with(['revenues', 'bookings'])
+            ->orderBy('bookings_count', 'desc') // urut berdasarkan jumlah bookings terbanyak
             ->get();
     }
+
 
     public function render()
     {
