@@ -35,19 +35,17 @@ Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
         Route::view('settings/basic', 'settings.basic')
             ->name('settings.basic');
 
-        Route::view('settings/info', 'settings.info')
-            ->name('settings.info');
-
-        Route::view('settings/permissions', 'settings.permissions')
-            ->name('settings.permissions');
-
         Route::view('reports/revenue', 'reports.revenue')
             ->name('reports.revenue');
 
         Route::view('reports/top-device', 'reports.top-device')
             ->name('reports.topdevice');
 
+        Route::view('settings/users', 'settings.users')
+            ->name('settings.users');
 
+        Route::view('faq', 'faq')
+            ->name('faq');
     });
 
 

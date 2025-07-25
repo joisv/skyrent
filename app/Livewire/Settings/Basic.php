@@ -16,6 +16,18 @@ class Basic extends Component
     public string $logo;
     public string $primary_color = '#000000';
     public string $wichImage;
+    public string $about_us;
+    public string $tagline;
+    public string $how_to_rent;
+    public string $terms_conditions;
+    public string $privacy_policy;
+    public string $youtube;
+    public string $tiktok;
+    public string $instagram;
+    public string $facebook;
+    public string $twitter;
+    public string $whatsapp;
+    public string $telegram;
 
 
     public function mount(GeneralSettings $settings)
@@ -26,6 +38,18 @@ class Basic extends Component
         $this->logo = $settings->logo;
         $this->favicon = $settings->favicon;
         $this->description = $settings->description;
+        $this->about_us = $settings->about_us;
+        $this->tagline = $settings->tagline;
+        $this->how_to_rent = $settings->how_to_rent;
+        $this->terms_conditions = $settings->terms_conditions;
+        $this->privacy_policy = $settings->privacy_policy;
+        $this->youtube = $settings->youtube;
+        $this->tiktok = $settings->tiktok;
+        $this->instagram = $settings->instagram;
+        $this->facebook = $settings->facebook;
+        $this->twitter = $settings->twitter;
+        $this->whatsapp = $settings->whatsapp;
+        $this->telegram = $settings->telegram;  
     }
 
     public function update()
@@ -38,6 +62,18 @@ class Basic extends Component
                 'description' => 'nullable|string',
                 'site_name' => 'nullable|string',
                 'primary_color' => 'required|string',
+                'about_us' => 'nullable|string',
+                'tagline' => 'nullable|string',
+                'how_to_rent' => 'nullable|string',
+                'terms_conditions' => 'nullable|string',
+                'privacy_policy' => 'nullable|string',
+                'youtube' => 'nullable|string',
+                'tiktok' => 'nullable|string',
+                'instagram' => 'nullable|string',
+                'facebook' => 'nullable|string',
+                'twitter' => 'nullable|string',
+                'whatsapp' => 'nullable|string',
+                'telegram' => 'nullable|string',
             ]);
 
             $settings = new GeneralSettings();
@@ -48,6 +84,19 @@ class Basic extends Component
             $settings->logo = $this->logo;
             $settings->favicon = $this->favicon;
             $settings->primary_color = $this->primary_color;
+            $settings->about_us = $this->about_us;
+            $settings->tagline = $this->tagline;
+            $settings->how_to_rent = $this->how_to_rent;
+            $settings->terms_conditions = $this->terms_conditions;
+            $settings->privacy_policy = $this->privacy_policy;
+            // social media links
+            $settings->youtube = $this->youtube;
+            $settings->tiktok = $this->tiktok;
+            $settings->instagram = $this->instagram;
+            $settings->facebook = $this->facebook;
+            $settings->twitter = $this->twitter;
+            $settings->whatsapp = $this->whatsapp;
+            $settings->telegram = $this->telegram;  
 
             $settings->save();
 
