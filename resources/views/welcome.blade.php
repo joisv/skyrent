@@ -1,4 +1,4 @@
 <x-home>
     <livewire:hero-section/>
-    <livewire:cards />
+    <livewire:cards lazy="on-load"/>
 </x-home>

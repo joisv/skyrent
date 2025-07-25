@@ -9,7 +9,7 @@ Route::view('/', 'welcome')
 Route::view('detail', 'detail')
     ->name('detail');
 
-Route::middleware(['auth', 'role:super-admin|admin'])
+Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {
         Route::view('dashboard', 'dashboard')
             ->name('dashboard');
