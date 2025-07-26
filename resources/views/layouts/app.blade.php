@@ -37,6 +37,7 @@
                     </div>
                     <div class="lg:flex hidden">
                         <x-mary-theme-toggle />
+                        {{-- <livewire:layout.logout /> --}}
                     </div>
                     {{ $header }}
                 </div>

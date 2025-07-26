@@ -31,9 +31,14 @@
 
         </x-mary-menu-sub>
         <x-mary-menu-separator />
-        <x-mary-menu-item title="Payments" icon="o-credit-card" wire:navigate  :href="route('payments')" :active="request()->routeIs('payments')"/>
+        <x-mary-menu-item title="Payments" icon="o-credit-card" wire:navigate :href="route('payments')" :active="request()->routeIs('payments')" />
         <x-mary-menu-item title="Roles & Permissions" icon="o-key" wire:navigate />
         <x-mary-menu-item title="Notifications" icon="o-bell" wire:navigate />
-        <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate :href="route('faq')" :active="request()->routeIs('faq')"/>
+        <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate :href="route('faq')"
+            :active="request()->routeIs('faq')" />
         </x-menu>
+
+        <x-mary-menu-separator />
+        <livewire:layout.logout />
+
 </div>

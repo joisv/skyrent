@@ -190,10 +190,10 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                     </div>
                                     <!-- Header navigasi bulan -->
                                     <div class="flex mb-2">
-                                        <button @click="prevMonth()"
+                                        <button type="button" @click="prevMonth()"
                                             class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
 
-                                        <button @click="nextMonth()"
+                                        <button type="button" @click="nextMonth()"
                                             class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
                                     </div>
 

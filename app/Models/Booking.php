@@ -24,7 +24,8 @@ class Booking extends Model
         'duration',
         'status',
         'price',
-        'created'
+        'created',
+        'booking_code'
     ];
 
     public function revenue()

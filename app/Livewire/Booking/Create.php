@@ -7,6 +7,7 @@ use App\Models\Iphones;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Component;
+use Illuminate\Support\Str;
 
 class Create extends Component
 {
@@ -102,7 +103,8 @@ class Create extends Component
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
             'status' => 'pending',
-            'created' => Carbon::now('Asia/Jakarta')
+            'created' => Carbon::now('Asia/Jakarta'),
+            'booking_code' => self::generatePaymentCode($this->customer_name),
         ]);
 
         // Reset
@@ -182,6 +184,16 @@ class Create extends Component
             })->orderBy($this->sortField, $this->sortDirection)->get();
     }
 
+     public static function generatePaymentCode($userName)
+    {
+        $userInitials = substr(strtoupper(preg_replace('/[^A-Za-z]/', '', $userName)), 0, 3);
+        $randomString = Str::random(6);
+
+        $code = $userInitials . $randomString;
+
+        return $code;
+    }
+    
     public function render()
     {
         return view('livewire.booking.create', [

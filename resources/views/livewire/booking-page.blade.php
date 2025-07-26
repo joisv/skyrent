@@ -89,9 +89,8 @@
                     </x-tables.td>
 
                     <x-tables.td>
-                        <x-dropdown align="top" width="48">
-                            {{-- Tombol pemicu dropdown --}}
-                            <x-slot name="trigger">
+                        <x-mary-dropdown>
+                            <x-slot:trigger>
                                 <button
                                     class="px-2 py-1 rounded text-xs font-semibold 
                     {{ $booking->status === 'pending'
@@ -102,33 +101,29 @@
                                 ? 'bg-red-100 text-red-700'
                                 : 'bg-gray-100 text-gray-700')) }}">{{ ucfirst($booking->status) }}
                                 </button>
-                            </x-slot>
+                            </x-slot:trigger>
 
-                            {{-- Konten dropdown --}}
-                            <x-slot name="content">
-                                <div class="p-1">
-                                    <button {{ $booking->status === 'pending' ? 'disabled' : '' }}
-                                        class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-yellow-200"
-                                        wire:click="updateStatusBooking({{ $booking->id }}, 'pending')">pending</button>
-                                </div>
-                                <div class="p-1">
-                                    <button {{ $booking->status === 'confirmed' ? 'disabled' : '' }}
-                                        class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-green-200"
-                                        wire:click="updateStatusBooking({{ $booking->id }}, 'confirmed')">confirmed</button>
-                                </div>
-                                <div class="p-1">
-                                    <button {{ $booking->status === 'returned' ? 'disabled' : '' }}
-                                        class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-purple-200"
-                                        wire:click="updateStatusBooking({{ $booking->id }}, 'returned')">returned</button>
-                                </div>
-                                <div class="p-1">
-                                    <button {{ $booking->status === 'cancelled' ? 'disabled' : '' }}
-                                        class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-red-300"
-                                        wire:click="updateStatusBooking({{ $booking->id }}, 'cancelled')">cancelled</button>
-                                </div>
-                            </x-slot>
-                        </x-dropdown>
-
+                            <div class="p-1">
+                                <button {{ $booking->status === 'pending' ? 'disabled' : '' }}
+                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-yellow-200"
+                                    wire:click="updateStatusBooking({{ $booking->id }}, 'pending')">pending</button>
+                            </div>
+                            <div class="p-1">
+                                <button {{ $booking->status === 'confirmed' ? 'disabled' : '' }}
+                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-green-200"
+                                    wire:click="updateStatusBooking({{ $booking->id }}, 'confirmed')">confirmed</button>
+                            </div>
+                            <div class="p-1">
+                                <button {{ $booking->status === 'returned' ? 'disabled' : '' }}
+                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-purple-200"
+                                    wire:click="updateStatusBooking({{ $booking->id }}, 'returned')">returned</button>
+                            </div>
+                            <div class="p-1">
+                                <button {{ $booking->status === 'cancelled' ? 'disabled' : '' }}
+                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-red-300"
+                                    wire:click="updateStatusBooking({{ $booking->id }}, 'cancelled')">cancelled</button>
+                            </div>
+                        </x-mary-dropdown>
                     </x-tables.td>
 
                     <x-tables.td>
