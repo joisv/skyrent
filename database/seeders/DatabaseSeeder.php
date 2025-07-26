@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Gallery as ModelsGallery;
 use App\Models\Iphones;
+use App\Models\Payment;
 use App\Models\Revenue;
 use App\Models\User;
 use Database\Factories\FaqFactory;
@@ -34,12 +35,12 @@ class DatabaseSeeder extends Seeder
         }
 
         ModelsGallery::factory(10)->create();
-        // Iphones::factory(10)->create();
+        Iphones::factory(10)->create();
         Revenue::factory()->count(5)->create();
         FaqFactory::new()->count(5)->create([
             'created_by' => User::factory()->create()->id,
             'updated_by' => User::factory()->create()->id,
         ]);
-
+        Payment::factory()->count(5)->create();
     }
 }

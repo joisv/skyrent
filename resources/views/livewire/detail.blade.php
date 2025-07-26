@@ -259,7 +259,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             @if ($is_available === true)
                                 <h1 class="text-green-600 font-semibold">tersedia</h1>
                                 <div
-                                    class="text-sm font-semibold text-slate-500 absolute -bottom-5 -left-2 -left-[1px]">
+                                    class="text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
                                     <p>tersedia untuk hari yang dipilih</p>
                                 </div>
                             @else
@@ -290,7 +290,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
     </form>
-    <x-modal name="user-booking-create" :show="true" rounded="rounded-none" border="border-2 border-slate-900">
+    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
         <div class="p-4 border">
             <div class="space-y-4">
                 <div>

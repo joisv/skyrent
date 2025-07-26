@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Booking;
 use App\Models\Iphones;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -30,6 +31,7 @@ class BookingFactory extends Factory
 
         return [
             'iphone_id' => Iphones::factory(),
+            'payment_id' => null, // Atau bisa diisi dengan Payment::inRandomOrder()->first()->id jika sudah ada data
             'customer_name' => $this->faker->name(),
             'customer_phone' => '08' . $this->faker->numerify('########'),
             'customer_email' => $this->faker->optional()->safeEmail(),

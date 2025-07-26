@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('iphone_id');
+            $table->unsignedBigInteger('payment_id')->nullable();
 
             // Data penyewa non-login
             $table->string('customer_name');
@@ -36,6 +37,7 @@ return new class extends Migration
             $table->timestamp('created');
 
             $table->foreign('iphone_id')->references('id')->on('iphones')->onDelete('cascade');
+            $table->foreign('payment_id')->references('id')->on('payments')->onDelete('set null');
             $table->enum('status', ['pending', 'confirmed', 'returned', 'cancelled'])->default('pending');
             $table->timestamps();
         });

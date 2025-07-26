@@ -37,4 +37,9 @@ class Booking extends Model
     {
         return $this->belongsTo(Iphones::class);
     }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payment::class);
+    }
 }

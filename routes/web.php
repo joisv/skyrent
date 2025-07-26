@@ -49,6 +49,9 @@ Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
 
         Route::view('faq', 'faq')
             ->name('faq');
+
+        Route::view('payments', 'payments')
+            ->name('payments');
     });
 
 
