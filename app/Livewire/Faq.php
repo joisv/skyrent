@@ -4,13 +4,14 @@ namespace App\Livewire;
 
 use App\Models\Faq as ModelsFaq;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use PhpParser\Node\Expr\AssignOp\Mod;
 
 class Faq extends Component
 {
     public $mySelected = [];
-    
+
     public function destroy()
     {
         if (auth()->user()->can('delete')) {
@@ -22,7 +23,7 @@ class Faq extends Component
                 ->toast()
                 ->success()
                 ->show();
-        } else{
+        } else {
             LivewireAlert::title('Kamu tidak memiliki izin')
                 ->position('top-end')
                 ->text('Tidak dapat menghapus data FAQ')
@@ -32,7 +33,7 @@ class Faq extends Component
                 ->show();
         }
     }
-    
+
     public function delete($data)
     {
         if (auth()->user()->can('delete')) {
@@ -47,7 +48,7 @@ class Faq extends Component
                 ->show();
         }
     }
-    
+
     public function destroyAlert($value = '', $onConfirm = 'destroy')
     {
 
@@ -63,10 +64,27 @@ class Faq extends Component
             ->show();
     }
 
+    public function toggleStatus($id, $is_active)
+    {
+        $faq = ModelsFaq::find($id);
+        $faq->update([
+            'is_active' => !$is_active
+        ]);
+        LivewireAlert::title('Status updated')
+            ->position('top-end')
+            ->text('Status berhasil di rubah')
+            ->toast()
+            ->success()
+            ->show();
+    }
+
+    #[On('re-render')]
+    public function reRender() {}
+
     public function render()
     {
         return view('livewire.faq', [
-            'faqs' => ModelsFaq::all(),
+            'faqs' => ModelsFaq::orderBy('created_at', 'desc')->get(),
         ]);
     }
 }

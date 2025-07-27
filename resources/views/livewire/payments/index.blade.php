@@ -73,9 +73,7 @@
 
                     {{-- <x-tables.td>{{ $payment->category->name }}</x-tables.td> --}}
                     <x-tables.td>
-                         {{-- <a href="{{ route('iphones.edit', $payment->id) }}" >
-                            <x-primary-button type="button">edit</x-primary-button>
-                        </a> --}}
+                        <x-primary-button type="button" @click="() => { $dispatch('open-modal', 'edit-payment'); $dispatch('edit', { payment: {{ $payment->id }} }); }">edit</x-primary-button>
                         <x-danger-button type="button"
                             wire:click="destroyAlert({{ $payment->id }}, 'delete')">delete</x-danger-button>
                     </x-tables.td>
@@ -87,7 +85,10 @@
     <div class="w-full mt-5">
         {{ $payments->links() }}
     </div>
-     <x-modal name="create-payment" :show="true">
+    <x-modal name="edit-payment" :show="$errors->isNotEmpty()">
+        <livewire:payments.edit />
+    </x-modal>
+    <x-modal name="create-payment" :show="$errors->isNotEmpty()">
         <livewire:payments.create />
     </x-modal>
 </div>

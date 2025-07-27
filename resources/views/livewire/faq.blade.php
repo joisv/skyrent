@@ -4,18 +4,42 @@
         console.log(input)
     },
 }">
+    <div class="w-full flex justify-end">
+        <x-primary-button class="mb-4" @click="$dispatch('open-modal', 'faq-create')">
+            <div class="flex items-center space-x-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
+                    class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                    <path
+                        d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-4-1h-3V4a1 1 0 0 0-2 0v3H4a1 1 0 0 0 0 2h3v3a1 1 0 0 0 2 0V9h3a1 1 0 0 0 0-2z" />
+                </svg>
+                <h4>
+                    faqs
+                </h4>
+            </div>
+        </x-primary-button>
+    </div>
     <div class="space-y-4 mb-4">
         @foreach ($faqs as $faq)
-            <div class="flex items-center">
+            <div class="flex items-center relative">
                 <x-mary-collapse collapse-plus-minus>
-                    <x-slot:heading class="bg-linear-to-r from-cyan-500 to-blue-500" id="heading-{{ $faq->id }}">
+                    <x-slot:heading class="bg-linear-to-r from-cyan-500 to-blue-500"
+                        id="heading-{{ $faq->id }}">
                         {{ $faq->question }}
-                        
+
                     </x-slot:heading>
                     <x-slot:content class="bg-primary/10">
                         <div class="mt-5">{{ $faq->answer }}</div>
                     </x-slot:content>
                 </x-mary-collapse>
+                <div class="absolute -top-2 -left-4">
+                    <button wire:click="toggleStatus({{ $faq->id }}, {{ $faq->is_active }})"
+                        class="px-3 py-1 rounded text-xs font-semibold 
+        {{ $faq->is_active ? 'bg-green-200 text-green-600 hover:bg-green-500' : 'bg-red-200 text-red-600 hover:bg-red-500' }}" wire:loading.attr="disabled">
+                        {{ $faq->is_active ? 'Enable' : 'Disable' }}
+                    </button>
+
+                </div>
+
                 <div>
                     <x-mary-dropdown>
                         <x-slot:trigger>
@@ -33,19 +57,30 @@
 
                             </button>
                         </x-slot:trigger>
-                        <button @click="editFaq('heading-{{ $faq->id }}')" class="w-full">
+                        <button
+                            @click="() => {
+                            $dispatch('open-modal', 'faq-edit');
+                            $dispatch('edit', { value: {{ $faq->id }} });    
+                        }"
+                            class="w-full">
                             <x-mary-menu-item title="edit" />
 
                         </button>
-                        <button  wire:click="destroyAlert({{ $faq->id }}, 'delete')" class="w-full">
+                        <button wire:click="destroyAlert({{ $faq->id }}, 'delete')" class="w-full">
                             <x-mary-menu-item title="delete" />
                         </button>
                     </x-mary-dropdown>
 
                 </div>
+
             </div>
         @endforeach
     </div>
-
+    <x-modal name="faq-create" :show="$errors->isNotEmpty()">
+        <livewire:faq.create />
+    </x-modal>
+    <x-modal name="faq-edit" :show="$errors->isNotEmpty()">
+        <livewire:faq.edit />
+    </x-modal>
     {{-- The Master doesn't talk, he acts. --}}
 </div>

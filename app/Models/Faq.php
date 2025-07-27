@@ -10,6 +10,14 @@ class Faq extends Model
     /** @use HasFactory<\Database\Factories\FaqFactory> */
     use HasFactory;
 
+    protected $fillable = [
+        'answer',
+        'question',
+        'created_by',
+        'updated_by',
+        'is_active'
+    ];
+    
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

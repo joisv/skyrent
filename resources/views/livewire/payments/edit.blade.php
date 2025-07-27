@@ -1,6 +1,6 @@
 <div @close-modal="show = false">
     {{-- Care about people's approval and you will be their prisoner. --}}
-    <form wire:submit="save" class="p-4 space-y-3">
+    <form wire:submit="update" class="p-4 space-y-3">
         <div>
             <label for="name" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Nama Bank</label>
             <input type="text" id="name"
@@ -12,9 +12,11 @@
         </div>
         <div>
             <label for="icon" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Icon</label>
-            <x-mary-file wire:model="icon" accept="image/png, image/jpeg">
-                <img src="{{ url('wame.png') }}" class="h-40 rounded-lg" />
-                </x-file>
+            @if ($payment)
+                <x-mary-file wire:model="icon" accept="image/png, image/jpeg">
+                    <img src="{{ $payment->icon ? asset('storage/' . $payment->icon) : '' }}" class="h-40 rounded-lg" />
+                </x-mary-file>
+            @endif
         </div>
         <div>
             <x-mary-textarea label="Description" wire:model="description" placeholder="Here ..." hint="Max 1000 chars"

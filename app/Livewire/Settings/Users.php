@@ -115,6 +115,20 @@ class Users extends Component
         }
     }
     
+    public function updatedSelectedAll($val)
+    {
+        $val ? $this->mySelected = $this->getData()->limit($this->paginate)->pluck('id') : $this->mySelected = [];
+    }
+
+    public function updatedMySelected()
+    {
+        if (count($this->mySelected) === $this->paginate) {
+            $this->selectedAll = true;
+        } else {
+            $this->selectedAll = false;
+        }
+    }
+    
     #[On('re-render')]
     public function reRender()
     {
