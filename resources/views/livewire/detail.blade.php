@@ -103,7 +103,7 @@
 
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
-    <form class="flex space-x-3 min-h-screen w-full mt-20">
+    <form class="flex space-x-3 min-h-[50vh] w-full mt-20 ">
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
                 <ul class="list-disc list-inside">
@@ -113,7 +113,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </ul>
             </div>
         @endif
-        <div class="w-[70%] flex space-x-3 ">
+        <div class="w-[70%] flex space-x-3 sticky top-10 h-fit">
             <div class="w-[45%] h-[50vh] relative">
                 <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
                     class="w-full h-full object-contain absolute">
@@ -124,7 +124,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     class="proseprose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600 mt-5">{!! $iphone->description !!}</span>
             </div>
         </div>
-        <div class="w-[30%] h-fit border-2 border-slate-900 p-5">
+        <div class="w-[30%] h-fit border-2 border-slate-900 p-5 sticky top-10 right-20">
             <div class="space-y-4">
                 {{-- BOOKING --}}
                 <div class="space-y-3">
@@ -289,6 +289,9 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
     </form>
+    <div class="w-[65%] h-[100vh]">
+
+    </div>
     <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
         <div class="p-4 border">
             <div class="space-y-4">
