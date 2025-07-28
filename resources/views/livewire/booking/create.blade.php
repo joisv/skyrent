@@ -200,7 +200,6 @@
                     }
                 }">
                     @foreach ($durations as $item)
-                    @dump($item['price'])
                         <div @click="setActiveTab({{ $item['hours'] }}, {{ $item['price'] }})"
                             :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
                             class="p-2 font-medium text-sm w-20 text-center border-2 border-slate-300 cursor-pointer rounded-md">

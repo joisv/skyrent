@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Booking;
 use App\Models\Iphones;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
@@ -26,6 +27,10 @@ class Detail extends Component
     public $customer_email;
     public $countryCode = '+62';
 
+    public $payments;
+    public $selectedPaymentId = 1;
+    public $selectedPayment;
+
     #[On('updated:selectedIphoneId')]
     #[On('updated:selectedDate')]
     #[On('updated:selectedHour')]
@@ -34,7 +39,15 @@ class Detail extends Component
     public function updated()
     {
         $this->checkAvailability();
-        // dd([$this->is_available, $this->selectedDate]);
+    }
+
+    public function updatedSelectedPaymentId()
+    {
+        $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
+        if (!$this->selectedPayment) {
+            $this->selectedPaymentId = optional($this->payments->first())->id ?? null;
+            $this->selectedPayment = $this->payments->first();
+        }
     }
 
     public function checkAvailability()
@@ -98,6 +111,7 @@ class Detail extends Component
         }
 
         $this->dispatch('open-modal', 'user-booking-create');
+        // $this->payments = Payment::orderBy('created_at', 'desc')->get();
     }
 
     public function mount(Iphones $iphone)
@@ -114,6 +128,13 @@ class Detail extends Component
 
     public function render()
     {
+        $this->payments = Payment::orderBy('created_at', 'desc')->get();
+        $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
+
+        if (!$this->selectedPayment) {
+            $this->selectedPaymentId = optional($this->payments->first())->id ?? null;
+            $this->selectedPayment = $this->payments->first();
+        }
         return view('livewire.detail');
     }
 }

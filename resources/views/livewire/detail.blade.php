@@ -258,8 +258,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         <div class="{{ $is_available === true ? 'bg-green-200' : 'bg-red-200' }} p-2 w-fit">
                             @if ($is_available === true)
                                 <h1 class="text-green-600 font-semibold">tersedia</h1>
-                                <div
-                                    class="text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
+                                <div class="text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
                                     <p>tersedia untuk hari yang dipilih</p>
                                 </div>
                             @else
@@ -342,7 +341,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
 
             {{-- Invoice --}}
-            <div class="mt-7 space-y-9">
+            <div class="mt-7 space-y-5">
                 <div class="flex justify-between items-start w-full">
                     {{-- <div class="">
                         <div class="font-medium">
@@ -355,12 +354,12 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             <h2>joisvanka@gmail.com</h2>
                         </div>
                     </div> --}}
-                    <div class="w-full flex flex-col items-end font-medium">
+                    {{-- <div class="w-full flex flex-col items-end font-medium">
                         <h2>
                             {{ $selectedDateFormatted }}
                         </h2>
                         <h3 class="font-semibold">Invoice no. #432893</h3>
-                    </div>
+                    </div> --}}
                 </div>
                 <div>
                     <h1 class="text-2xl font-semibold mb-4">Deskripsi</h1>
@@ -380,15 +379,25 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                         <div class="flex justify-between items-center font-medium" x-data="{ price: @entangle('selectedPrice').live }">
                             <p>Harga</p>
-                             <span class=" font-bold" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+                            <span class=" font-bold"
+                                x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                         </div>
                     </div>
                 </div>
                 <div>
                     <h1 class="text-2xl font-semibold mb-4">Metode Pembayaran</h1>
-                    <div class="border-t-2 border-gray-400 py-6 my-py-6 space-y-1">
+                    <div class="border-t-2 border-gray-400 py-6 my-py-6 space-y-2">
+                        @if (!empty($payments))
+                        <div class="w-48">
+                            <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
+                                placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
+                                option-label="name" />
+                        </div>
+                            <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
+                                class="w-48 h-w-48 object-cover rounded-md">
+                            {{-- @dump($selectedPayment) --}}
+                        @endif
 
-                        
                     </div>
                 </div>
             </div>

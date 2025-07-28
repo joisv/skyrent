@@ -16,10 +16,7 @@ class Gallery extends Component
     public $paginate = 20;
     public $images = [];
 
-    // public function updatedImages($props)
-    // {
-    //     dd($props);
-    // }
+
     public function saveImage()
     {
         if (auth()->user()->can('create')) {
@@ -37,14 +34,26 @@ class Gallery extends Component
                 LivewireAlert::title('Item Saved')
                     ->text('The item has been successfully saved to the database.')
                     ->success()
+                    ->toast()
                     ->show();
                 $this->dispatch('re-render');
                 $this->images = [];
             } else {
-                $this->alert('error', 'image tidak ditemukan');
+                LivewireAlert::title('Error')
+                    ->text('image tidak ditemukan')
+                    ->error()
+                    ->toast()
+                    ->position('top-end')
+                    ->show();
             }
         } else {
             $this->alert('error', 'kamu tidak memiliki izin');
+            LivewireAlert::title('Unauthorize')
+                ->text('Kamu tidak memiliki akses untuk merubah gambar')
+                ->warning()
+                ->toast()
+                ->position('top-end')
+                ->show();
         }
     }
 
@@ -56,17 +65,43 @@ class Gallery extends Component
             $gallery = ModelsGallery::find($id);
             $gallery->delete();
             Storage::delete($gallery);
-            $this->alert('success', 'image deleted successfully');
+            LivewireAlert::title('Berhasil dihapus')
+                ->text('Image deleted successfully')
+                ->success()
+                ->toast()
+                ->position('top-end')
+                ->show();
             $this->dispatch('re-render');
         } else {
-            $this->alert('error', 'kamu tidak memiliki izin');
+            LivewireAlert::title('Unauthorize')
+                ->text('Kamu tidak memiliki akses untuk merubah gambar')
+                ->warning()
+                ->toast()
+                ->position('top-end')
+                ->show();
         }
     }
 
     #[On('alert-me')]
     public function alertMe($status, $message)
     {
-        $this->alert($status, $message);
+        if ($status == 'error') {
+            # code...
+            LivewireAlert::title('Error')
+                ->text($message)
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+        } else {
+            LivewireAlert::title('Succes')
+                ->text($message)
+                ->success()
+                ->toast()
+                ->position('top-end')
+                ->show();
+        }
+        // $this->alert($status, $message);
     }
 
     public function getGalleries()
