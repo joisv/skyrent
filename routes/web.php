@@ -1,16 +1,23 @@
 <?php
 
 use App\Models\Iphones;
+use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')
     ->name('welcome');
 
+Route::get('cara-sewa', function(GeneralSettings $setting) {
+    return view('how-to-rent', [
+        'how_to_rent' => $setting->how_to_rent
+    ]);
+})->name('howtorent');
+
 Route::get('detail/{iphones:slug}', function (Iphones $iphones) {
-        return view('detail', [
-            'iphone' => $iphones->load(['gallery', 'bookings'])
-        ]);
-    })->name('detail');
+    return view('detail', [
+        'iphone' => $iphones->load(['gallery', 'bookings'])
+    ]);
+})->name('detail');
 
 Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {

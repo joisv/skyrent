@@ -6,7 +6,7 @@ use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\Payment;
 use Carbon\Carbon;
-use Carbon\Exceptions\InvalidFormatException;
+use Illuminate\Support\Str;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -30,6 +30,9 @@ class Detail extends Component
     public $payments;
     public $selectedPaymentId = 1;
     public $selectedPayment;
+
+    public $rating = 0;
+    public $name;
 
     #[On('updated:selectedIphoneId')]
     #[On('updated:selectedDate')]
@@ -77,6 +80,13 @@ class Detail extends Component
         }
     }
 
+    function generateAnonymousName(): string
+    {
+        $prefix = 'anon';
+        $code = strtoupper(Str::random(6)); // gunakan helper Laravel Str
+        return "@{$prefix}{$code}";
+    }
+    
     public function bookingNow()
     {
         // if (!$this->is_available) {
@@ -124,6 +134,7 @@ class Detail extends Component
         $this->selectedIphoneId = $iphone->id;
         $this->selectedDuration = $iphone->durations->first()->hours ?? 1; // Default to first duration or 1 hour
         $this->selectedPrice = $iphone->durations->first()->pivot->price ?? 0; // Default to first duration price or 0
+        $this->name = $this->generateAnonymousName();
     }
 
     public function render()

@@ -65,7 +65,7 @@
                     <ul class="space-y-1 text-sm">
                         <li><a href="/" class="hover:underline">Beranda</a></li>
                         <li><a href="/produk" class="hover:underline">Daftar iPhone</a></li>
-                        <li><a href="/cara-sewa" class="hover:underline">Cara Sewa</a></li>
+                        <li><a wire:navigate href="{{ route('howtorent') }}" class="hover:underline">Cara Sewa</a></li>
                         <li><a href="/kontak" class="hover:underline">Kontak</a></li>
                     </ul>
                 </div>

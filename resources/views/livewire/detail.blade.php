@@ -103,7 +103,7 @@
 
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
-    <form class="flex space-x-3 min-h-[50vh] w-full mt-20 ">
+    <form class="flex space-x-3 min-h-[70vh] w-full mt-20 ">
         @if ($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
                 <ul class="list-disc list-inside">
@@ -289,8 +289,25 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
     </form>
-    <div class="w-[65%] h-[100vh]">
-
+    <div class="w-[65%] min-h-[100vh]">
+        <div class="space-y-5">
+            
+            <div class="space-y-3">
+                <div class="flex justify-start items-center space-x-4">
+                    <div class="w-[60px] h-[60px] rounded-full overflow-hidden">
+                        <img src="https://placehold.co/600x400" alt="" srcset=""
+                            class="object-cover w-full h-full">
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <h3 class="font-semibold text-xl text-gray-600">{{ $name }}</h3>
+                            <p class="text-sm text-gray-600 font-medium">Tulis review dengan nama anonimous</p>
+                        </div>
+                    </div>
+                </div>
+               <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name"/>
+            </div>
+        </div>
     </div>
     <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
         <div class="p-4 border">
@@ -391,11 +408,11 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     <h1 class="text-2xl font-semibold mb-4">Metode Pembayaran</h1>
                     <div class="border-t-2 border-gray-400 py-6 my-py-6 space-y-2">
                         @if (!empty($payments))
-                        <div class="w-48">
-                            <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
-                                placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
-                                option-label="name" />
-                        </div>
+                            <div class="w-48">
+                                <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
+                                    placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
+                                    option-label="name" />
+                            </div>
                             <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
                                 class="w-48 h-w-48 object-cover rounded-md">
                             {{-- @dump($selectedPayment) --}}
