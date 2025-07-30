@@ -6,7 +6,7 @@
           <x-home-navlink href="/" class="">Price</x-home-navlink>
           <x-home-navlink href="/" class="">Reviews</x-home-navlink>
           <x-home-navlink href="/" class="">About us</x-home-navlink>
-          <x-home-navlink href="/" class="">Contact</x-home-navlink>
+          <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Contact</x-home-navlink>
         </div>
         <div class="flex items-center space-x-3 w-[40%] h-full justify-end">
              <x-mary-theme-toggle/>

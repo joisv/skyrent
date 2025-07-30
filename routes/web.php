@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Faq;
 use App\Models\Iphones;
 use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\Route;
@@ -7,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'welcome')
     ->name('welcome');
 
-Route::get('cara-sewa', function(GeneralSettings $setting) {
+Route::get('cara-sewa', function (GeneralSettings $setting) {
     return view('how-to-rent', [
         'how_to_rent' => $setting->how_to_rent
     ]);
@@ -18,6 +19,21 @@ Route::get('detail/{iphones:slug}', function (Iphones $iphones) {
         'iphone' => $iphones->load(['gallery', 'bookings'])
     ]);
 })->name('detail');
+
+Route::get('faqs', function () {
+
+    $faq = Faq::orderBy('created_at', 'desc')->get();
+
+    return view('user-faq', [
+        'faqs' => $faq
+    ]);
+})->name('faqs');
+
+Route::get('contacts', function (){
+
+    return view('contacts');
+    
+})->name('contacts');
 
 Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {
