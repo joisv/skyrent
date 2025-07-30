@@ -12,10 +12,13 @@ class FilterSection extends Component
 {
     public $selectedDateFormatted = '';
     public $iphoneByDate;
+    public $selectedHour;
+    public $selectedMinute;
+    public $selectedDate;
 
     public function getIphoneByDate()
     {
-        $date = Carbon::parse($this->selectedDateFormatted)->toDateString();
+        $date = Carbon::parse($this->selectedDate)->toDateString();
 
         // Ambil semua ID iPhone yang sedang dibooking pada tanggal tertentu
         $this->iphoneByDate = Iphones::with('durations')
@@ -30,6 +33,13 @@ class FilterSection extends Component
                 });
             })
             ->get();
+    }
+
+    public function mount()
+    {
+        $now = Carbon::now('Asia/Jakarta');
+        $this->selectedHour = $now->format('H');
+        $this->selectedMinute = $now->format('i');
     }
 
     public function render()
