@@ -35,6 +35,10 @@ Route::get('contacts', function (){
     
 })->name('contacts');
 
+Route::get('products', function() {
+    return view('products');
+})->name('products');
+
 Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {
         Route::view('dashboard', 'dashboard')

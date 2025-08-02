@@ -60,6 +60,7 @@ class BookingPage extends Component
                         ->position('top-end')
                         ->text('bulk delete data berhasil')
                         ->timer(5000)
+                        ->toast()
                         ->success()
                         ->show();
                 } catch (\Throwable $th) {
@@ -67,6 +68,7 @@ class BookingPage extends Component
                         ->position('top-end')
                         ->text('tidak dapat menghapus data')
                         ->timer(5000)
+                        ->toast()
                         ->error()
                         ->show();
                 }
@@ -75,6 +77,7 @@ class BookingPage extends Component
                     ->position('top-end')
                     ->text('tidak dapat menghapus data')
                     ->timer(5000)
+                    ->toast()
                     ->error()
                     ->show();
             }
@@ -83,6 +86,7 @@ class BookingPage extends Component
                 ->position('top-end')
                 ->text('tidak dapat menghapus data')
                 ->timer(5000)
+                ->toast()
                 ->error()
                 ->show();
             $this->mySelected = [];

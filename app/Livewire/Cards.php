@@ -8,6 +8,7 @@ use Livewire\Component;
 class Cards extends Component
 {
     public $iphones;
+    public $title;
 
     public function getIphones()
     {
@@ -18,6 +19,10 @@ class Cards extends Component
             ->get();
     }
 
+    public function mount($title = 'Most popular iphone')
+    {
+        $this->title = $title;
+    }
 
     public function render()
     {

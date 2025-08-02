@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('iphone_id');
             $table->unsignedBigInteger('payment_id')->nullable();
 
-            $table->string('payment_code')->unique()->nullable();
+            $table->string('booking_code')->unique()->nullable();
             
             // Data penyewa non-login
             $table->string('customer_name');
@@ -33,7 +33,6 @@ return new class extends Migration
             $table->time('start_time')->nullable();
             $table->date('end_booking_date')->nullable();
             $table->time('end_time')->nullable();
-
 
             $table->integer('duration');
             $table->timestamp('created');

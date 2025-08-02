@@ -109,82 +109,11 @@
     }
 
 
-}">
+}" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
+$watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
     <div class="items-center w-full relative" x-cloak>
         <div class="space-y-2 w-[92%]">
             <h1 class="text-lg font-semibold">cek ketersediaan iPhone</h1>
-            {{-- <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
-                <div @click="open = ! open">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 start-0 flex items-center p-3 pointer-events-none">
-                            <svg width="30px" height="30px" viewBox="0 0 24.00 24.00" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M20 10V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V10M20 10V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V10M20 10H4M8 3V7M16 3V7"
-                                    stroke="#000000" stroke-width="1.344" stroke-linecap="round"></path>
-                                <rect x="6" y="12" width="3" height="3" rx="0.5" fill="#000000" />
-                                <rect x="10.5" y="12" width="3" height="3" rx="0.5" fill="#000000" />
-                                <rect x="15" y="12" width="3" height="3" rx="0.5" fill="#000000" />
-                            </svg>
-                        </div>
-                        <input
-                            class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
-                            placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
-                            @click="$refs.dropdownButton.click()" />
-                    </div>
-                </div>
-
-                <div x-show="open" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95"
-                    class="absolute z-50 mt-2 
-                    style="display: none;">
-                    <div class="rounded-md ring-1 ring-black ring-opacity-5">
-                        <!-- Kalender -->
-                        <div
-                            class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-[30vw] border-2 border-slate-900 shadow-xl">
-                            <!-- Header navigasi bulan -->
-                            <div class="flex items-center justify-between mb-2">
-                                <button @click="prevMonth()"
-                                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
-                                <div class="text-lg font-medium text-gray-700 dark:text-gray-200"
-                                    x-text="monthNames[month] + ' ' + year"></div>
-                                <button @click="nextMonth()"
-                                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
-                            </div>
-
-                            <!-- Hari -->
-                            <div class="grid grid-cols-7 text-gray-500 mb-1">
-                                <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
-                                    <div x-text="day" class="text-center"></div>
-                                </template>
-                            </div>
-
-                            <!-- Tanggal -->
-                            <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
-                                <!-- Sisipkan hari kosong -->
-                                <template x-for="blank in blankdays">
-                                    <div></div>
-                                </template>
-
-                                <!-- Tanggal -->
-                                <template x-for="(date, index) in daysInMonth" :key="index">
-                                    <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()"
-                                        x-text="date"
-                                        class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
-                                        :class="{
-                                            'bg-slate-900 text-white': isSelectedDate(date),
-                                            'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
-                                            'hover:border-slate-900': !isPastDate(date)
-                                        }">
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> --}}
             <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
                 <div @click="open = ! open">
                     <div class="relative">

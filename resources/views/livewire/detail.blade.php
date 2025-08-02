@@ -104,15 +104,6 @@
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
     <form class="flex space-x-3 min-h-[70vh] w-full mt-20 ">
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
         <div class="w-[70%] flex space-x-3 sticky top-10 h-fit">
             <div class="w-[45%] h-[50vh] relative">
                 <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
@@ -291,7 +282,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
     </form>
     <div class="w-[65%] min-h-[100vh]">
         <div class="space-y-5">
-            
+
             <div class="space-y-3">
                 <div class="flex justify-start items-center space-x-4">
                     <div class="w-[60px] h-[60px] rounded-full overflow-hidden">
@@ -305,122 +296,140 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                     </div>
                 </div>
-               <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name"/>
+                <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name" />
             </div>
         </div>
     </div>
-    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
-        <div class="p-4 border">
-            <div class="space-y-4">
-                <div>
-                    <h1 class="text-xl font-medium ">Nama</h1>
-                    <input type="text" wire:model.live.debounce.250ms="customer_name"
-                        class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
+    <x-modal name="user-booking-create" :show="true" rounded="rounded-none" border="border-2 border-slate-900">
+        <form wire:submit="booking">
+            @if ($errors->any())
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
-                <div>
-                    <h1 class="text-xl font-medium ">Nomor telephone</h1>
-                    <div x-data="{
-                        countryCode: @entangle('countryCode'),
-                        customerPhone: @entangle('customer_phone').lives,
-                        countries: [
-                            { code: '+62', name: 'Indonesia', flag: 'ID' },
-                            { code: '+60', name: 'Malaysia', flag: 'MY' },
-                            { code: '+65', name: 'Singapore', flag: 'SG' },
-                            { code: '+66', name: 'Thailand', flag: 'TH' },
-                            { code: '+63', name: 'Philippines', flag: 'PH' },
-                            { code: '+95', name: 'Myanmar', flag: 'MM' },
-                            { code: '+855', name: 'Cambodia', flag: 'KH' },
-                            { code: '+856', name: 'Laos', flag: 'LA' },
-                            { code: '+84', name: 'Vietnam', flag: 'VN' },
-                            { code: '+673', name: 'Brunei', flag: 'BN' }
-                        ]
-                    }" class="flex gap-2">
-
-                        <!-- Dropdown Kode Negara -->
-                        <select x-model="countryCode" class="w-[40%] p-2 border-2 border-slate-900">
-                            <template x-for="country in countries" :key="country.code">
-                                <option :value="country.code" x-text="country.flag + ' ' + country.code"></option>
-                            </template>
-                        </select>
-
-                        <!-- Input Nomor -->
-                        <input type="tel" id="customer_phone" x-model="customerPhone"
-                            @input="
-        let raw = $event.target.value.replace(/[^0-9]/g, '');
-        customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';
-    "
-                            class="w-full p-2 border-2 border-slate-900" placeholder="8123-4567-8901" />
-
+            @endif
+            <div class="p-4 border">
+                <div class="space-y-4">
+                    <div>
+                        <h1 class="text-xl font-medium ">Nama</h1>
+                        <input type="text" wire:model.live.debounce.250ms="customer_name"
+                            class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
                     </div>
-                </div>
-                <div>
-                    <h1 class="text-xl font-medium ">Email</h1>
-                    <input type="email" wire:model.live.debounce.250ms="customer_email"
-                        class="w-full p-2 border-2 border-slate-900 " placeholder="youreemail@example.site">
-                </div>
-            </div>
+                    <div>
+                        <h1 class="text-xl font-medium ">Nomor telephone</h1>
+                        <div x-data="{
+                            countryCode: @entangle('countryCode'),
+                            customerPhone: @entangle('customer_phone').lives,
+                            countries: [
+                                { code: '+62', name: 'Indonesia', flag: 'ID' },
+                                { code: '+60', name: 'Malaysia', flag: 'MY' },
+                                { code: '+65', name: 'Singapore', flag: 'SG' },
+                                { code: '+66', name: 'Thailand', flag: 'TH' },
+                                { code: '+63', name: 'Philippines', flag: 'PH' },
+                                { code: '+95', name: 'Myanmar', flag: 'MM' },
+                                { code: '+855', name: 'Cambodia', flag: 'KH' },
+                                { code: '+856', name: 'Laos', flag: 'LA' },
+                                { code: '+84', name: 'Vietnam', flag: 'VN' },
+                                { code: '+673', name: 'Brunei', flag: 'BN' }
+                            ]
+                        }" class="flex gap-2">
 
-            {{-- Invoice --}}
-            <div class="mt-7 space-y-5">
-                <div class="flex justify-between items-start w-full">
-                    {{-- <div class="">
-                        <div class="font-medium">
-                            <h1 class="text-2xl font-semibold mb-2">Rincian sewa</h1>
-                            <h2>{{ $customer_name }}</h2>
-                        <h2>{{ $customer_phone }}</h2>
-                        <h2>{{ $customer_email }}</h2>
-                            <h2>Jois Vanka</h2>
-                            <h2>+6283-1321-4535-4231</h2>
-                            <h2>joisvanka@gmail.com</h2>
-                        </div>
-                    </div> --}}
-                    {{-- <div class="w-full flex flex-col items-end font-medium">
-                        <h2>
-                            {{ $selectedDateFormatted }}
-                        </h2>
-                        <h3 class="font-semibold">Invoice no. #432893</h3>
-                    </div> --}}
-                </div>
-                <div>
-                    <h1 class="text-2xl font-semibold mb-4">Deskripsi</h1>
-                    <div class="border-y-2 border-gray-400 py-6 my-py-6 space-y-1">
+                            <!-- Dropdown Kode Negara -->
+                            <select x-model="countryCode" class="w-[40%] p-2 border-2 border-slate-900">
+                                <template x-for="country in countries" :key="country.code">
+                                    <option :value="country.code" x-text="country.flag + ' ' + country.code"></option>
+                                </template>
+                            </select>
 
-                        <div class="flex justify-between items-center font-medium">
-                            <p>Tipe iPhone</p>
-                            <p>iPhone 16 pro Max</p>
-                        </div>
-                        <div class="flex justify-between items-center font-medium">
-                            <p>Durasi</p>
-                            <p>24 jam</p>
-                        </div>
-                        <div class="flex justify-between items-center font-medium">
-                            <p>Tanggal dan waktu booking</p>
-                            <p>{{ $selectedDateFormatted }}</p>
-                        </div>
-                        <div class="flex justify-between items-center font-medium" x-data="{ price: @entangle('selectedPrice').live }">
-                            <p>Harga</p>
-                            <span class=" font-bold"
-                                x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+                            <!-- Input Nomor -->
+                            <input type="tel" id="customer_phone" x-model="customerPhone"
+                                @input="
+            let raw = $event.target.value.replace(/[^0-9]/g, '');
+            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';
+        "
+                                class="w-full p-2 border-2 border-slate-900" placeholder="8123-4567-8901" />
+
                         </div>
                     </div>
+                    <div>
+                        <h1 class="text-xl font-medium ">Email</h1>
+                        <input type="email" wire:model.live.debounce.250ms="customer_email"
+                            class="w-full p-2 border-2 border-slate-900 " placeholder="youreemail@example.site">
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-semibold mb-4">Metode Pembayaran</h1>
-                    <div class="border-t-2 border-gray-400 py-6 my-py-6 space-y-2">
-                        @if (!empty($payments))
-                            <div class="w-48">
-                                <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
-                                    placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
-                                    option-label="name" />
+
+                {{-- Invoice --}}
+                <div class="mt-7 space-y-5">
+                    <div class="flex justify-between items-start w-full">
+                        {{-- <div class="">
+                            <div class="font-medium">
+                                <h1 class="text-2xl font-semibold mb-2">Rincian sewa</h1>
+                                <h2>{{ $customer_name }}</h2>
+                            <h2>{{ $customer_phone }}</h2>
+                            <h2>{{ $customer_email }}</h2>
+                                <h2>Jois Vanka</h2>
+                                <h2>+6283-1321-4535-4231</h2>
+                                <h2>joisvanka@gmail.com</h2>
                             </div>
-                            <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
-                                class="w-48 h-w-48 object-cover rounded-md">
-                            {{-- @dump($selectedPayment) --}}
-                        @endif
+                        </div> --}}
+                        {{-- <div class="w-full flex flex-col items-end font-medium">
+                            <h2>
+                                {{ $selectedDateFormatted }}
+                            </h2>
+                            <h3 class="font-semibold">Invoice no. #432893</h3>
+                        </div> --}}
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-semibold mb-4">Deskripsi</h1>
+                        <div class="border-y-2 border-gray-400 py-6 my-py-6 space-y-1">
+
+                            <div class="flex justify-between items-center font-medium">
+                                <p>Tipe iPhone</p>
+                                <p>{{ $iphone->name }}</p>
+                            </div>
+                            <div class="flex justify-between items-center font-medium">
+                                <p>Durasi</p>
+                                <p>24 jam</p>
+                            </div>
+                            <div class="flex justify-between items-center font-medium">
+                                <p>Tanggal dan waktu booking</p>
+                                <p>{{ $selectedDateFormatted }}</p>
+                            </div>
+                            <div class="flex justify-between items-center font-medium" x-data="{ price: @entangle('selectedPrice').live }">
+                                <p>Harga</p>
+                                <span class=" font-bold"
+                                    x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between">
+
+                            <h1 class="text-2xl font-semibold mb-4">Metode Pembayaran</h1>
+                            <div class="space-y-2">
+                                @if (!empty($payments))
+                                    <div class="w-48">
+                                        <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
+                                            placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
+                                            option-label="name" />
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
+                            class="w-48 h-w-48 object-cover rounded-md">
+
+                        <div class="text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
+                            <span>{{ $selectedPayment->description }}</span>
+                        </div>
 
                     </div>
                 </div>
             </div>
-        </div>
+            <x-primary-button type="submit">book</x-primary-button>
+        </form>
     </x-modal>
 </div>

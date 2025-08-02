@@ -18,19 +18,18 @@ class FilterSection extends Component
 
     public function getIphoneByDate()
     {
-        $date = Carbon::parse($this->selectedDate)->toDateString();
+        // Waktu yang diminta user
+        $requestedStart = Carbon::parse($this->selectedDate)
+            ->timezone('Asia/Jakarta')
+            ->setTime((int)$this->selectedHour, (int)$this->selectedMinute)
+            ->format('Y-m-d H:i:s');
 
         // Ambil semua ID iPhone yang sedang dibooking pada tanggal tertentu
         $this->iphoneByDate = Iphones::with('durations')
-            ->whereDoesntHave('bookings', function ($query) use ($date) {
-                $query->where(function ($sub) use ($date) {
-                    $sub->where('status', 'pending')
-                        ->whereDate('requested_booking_date', $date);
-                })->orWhere(function ($sub) use ($date) {
-                    $sub->where('status', 'confirmed')
-                        ->whereDate('start_booking_date', '<=', $date)
-                        ->whereDate('end_booking_date', '>=', $date);
-                });
+            ->whereDoesntHave('bookings', function ($query) use ($requestedStart) {
+                $query->whereIn('status', ['pending', 'confirmed'])
+                    ->whereRaw("datetime(requested_booking_date || ' ' || requested_time) <= ?", [$requestedStart])
+                    ->whereRaw("datetime(requested_booking_date || ' ' || requested_time, '+' || duration || ' hours') >= ?", [$requestedStart]);
             })
             ->get();
     }

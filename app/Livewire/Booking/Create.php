@@ -89,7 +89,6 @@ class Create extends Component
                 ->show();
             return;
         }
-        // dd($this->requested_booking_date->toDateString());
         // Simpan booking baru
         Booking::create([
             'iphone_id' => $this->selectedIphoneId,

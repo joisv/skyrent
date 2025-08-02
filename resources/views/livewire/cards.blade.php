@@ -1,6 +1,6 @@
 <div class="mt-10" wire:init="getIphones">
     <div>
-        <h1 class="text-2xl font-semibold">Most popular iPhone</h1>
+        <h1 class="text-2xl font-semibold">{{ $title }}</h1>
         <div class="grid grid-cols-4 gap-3 mt-10">
             @empty(!$iphones)
 

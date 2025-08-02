@@ -16,12 +16,12 @@ class Detail extends Component
     public $iphone;
     public $selectedPrice;
     public $selectedDateFormatted; // 25 Juli 2025, 20:51
+    public $selectedDate; // Date object for the selected date
     public $selectedDuration; // 24
     public $selectedHour; // 20
-    public $selectedMinute; //
+    public $selectedMinute; // 10
     public $is_available = false;
     public $selectedIphoneId;
-    public $selectedDate; // Date object for the selected date
     public $customer_name;
     public $customer_phone;
     public $customer_email;
@@ -86,33 +86,12 @@ class Detail extends Component
         $code = strtoupper(Str::random(6)); // gunakan helper Laravel Str
         return "@{$prefix}{$code}";
     }
-    
+
     public function bookingNow()
     {
-        // if (!$this->is_available) {
-        //      LivewireAlert::title('Booking Tidak Tersedia')
-        //         ->text('Tanggal dan waktu yang dipilih tidak tersedia.')
-        //         ->error()
-        //         ->toast()
-        //         ->position('top-end')
-        //         ->show();
-        // }
-        // $this->validate([
-        //     'selectedIphoneId' => 'required|exists:iphones,id',
-        //     'selectedDate' => 'required|date',
-        //     'selectedHour' => 'required|min:0|max:23',
-        //     'selectedMinute' => 'required|min:0|max:59',
-        //     'selectedDuration' => 'required|integer|min:1',
-        // ]);
-        if (collect([
-            $this->selectedDuration,
-            $this->selectedHour,
-            $this->selectedMinute,
-            $this->selectedIphoneId,
-            $this->selectedDate,
-        ])->contains(null)) {
-            LivewireAlert::title('Booking Tidak Tersedia')
-                ->text('Tanggal dan waktu yang dipilih tidak tersedia.')
+        if (!$this->is_available) {
+            LivewireAlert::title('Waktu Tidak Tersedia')
+                ->text('iPhone sedang dibooking pada waktu tersebut. Silakan pilih waktu lain.')
                 ->error()
                 ->toast()
                 ->position('top-end')
@@ -122,6 +101,80 @@ class Detail extends Component
 
         $this->dispatch('open-modal', 'user-booking-create');
         // $this->payments = Payment::orderBy('created_at', 'desc')->get();
+    }
+
+    public function booking()
+    {
+        if (!$this->is_available) {
+            LivewireAlert::title('Waktu Tidak Tersedia')
+                ->text('iPhone sedang dibooking pada waktu tersebut. Silakan pilih waktu lain.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+            return;
+        }
+        $this->validate([
+            'selectedIphoneId' => 'required|exists:iphones,id',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:15',
+            'customer_email' => 'nullable|email|max:255',
+            // potensial bugg
+            // 'requested_booking_date' => 'required|date',
+            // 'requested_time' => 'required|date_format:H:i',
+            'selectedDuration' => 'required|integer|min:1',
+            'selectedPrice' => 'required|numeric|min:0',
+        ]);
+        Booking::create([
+            'iphone_id' => $this->selectedIphoneId,
+            'customer_name' => $this->customer_name,
+            'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
+            'customer_email' => $this->customer_email,
+
+            'requested_booking_date' => Carbon::parse($this->selectedDate)->timezone('Asia/Jakarta')->toDateString(),
+            'requested_time' => sprintf('%02d:%02d', $this->selectedHour, $this->selectedMinute),
+            'duration' => $this->selectedDuration,
+            'price' => $this->selectedPrice,
+            'status' => 'pending',
+            'created' => Carbon::now('Asia/Jakarta'),
+            'booking_code' => self::generatePaymentCode($this->customer_name),
+        ]);
+
+        $this->dispatch('close-modal');
+        $this->reset([
+            'selectedDuration',
+            'selectedIphone',
+            'selectedIphoneId',
+            'customer_name',
+            'customer_phone',
+            'customer_email',
+            'selectedDate',
+            'selectedHour',
+            'selectedMinute',
+            'selectedPrice',
+
+        ]);
+
+        $now = Carbon::now('Asia/Jakarta');
+        $this->selectedHour = $now->format('H');
+        $this->selectedMinute = $now->format('i');
+         LivewireAlert::title('Success!')
+            ->text('Berhasil membuat booking cek status booking pada halaman booking')
+            ->success()
+            ->timer(50000)
+            ->toast()
+            ->position('top-end')
+            ->show();
+    }
+
+    public static function generatePaymentCode($userName)
+    {
+        $userInitials = substr(strtoupper(preg_replace('/[^A-Za-z]/', '', $userName)), 0, 3);
+        $randomString = Str::random(6);
+
+        $code = $userInitials . $randomString;
+
+        return $code;
     }
 
     public function mount(Iphones $iphone)
@@ -139,7 +192,7 @@ class Detail extends Component
 
     public function render()
     {
-        $this->payments = Payment::orderBy('created_at', 'desc')->get();
+        $this->payments = Payment::where('is_active', true)->orderBy('created_at', 'desc')->get();
         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
 
         if (!$this->selectedPayment) {
