@@ -103,7 +103,7 @@
 
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
-    <form class="flex space-x-3 min-h-[70vh] w-full mt-20 ">
+    <div class="flex space-x-3 min-h-[70vh] w-full mt-20 ">
         <div class="w-[70%] flex space-x-3 sticky top-10 h-fit">
             <div class="w-[45%] h-[50vh] relative">
                 <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
@@ -279,7 +279,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </button>
             </div>
         </div>
-    </form>
+    </div>
     <div class="w-[65%] min-h-[100vh]">
         <div class="space-y-5">
 
@@ -300,8 +300,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
     </div>
-    <x-modal name="user-booking-create" :show="true" rounded="rounded-none" border="border-2 border-slate-900">
-        <form wire:submit="booking">
+    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
+        <form wire:submit="booking" >
             @if ($errors->any())
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
                     <ul class="list-disc list-inside">
@@ -311,7 +311,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </ul>
                 </div>
             @endif
-            <div class="p-4 border">
+            <div class="p-4 border" x-on:close-modal.window="show = false">
                 <div class="space-y-4">
                     <div>
                         <h1 class="text-xl font-medium ">Nama</h1>
@@ -322,7 +322,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         <h1 class="text-xl font-medium ">Nomor telephone</h1>
                         <div x-data="{
                             countryCode: @entangle('countryCode'),
-                            customerPhone: @entangle('customer_phone').lives,
+                            customerPhone: @entangle('customer_phone').live,
                             countries: [
                                 { code: '+62', name: 'Indonesia', flag: 'ID' },
                                 { code: '+60', name: 'Malaysia', flag: 'MY' },
@@ -422,14 +422,14 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
                             class="w-48 h-w-48 object-cover rounded-md">
 
-                        <div class="text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
+                        <div class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
                             <span>{{ $selectedPayment->description }}</span>
                         </div>
 
                     </div>
                 </div>
             </div>
-            <x-primary-button type="submit">book</x-primary-button>
+            <button type="submit" class="p-3 font-medium text-white bg-black w-full disabled:bg-gray-400" wire:loading.attr="disabled">Booking sekarang</button>
         </form>
     </x-modal>
 </div>

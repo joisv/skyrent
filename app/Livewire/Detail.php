@@ -142,8 +142,6 @@ class Detail extends Component
 
         $this->dispatch('close-modal');
         $this->reset([
-            'selectedDuration',
-            'selectedIphone',
             'selectedIphoneId',
             'customer_name',
             'customer_phone',
@@ -158,6 +156,7 @@ class Detail extends Component
         $now = Carbon::now('Asia/Jakarta');
         $this->selectedHour = $now->format('H');
         $this->selectedMinute = $now->format('i');
+        $this->dispatch('close-modal');
          LivewireAlert::title('Success!')
             ->text('Berhasil membuat booking cek status booking pada halaman booking')
             ->success()

@@ -1,11 +1,11 @@
-<div class="w-full h-[70vh]">
-    <div class="flex justify-between items-center h-[60vh] space-y-2">
-        <div class="w-[52%] space-y-9">
+<div class="w-full h-[70vh] p-3 lg:p-6 xl:p-0 ">
+    <div class="lg:flex lg:justify-between lg:items-center h-[60vh] space-y-2 ">
+        <div class="w-full lg:w-[52%] space-y-9  mx-auto">
             <div class="space-y-5">
-                <h1 class="text-7xl font-medium">
+                <h1 class="text-6xl font-semibold xl:text-7xl xl:font-medium">
                     Sewa iPhone Impianmu, Gaya Maximal Tanpa Beli Mahal
                 </h1>
-                <div class="flex space-x-3 items-center">
+                <div class="flex space-x-3 items-center w-full">
                     <button
                         class="bg-slate-900 text-white text-xl p-3 font-semibold border-2 border-transparent hover:bg-white hover:text-black hover:border-black transition-all duration-100 ease-in-out">
                         Sewa Sekarang
@@ -23,7 +23,7 @@
             </div>
             <livewire:filter-section />
         </div>
-        <div class=" w-[48%] h-full">
+        <div class="hidden lg:flex w-[48%] h-full">
             <img src="{{ url('elegant-smartphone-composition-removebg-preview 1.png') }}" alt="" srcset=""
                 class="w-full h-full object-contain">
         </div>
