@@ -79,11 +79,11 @@
         <div class="w-full bg-white p-2">
             <div class="content min-h-[50vh]">
                 <div x-cloak x-show="activeTab === 'revenue'">
-                    <div class="flex">
-                        <div class="lg:w-[70%]">
+                    <div class="lg:flex">
+                        <div class="w-full lg:w-[70%]">
                             <livewire:analytics.revenue-chart />
                         </div>
-                        <div class="w-[30%] bg-red-500 h-20">
+                        <div class="mt-10 md:0 w-full lg:w-[30%] bg-red-500 h-20">
                             <div wire:loading wire:target="getRevenues">
                                 Checking availability of bookings...
                             </div>
@@ -92,11 +92,17 @@
                     </div>
                 </div>
                 <div x-cloak x-show="activeTab === 'bookings'">
-                    <div class="flex">
-                        <div class="lg:w-[70%]">
+                    <div class="lg:flex">
+                        <div class="w-full lg:w-[70%]">
                             <livewire:analytics.bookings-chart />
                         </div>
                     </div>
+                     <div class="mt-10 md:0 w-full lg:w-[30%] bg-red-500 h-20">
+                            <div wire:loading wire:target="getRevenues">
+                                Checking availability of bookings...
+                            </div>
+                            @dump($bookings)
+                        </div>
                 </div>
             </div>
         </div>

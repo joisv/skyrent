@@ -157,7 +157,7 @@
                 <span class="error">Pilih tanggal sewa</span>
             @enderror
             {{-- Time picker --}}
-            <div>
+            <div wire:ignore>
                 <label for="timepicker" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Waktu
                     mulai</label>
                 {{-- Initialize flatpickr for time selection --}}

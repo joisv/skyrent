@@ -1,5 +1,5 @@
 <div>
-    <div class="grid grid-cols-4 gap-x-2">
+    <div class="grid md:grid-cols-4 grid-cols-2 gap-x-2">
         {{-- Revenue Hari Ini --}}
         <x-mary-stat title="Hari Ini" description="{{ now()->format('d F Y') }}"
             value="Rp {{ number_format($revenueToday, 0, ',', '.') }}" icon="o-banknotes" color="text-green-600" />

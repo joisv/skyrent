@@ -26,14 +26,14 @@
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex lg:space-x-4">
         <livewire:layout.navigation />
-        {{-- <livewire:components.mobile-nav /> --}}
+        <livewire:layout.mobile-navigation />
 
         <div class="w-full">
             <!-- Page Heading -->
             <header>
                 <div x-data class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
                     <div class="flex lg:hidden">
-                        <x-mary-button label="Open Left" @click="$dispatch('showdrawer')" />
+                        <x-mary-button label="Menu" @click="$dispatch('showdrawer')" />
                     </div>
                     <div class="lg:flex hidden">
                         <x-mary-theme-toggle />
