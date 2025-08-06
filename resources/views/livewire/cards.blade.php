@@ -1,7 +1,7 @@
-<div class="mt-10" wire:init="getIphones">
+<div class="mt-10 p-3" wire:init="getIphones">
     <div>
         <h1 class="text-2xl font-semibold">{{ $title }}</h1>
-        <div class="grid grid-cols-4 gap-3 mt-10">
+        <div class="grid  grid-cols-3 lg:grid-cols-4 lg:gap-3 gap-x-1 gap-y-4 mt-10">
             @empty(!$iphones)
 
                 @forelse ($iphones as $iphone)
@@ -9,7 +9,7 @@
                         <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt=""
                             class="w-full object-contain h-64">
                         <h2 class="text-lg font-semibold text-center">{{ $iphone->name }}</h2>
-                        <a href="{{ route('detail', $iphone->slug) }}" wire:navigate class="bg-slate-900 p-2 text-white w-fit px-5">Sewa Sekarang</a>
+                        <a href="{{ route('detail', $iphone->slug) }}" wire:navigate class="bg-slate-900 p-2 text-white w-fit px-3 text-center text-sm lg:px-5">Sewa Sekarang</a>
                     </div>
                 @empty
                     <p class="text-center col-span-4" wire:loading.remove>No iPhones available at the moment.</p>

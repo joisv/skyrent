@@ -112,7 +112,7 @@
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
     <div class="items-center w-full relative" x-cloak>
-        <div class="space-y-2 w-[92%]">
+        <div class="space-y-2 w-[83%] lg:w-[92%]">
             <h1 class="text-lg font-semibold">cek ketersediaan iPhone</h1>
             <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
                 <div @click="open = ! open">
@@ -145,7 +145,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                         <!-- Kalender -->
                         <div
-                            class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-[25vw] border-2 border-slate-900 shadow-xl">
+                            class="p-2 lg:p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 border-slate-900 shadow-xl">
                             <div class="border-b-2 border-gray-300 pb-4">
                                 <div class="flex items-center  text-lg">
                                     <!-- Hour Picker -->

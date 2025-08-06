@@ -21,15 +21,21 @@
 </head>
 
 <body>
-    <div class="antialiased font-sans max-w-screen-2xl mx-auto dark:bg-gray-900">
+    <div class="antialiased font-sans max-w-screen-2xl mx-auto dark:bg-gray-900" x-data="{
+        setNav: false,
+    }">
         <livewire:layout.home-navigation />
+        <button type="button" class="p-2 bg-primary fixed bottom-3 right-3 flex lg:hidden z-50" @click="setNav = true"
+            :class="setNav ? 'hidden' : ''">
+            <x-icons.dotmenu default="25px" />
+        </button>
         <main>
             {{ $slot }}
         </main>
     </div>
     <footer class="w-full h-fit mt-40 bg-sky-300">
-        <div class="flex items-center justify-between  text-white py-32">
-            <div class="w-[60%] ">
+        <div class="lg:flex items-center justify-between  text-white py-32">
+            <div class="w-[60%] hidden lg:flex">
                 <div class="ml-20 space-y-5">
                    <img src="{{ url('logo.png') }}" alt="" srcset="">
                     <div>
@@ -40,7 +46,7 @@
                     </div>
                 </div>
             </div>
-            <div class="w-[40%] flex items-start justify-center space-x-3">
+            <div class="w-full lg:w-[40%] flex items-start justify-center space-x-3">
                 <div>
                     <h3 class="text-lg font-semibold mb-2">Navigasi</h3>
                     <ul class="space-y-1 text-sm">
@@ -73,7 +79,7 @@
             </div>
         </div>
         <div class="w-full flex items-center justify-center text-white py-10 border-t-2 border-gray-300 ">
-            <div class="w-[95%] flex items-center justify-between px-10 py-5 ">
+            <div class="w-full lg:w-[95%] lg:flex flex-col items-center justify-center lg:justify-between px-10 py-5 ">
                 <p>&copy; {{ date('Y') }} SkyRental. All rights reserved.</p>
                 <div class="flex items-center space-x-2">
                     <a href="/syarat-ketentuan" class="hover:underline">Syarat & Ketentuan</a>

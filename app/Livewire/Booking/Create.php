@@ -119,7 +119,6 @@ class Create extends Component
             'end_booking_date',
             'requested_time',
             'end_time',
-            'selectedDuration',
             'price'
         ]);
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
