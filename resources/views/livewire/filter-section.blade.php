@@ -94,7 +94,7 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         return picked < today;
-    },     
+    },
     searchIphones() {
         this.$dispatch('open-modal', 'ipip');
         $wire.getIphoneByDate();
@@ -227,11 +227,15 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         ];
                     });
                 @endphp
+
                 <div class="p-3 space-y-2 w-full flex items-start justify-between relative border border-slate-400"
                     x-data="{
                         durations: {{ Js::from($durationsData) }},
                         activeTab: {{ $durationsData->first()['id'] ?? 'null' }},
                         price: {{ $durationsData->first()['price'] ?? 0 }},
+                        showDetail: false, // ← tambahkan ini
+                        showHowToRent: false,
+                        showTerms: false,
                     
                         setActiveTab(id) {
                             const selected = this.durations.find(d => d.id === id);
@@ -248,114 +252,117 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                 minimumFractionDigits: 0
                             }).format(number);
                         }
-                    
                     }">
+
                     <div class="p-2">
                         <div class="space-y-1">
                             <h1 class="text-xl font-semibold">{{ $iphone->name }}</h1>
-                            <div class="flex border border-gray-400 rounded-lg w-fit p-1">
-                                {{-- cable --}}
-                                <svg fill="#a1a1a1" height="23px" width="23px" version="1.1" id="Layer_1"
-                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                    viewBox="0 0 512 512" xml:space="preserve">
-                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                    <g id="SVGRepo_iconCarrier">
-                                        <g>
-                                            <g>
-                                                <g>
-                                                    <path
-                                                        d="M332.804,256h-8.533v-93.867c0-14.114-11.486-25.6-25.6-25.6h-85.333c-14.123,0-25.6,11.486-25.6,25.6V256h-8.533 c-9.412,0-17.067,7.654-17.067,17.067v170.667c0,9.412,7.654,17.067,17.067,17.067h34.133v34.133 c0,9.412,7.654,17.067,17.067,17.067h51.2c9.412,0,17.067-7.654,17.067-17.067V460.8h34.133c9.412,0,17.067-7.654,17.067-17.067 V273.067C349.871,263.654,342.217,256,332.804,256z M230.404,494.933V460.8h51.2l0.009,34.133H230.404z M298.671,204.8 c0,4.719-3.823,8.533-8.533,8.533h-68.267c-4.719,0-8.533-3.814-8.533-8.533v-25.6c0-4.719,3.814-8.533,8.533-8.533h68.267 c4.71,0,8.533,3.814,8.533,8.533V204.8z">
-                                                    </path>
-                                                    <path
-                                                        d="M298.667,51.2h-85.333c-4.702,0-8.533,3.823-8.533,8.533c0,4.71,3.831,8.533,8.533,8.533h85.333 c4.702,0,8.533-3.823,8.533-8.533C307.2,55.023,303.369,51.2,298.667,51.2z">
-                                                    </path>
-                                                    <path
-                                                        d="M332.8,0H179.2c-14.114,0-25.6,11.486-25.6,25.6v68.267c0,14.114,11.486,25.6,25.6,25.6h153.6 c14.114,0,25.6-11.486,25.6-25.6V25.6C358.4,11.486,346.914,0,332.8,0z M298.667,85.333h-85.333c-14.114,0-25.6-11.486-25.6-25.6 s11.486-25.6,25.6-25.6h85.333c14.114,0,25.6,11.486,25.6,25.6S312.781,85.333,298.667,85.333z">
-                                                    </path>
-                                                </g>
-                                            </g>
-                                        </g>
-                                    </g>
-                                </svg>
-                                {{-- adapter --}}
-                                <svg fill="#a1a1a1" width="23px" height="23px" viewBox="0 0 32 32"
-                                    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"
-                                    version="1.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"
-                                    xmlns:serif="http://www.serif.com/" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                    <g id="SVGRepo_iconCarrier">
-                                        <g id="Icon"></g>
-                                        <path
-                                            d="M25,8c0,-0.552 -0.448,-1 -1,-1l-16,0c-0.552,0 -1,0.448 -1,1l0,16c0,0.552 0.448,1 1,1l16,0c0.552,0 1,-0.448 1,-1l0,-16Zm-2,1l-0,14c0,0 -14,0 -14,0c0,0 0,-14 0,-14l14,-0Z">
-                                        </path>
-                                        <path
-                                            d="M20.5,23.5c0,-0.276 -0.224,-0.5 -0.5,-0.5l-8,0c-0.276,0 -0.5,0.224 -0.5,0.5l0,3c0,0.276 0.224,0.5 0.5,0.5l8,-0c0.276,0 0.5,-0.224 0.5,-0.5l0,-3Zm-1,0.5l0,2c0,-0 -7,-0 -7,-0c0,-0 0,-2 0,-2l7,0Z">
-                                        </path>
-                                        <path
-                                            d="M21.5,5.5c0,-0.276 -0.224,-0.5 -0.5,-0.5l-10,0c-0.276,0 -0.5,0.224 -0.5,0.5l0,3c0,0.276 0.224,0.5 0.5,0.5l10,-0c0.276,-0 0.5,-0.224 0.5,-0.5l0,-3Zm-1,0.5l0,2c-0,-0 -9,-0 -9,-0c-0,-0 0,-2 0,-2l9,0Z">
-                                        </path>
-                                        <path
-                                            d="M14.5,5.5l0,-2.095c0,-0.276 -0.224,-0.5 -0.5,-0.5c-0.276,-0 -0.5,0.224 -0.5,0.5l0,2.095c0,0.276 0.224,0.5 0.5,0.5c0.276,-0 0.5,-0.224 0.5,-0.5Z">
-                                        </path>
-                                        <path
-                                            d="M18.5,5.5l0,-2.095c0,-0.276 -0.224,-0.5 -0.5,-0.5c-0.276,-0 -0.5,0.224 -0.5,0.5l0,2.095c0,0.276 0.224,0.5 0.5,0.5c0.276,-0 0.5,-0.224 0.5,-0.5Z">
-                                        </path>
-                                        <path
-                                            d="M15.553,11.776l-2,4c-0.078,0.155 -0.069,0.339 0.022,0.487c0.091,0.147 0.252,0.237 0.425,0.237l3.191,-0c-0,-0 -1.638,3.276 -1.638,3.276c-0.124,0.247 -0.023,0.548 0.223,0.671c0.247,0.124 0.548,0.023 0.671,-0.223l2,-4c0.078,-0.155 0.069,-0.339 -0.022,-0.487c-0.091,-0.147 -0.252,-0.237 -0.425,-0.237l-3.191,-0c0,0 1.638,-3.276 1.638,-3.276c0.124,-0.247 0.023,-0.548 -0.223,-0.671c-0.247,-0.124 -0.548,-0.023 -0.671,0.223Z">
-                                        </path>
-                                        <path
-                                            d="M15.5,26.5l0,2.095c0,0.277 0.224,0.5 0.5,0.5l3,0c0.276,0 0.5,-0.224 0.5,-0.5c0,-0.276 -0.224,-0.5 -0.5,-0.5l-2.5,0c-0,0 0,-1.595 0,-1.595c0,-0.276 -0.224,-0.5 -0.5,-0.5c-0.276,-0 -0.5,0.224 -0.5,0.5Z">
-                                        </path>
-                                    </g>
-                                </svg>
-                                {{-- bag --}}
-                                <svg fill="#a1a1a1" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-                                    xmlns:xlink="http://www.w3.org/1999/xlink" width="20px" height="20px"
-                                    viewBox="0 0 43.181 43.181" xml:space="preserve">
-                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                    <g id="SVGRepo_iconCarrier">
-                                        <g>
-                                            <g>
-                                                <path
-                                                    d="M25.629,11.02h7.332c-9.344-9.21-13.398-9.21-22.742,0h7.332C20.669,8.475,22.51,8.475,25.629,11.02z">
-                                                </path>
-                                                <path
-                                                    d="M39.629,13.02H7.541c-2.762,0-5.264,2.223-5.59,4.965l-1.915,16.12c-0.326,2.742,1.649,4.965,4.41,4.965h34.29 c2.763,0,4.735-2.223,4.41-4.965L40.76,14.022C40.426,13.642,40.047,13.305,39.629,13.02z">
-                                                </path>
-                                            </g>
-                                        </g>
-                                    </g>
-                                </svg>
+
+                            <div class="flex gap-2 flex-wrap mb-4">
+                                @foreach ($iphone->durations as $duration)
+                                    <div @click="setActiveTab({{ $duration->id }})"
+                                        :class="{ 'bg-black text-white': activeTab === {{ $duration->id }} }"
+                                        class="px-3 py-1 font-medium text-sm text-center cursor-pointer border border-slate-400 text-black rounded">
+                                        {{ $duration->hours }} jam
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
-                        <div class="mt-5 flex space-x-5 text-sm font-semibold text-gray-600">
-                            <button>Detail</button>
-                            <button>Refund</button>
-                            <button>Reschedule</button>
+
+                        <div class="mt-5 flex space-x-1 md:space-x-5 text-sm font-semibold text-gray-600">
+                            <button
+                                @click="() => {
+                                showDetail = !showDetail
+                                showHowToRent = false
+                                showTerms = false
+                            }"
+                                class="hover:underline">Detail</button>
+                            <button
+                                @click="() => {
+                                showDetail = false
+                                showTerms = false
+                                showHowToRent = !showHowToRent    
+                            }"
+                                class="hover:underline">Cara Sewa</button>
+                            <button
+                                @click="() => {
+                                showDetail = false
+                                showHowToRent = false
+                                showTerms = !showTerms    
+                            }"
+                                class="hover:underline">Syarat & Ketentuan</button>
                         </div>
-                    </div>
-                    <div class="flex gap-2 flex-wrap mb-4">
-                        @foreach ($iphone->durations as $duration)
-                            <div @click="setActiveTab({{ $duration->id }})"
-                                :class="{ 'bg-black text-white': activeTab === {{ $duration->id }} }"
-                                class="px-3 py-1 font-medium text-sm text-center cursor-pointer border border-slate-400 text-black rounded">
-                                {{ $duration->hours }} jam
+
+                        <!-- COLLAPSE AREA -->
+                        <div x-show="showDetail" x-collapse class="mt-3 text-sm text-gray-700 border-t pt-3 w-full">
+                            <p><strong>Deskripsi:</strong> {{ $iphone->description ?? 'Tidak ada deskripsi.' }}</p>
+                            {{-- <p><strong>Warna:</strong> {{ $iphone->color ?? '-' }}</p>
+                            <p><strong>Serial:</strong> {{ $iphone->serial_number ?? '-' }}</p> --}}
+                            <!-- Tambahkan info lainnya sesuai kebutuhan -->
+                        </div>
+                        <div x-show="showHowToRent" x-collapse class="mt-3 text-sm text-gray-700 border-t pt-3">
+                            <p><strong>Cara Sewa iPhone:</strong></p>
+                            <ul class="list-disc pl-5 space-y-1 mt-2">
+                                <li>Pilih unit iPhone pada tanggal yang tersedia.</li>
+                                <li>Tentukan durasi sewa dengan mengklik jumlah jam.</li>
+                                <li>Lihat total harga yang muncul secara otomatis.</li>
+                                <li>Klik tombol <strong>Booking</strong> untuk memesan.</li>
+                                <li>Lengkapi data dan lakukan pembayaran.</li>
+                                <li>iPhone akan dikirim atau dapat diambil sesuai ketentuan.</li>
+                            </ul>
+                        </div>
+                        <div x-show="showTerms" x-collapse class="mt-3 text-sm text-gray-700 border-t pt-3">
+                            <div class="text-sm text-gray-700 space-y-2">
+                                <h2 class="text-base font-semibold mb-2">✅ Syarat dan Ketentuan Sewa iPhone</h2>
+                                <ul class="list-disc pl-5 space-y-1">
+                                    <li>
+                                        Penyewa wajib mengisi data diri dengan lengkap dan benar. Data yang dimasukkan
+                                        akan digunakan untuk proses verifikasi dan keperluan sewa.
+                                    </li>
+                                    <li>
+                                        Minimal durasi sewa adalah 1 jam. Waktu sewa dihitung dari waktu penyerahan unit
+                                        ke penyewa.
+                                    </li>
+                                    <li>
+                                        Pembayaran dilakukan di awal (DP/full), sebelum unit dikirim/diambil.
+                                    </li>
+                                    <li>
+                                        Dilarang keras mengubah, mereset, atau merusak iPhone yang disewa. Termasuk:
+                                        logout iCloud, reset ulang, jailbreak, dan tindakan lain yang merugikan.
+                                    </li>
+                                    <li>
+                                        Kerusakan atau kehilangan selama masa sewa menjadi tanggung jawab penyewa. Biaya
+                                        akan ditagihkan sesuai harga pasaran atau perjanjian awal.
+                                    </li>
+                                    <li>
+                                        Unit harus dikembalikan tepat waktu sesuai durasi sewa. Keterlambatan akan
+                                        dikenakan denda per jam yang berlaku.
+                                    </li>
+                                    <li>
+                                        Penyewa yang tidak kooperatif atau melanggar aturan dapat masuk blacklist dan
+                                        dilaporkan.
+                                    </li>
+                                    <li>
+                                        Dengan melakukan pemesanan, penyewa dianggap telah membaca dan menyetujui
+                                        seluruh syarat & ketentuan ini.
+                                    </li>
+                                </ul>
                             </div>
-                        @endforeach
+
+                        </div>
+
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-4 space-y-3">
                         <div class="text-xl font-bold text-red-500">
                             <h1 x-text="formatRupiah(price)"></h1>
                         </div>
-                        <button class="mt-2 bg-black py-2 px-4 text-white text-base font-semibold rounded">
-                            Booking
-                        </button>
+                        <div>
+                            <a href="{{ route('detail', $iphone->slug) }}" wire:navigate class="mt-2 bg-black py-2 px-4 text-white text-base font-semibold rounded">
+                                Booking
+                            </a>
+                        </div>
                     </div>
-
                 </div>
             @endforeach
         @else

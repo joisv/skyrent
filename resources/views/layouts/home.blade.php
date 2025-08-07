@@ -33,7 +33,7 @@
             {{ $slot }}
         </main>
     </div>
-    <footer class="w-full bg-slate-950 h-fit mt-0 md:mt-[10vh] lg:mt-[25vh] py-7 px-3">
+    <footer class="w-full bg-slate-950 h-fit mt-[10vh] lg:mt-[25vh] py-7 px-3">
         <div class="max-w-screen-2xl mx-auto mt-5">
             <div class="md:flex md:justify-end mb-5">
                 <div class="flex items-center space-x-3">
