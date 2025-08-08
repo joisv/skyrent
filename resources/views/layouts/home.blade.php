@@ -10,7 +10,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -214,7 +216,8 @@
                     </li>
                 </ul>
                 <div class=" w-40 h-40 mt-5">
-                    <h3 class="text-gray-500 font-semibold text-sm md:text-base">Jl. KH. Imam Bahri, Dusun Kopen, Desa Genteng Kulon, Kec.
+                    <h3 class="text-gray-500 font-semibold text-sm md:text-base">Jl. KH. Imam Bahri, Dusun Kopen, Desa
+                        Genteng Kulon, Kec.
                         Genteng, Kab. Banyuwangi</h3>
                 </div>
             </div>
