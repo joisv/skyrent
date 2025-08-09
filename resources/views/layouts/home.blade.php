@@ -24,7 +24,7 @@
 
 <body>
     <div class="antialiased font-sans dark:bg-gray-900" x-data="{ setNav: false, }">
-        <div class="max-w-screen-2xl mx-auto">
+        <div class="">
             <livewire:layout.home-navigation />
             <button type="button" class="p-2 bg-primary fixed bottom-3 right-3 flex lg:hidden z-50"
                 @click="setNav = true" :class="setNav ? 'hidden' : ''">

@@ -28,6 +28,7 @@
             <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
             <x-mary-menu-item title="Daftar User" icon="o-users" wire:navigate :href="route('settings.users')" :active="request()->routeIs('settings.users')" />
 
+            <x-mary-menu-item title="Slider" icon="o-photo" wire:navigate :href="route('settings.sliders')" :active="request()->routeIs('settings.sliders')"/>
 
         </x-mary-menu-sub>
         <x-mary-menu-separator />

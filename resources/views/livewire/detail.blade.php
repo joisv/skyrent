@@ -102,7 +102,7 @@
     },
 
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
-$watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
+$watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));" class="max-w-screen-2xl mx-auto">
     <div class="md:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
         <div class="w-full xl:w-[70%] lg:flex space-x-3 xl:sticky top-10 h-fit ">
             <div class="lg:w-[45%] h-[50vh] relative">

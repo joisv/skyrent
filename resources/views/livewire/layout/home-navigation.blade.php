@@ -1,4 +1,4 @@
-<div class="relative">
+<div class="relative max-w-screen-2xl mx-auto">
     <div class="w-full h-24 xl:flex items-center justify-between hidden ">
         <div class="flex items-center space-x-4 w-[60%] text-slate-950 dark:text-slate-200 font-medium text-base">
             <x-home-navlink :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate class="">Home</x-home-navlink>

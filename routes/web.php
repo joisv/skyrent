@@ -29,13 +29,12 @@ Route::get('faqs', function () {
     ]);
 })->name('faqs');
 
-Route::get('contacts', function (){
+Route::get('contacts', function () {
 
     return view('contacts');
-    
 })->name('contacts');
 
-Route::get('products', function() {
+Route::get('products', function () {
     return view('products');
 })->name('products');
 
@@ -73,6 +72,8 @@ Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
 
         Route::view('settings/users', 'settings.users')
             ->name('settings.users');
+
+        Route::view('settings/sliders', 'settings.sliders')->name('settings.sliders');
 
         Route::view('faq', 'faq')
             ->name('faq');

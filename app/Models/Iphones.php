@@ -59,4 +59,9 @@ class Iphones extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function sliders()
+    {
+        return $this->hasMany(Slider::class);
+    }
 }

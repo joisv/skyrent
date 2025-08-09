@@ -1,4 +1,6 @@
 <x-home>
     <livewire:hero-section/>
-    <livewire:cards lazy="on-load"/>
+    <div class="max-w-screen-2xl mx-auto">
+        <livewire:cards lazy="on-load"/>
+    </div>
 </x-home>
