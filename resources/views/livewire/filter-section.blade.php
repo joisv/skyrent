@@ -113,7 +113,7 @@
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
     <div class="items-center w-full relative" x-cloak>
         <div class="space-y-2 w-[83%] lg:w-[92%]">
-            <h1 class="text-lg font-semibold">cek ketersediaan iPhone</h1>
+            <h1 class="text-lg font-semibold hidden sm:flex">cek ketersediaan iPhone</h1>
             <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
                 <div @click="open = ! open">
                     <div class="relative">

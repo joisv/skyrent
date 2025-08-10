@@ -1,35 +1,58 @@
-{{-- ini adalah background color --}}
-<div class="relative">
-    <div class="w-full h-[70vh] p-3 lg:p-6 xl:p-0 flex justify-center">
-        <div class="lg:flex lg:justify-end lg:items-center h-[60vh] space-y-2 max-w-screen-2xl w-full">
-           
-            <div class="hidden lg:flex w-[48%] h-full ">
-                <img src="{{ url('elegant-smartphone-composition-removebg-preview 1.png') }}" alt="" srcset=""
-                    class="w-full h-full object-contain">
+<div class="relative w-full h-auto">
+    <div class="flex flex-col-reverse lg:flex-row lg:items-center lg:justify-center lg:space-x-6 max-w-screen-2xl mx-auto">
+         <!-- Teks & Filter -->
+        <div class="w-full lg:w-1/2 space-y-3 md:space-y-9 p-3 lg:p-0">
+            <div class="space-y-5">
+                <h1 class="text-4xl lg:text-6xl font-semibold xl:text-7xl xl:font-medium hidden">
+                    Sewa iPhone Impianmu, Gaya Maximal Tanpa Beli Mahal
+                </h1>
+                <div class="flex space-x-3 items-center w-full">
+                    <button
+                        class="bg-slate-900 text-white text-lg lg:text-xl p-3 font-semibold border-2 border-transparent hover:bg-white hover:text-black hover:border-black transition-all duration-100 ease-in-out">
+                        Sewa Sekarang
+                    </button>
+                    <div
+                        class="flex items-center space-x-4 bg-white text-black text-lg lg:text-xl p-3 font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900">
+                        <h1>Details</h1>
+                        <div class="w-full h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
+                            <x-icons.arrow1 />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <livewire:filter-section />
+        </div>
+        <!-- Slider -->
+        <div class="w-full lg:w-1/2">
+            <div class="swiper mySwiper w-full h-[60vh] lg:h-[70vh]">
+                <div class="swiper-wrapper">
+                    @for ($i = 0; $i < 3; $i++)
+                        <div class="swiper-slide flex justify-center items-center bg-sky-500">
+                            <img src="{{ url('elegant-smartphone-composition-removebg-preview 1.png') }}"
+                                 alt="iPhone"
+                                 class="w-full h-full object-contain">
+                        </div>
+                    @endfor
+                </div>
+                
             </div>
         </div>
+
+       
     </div>
-    <div class="w-full lg:w-[44%] space-y-9  mx-auto absolute top-[19%] left-[192px]">
-           <div class="space-y-5">
-               <h1 class="text-6xl font-semibold xl:text-7xl xl:font-medium">
-                   Sewa iPhone Impianmu, Gaya Maximal Tanpa Beli Mahal
-               </h1>
-               <div class="flex space-x-3 items-center w-full">
-                   <button
-                       class="bg-slate-900 text-white text-xl p-3 font-semibold border-2 border-transparent hover:bg-white hover:text-black hover:border-black transition-all duration-100 ease-in-out">
-                       Sewa Sekarang
-                   </button>
-                   <div
-                       class="flex items-center space-x-4 bg-white text-black text-xl p-3 font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900">
-                       <h1>
-                           Details
-                       </h1>
-                       <div class="w-full h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
-                           <x-icons.arrow1 />
-                       </div>
-                   </div>
-               </div>
-           </div>
-           <livewire:filter-section />
-       </div>
+
+    <script>
+        var swiper = new Swiper(".mySwiper", {
+            spaceBetween: 0,
+            loop: true,
+            autoplay: {
+                delay: 2500,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+        });
+    </script>
 </div>

@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.10.1",
         "livewire/livewire": "^3.6",
         "livewire/volt": "^1.7",
+        "ralphjsmit/laravel-seo": "^1.7",
         "robsontenorio/mary": "^2.4",
         "spatie/laravel-permission": "^6.19",
         "spatie/laravel-settings": "^3.4"

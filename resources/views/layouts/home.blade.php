@@ -4,8 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    @if (!empty($overide))
+        {{ $overide }}
+    @else
+        <title>{{ $seo->title }}</title>
+        <meta name="description" content="{{ $seo->description }}">
+        <meta name="robots" content="{{ $seo->robots }}">
+    @endif
 
-    <title>Laravel</title>
+
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -35,7 +42,7 @@
             {{ $slot }}
         </main>
     </div>
-    <footer class="w-full bg-slate-950 h-fit mt-[10vh] lg:mt-[25vh] py-7 px-3">
+    <footer class="w-full bg-slate-950 h-fit mt-[30vh] lg:mt-[25vh] py-7 px-3">
         <div class="max-w-screen-2xl mx-auto mt-5">
             <div class="md:flex md:justify-end mb-5">
                 <div class="flex items-center space-x-3">

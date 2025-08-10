@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Client\PageController;
 use App\Models\Faq;
 use App\Models\Iphones;
 use App\Settings\GeneralSettings;
@@ -14,11 +15,7 @@ Route::get('cara-sewa', function (GeneralSettings $setting) {
     ]);
 })->name('howtorent');
 
-Route::get('detail/{iphones:slug}', function (Iphones $iphones) {
-    return view('detail', [
-        'iphone' => $iphones->load(['gallery', 'bookings'])
-    ]);
-})->name('detail');
+Route::get('detail/{iphones:slug}', [PageController::class, 'detail'])->name('detail');
 
 Route::get('faqs', function () {
 
