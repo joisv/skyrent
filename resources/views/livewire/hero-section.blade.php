@@ -3,7 +3,7 @@
          <!-- Teks & Filter -->
         <div class="w-full lg:w-1/2 space-y-3 md:space-y-9 p-3 lg:p-0">
             <div class="space-y-5">
-                <h1 class="text-4xl lg:text-6xl font-semibold xl:text-7xl xl:font-medium hidden">
+                <h1 class="text-4xl lg:text-6xl font-semibold xl:text-7xl xl:font-medium hidden lg:flex">
                     Sewa iPhone Impianmu, Gaya Maximal Tanpa Beli Mahal
                 </h1>
                 <div class="flex space-x-3 items-center w-full">
@@ -25,14 +25,14 @@
         <!-- Slider -->
         <div class="w-full lg:w-1/2">
             <div class="swiper mySwiper w-full h-[60vh] lg:h-[70vh]">
-                <div class="swiper-wrapper">
-                    @for ($i = 0; $i < 3; $i++)
-                        <div class="swiper-slide flex justify-center items-center bg-sky-500">
-                            <img src="{{ url('elegant-smartphone-composition-removebg-preview 1.png') }}"
+                <div class="swiper-wrapper ">
+                    @foreach ($sliders as $slider)
+                        <div class="swiper-slide flex justify-center items-center ">
+                            <img src="{{ asset('storage/' . $slider->main ) }}"
                                  alt="iPhone"
                                  class="w-full h-full object-contain">
                         </div>
-                    @endfor
+                    @endforeach
                 </div>
                 
             </div>

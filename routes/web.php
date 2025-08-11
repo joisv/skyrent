@@ -6,8 +6,7 @@ use App\Models\Iphones;
 use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')
-    ->name('welcome');
+Route::view('/', [PageController::class, 'welcome'])->name('welcome');
 
 Route::get('cara-sewa', function (GeneralSettings $setting) {
     return view('how-to-rent', [
@@ -26,10 +25,7 @@ Route::get('faqs', function () {
     ]);
 })->name('faqs');
 
-Route::get('contacts', function () {
-
-    return view('contacts');
-})->name('contacts');
+Route::get('contacts', [PageController::class, 'contacts'])->name('contacts');
 
 Route::get('products', function () {
     return view('products');

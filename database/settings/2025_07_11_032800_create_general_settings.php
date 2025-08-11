@@ -18,7 +18,7 @@ return new class extends SettingsMigration
         $this->migrator->add('general.instagram', 'instagram.com/example');
         $this->migrator->add('general.facebook', 'facebook.com/example');
         $this->migrator->add('general.twitter', 'x.com/example');
-        $this->migrator->add('general.whatsapp', 'wa.me/1234567890');
+        $this->migrator->add('general.whatsapp', 'https://wa.me/1234567890');
         $this->migrator->add('general.telegram', 'te.me/example');
         $this->migrator->add('general.tagline', 'Tagline');
         $this->migrator->add('general.how_to_rent', '<h3 data-section-id="14faaz8" data-start="204" data-end="250"><strong data-start="208" data-end="250">Cara Sewa iPhone di Skyrental</strong></h3>

@@ -2,12 +2,16 @@
 
 namespace App\Livewire;
 
+use App\Models\Slider;
 use Livewire\Component;
 
 class HeroSection extends Component
 {
     public function render()
     {
-        return view('livewire.hero-section');
+        $sliders = Slider::all();   
+        return view('livewire.hero-section', [
+            'sliders' => $sliders
+        ]);
     }
 }
