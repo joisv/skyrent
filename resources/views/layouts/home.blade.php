@@ -11,8 +11,8 @@
         <meta name="description" content="{{ $seo->description }}">
         <meta name="robots" content="{{ $seo->robots }}">
     @endif
-
-
+    <link rel="icon" href="{{ url('IMG_0976-removebg-preview1.png') }}" type="image/x-icon">
+ 
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

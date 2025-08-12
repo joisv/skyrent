@@ -1,11 +1,11 @@
-<div class="relative max-w-screen-2xl mx-auto">
-    <div class="w-full h-24 xl:flex items-center justify-between hidden ">
+<div class="relative max-w-screen-2xl mx-auto p-3 lg:p-5">
+    <div class="w-full h-24 lg:flex items-center justify-between hidden ">
         <div class="flex items-center space-x-4 w-[60%] text-slate-950 dark:text-slate-200 font-medium text-base">
             <x-home-navlink :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate class="">Home</x-home-navlink>
             <x-home-navlink :href="route('products')" :active="request()->routeIs('products')" wire:navigate class="">Product</x-home-navlink>
             <x-home-navlink href="/" class="">Price</x-home-navlink>
             <x-home-navlink href="/" class="">Reviews</x-home-navlink>
-            <x-home-navlink href="/" class="">About us</x-home-navlink>
+            <x-home-navlink :href="route('faqs')" :active="request()->routeIs('faqs')" wire:navigate class="">FAQ</x-home-navlink>
             <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Contact</x-home-navlink>
         </div>
         <div class="flex items-center space-x-3 w-[40%] h-full justify-end">

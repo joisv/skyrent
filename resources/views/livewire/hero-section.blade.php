@@ -1,7 +1,7 @@
 <div class="relative w-full h-auto">
     <div class="flex flex-col-reverse lg:flex-row lg:items-center lg:justify-center lg:space-x-6 max-w-screen-2xl mx-auto">
          <!-- Teks & Filter -->
-        <div class="w-full lg:w-1/2 space-y-3 md:space-y-9 p-3 lg:p-0">
+        <div class="w-full lg:w-1/2 space-y-3 md:space-y-9 p-3 lg:p-5 ">
             <div class="space-y-5">
                 <h1 class="text-4xl lg:text-6xl font-semibold xl:text-7xl xl:font-medium hidden lg:flex">
                     Sewa iPhone Impianmu, Gaya Maximal Tanpa Beli Mahal

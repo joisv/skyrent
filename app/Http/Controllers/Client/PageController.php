@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Faq;
 use App\Models\Iphones;
 use App\Settings\GeneralSettings;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
@@ -24,7 +25,7 @@ class PageController extends Controller
             'settings' => $this->setting
         ]);
     }
-    
+
     public function detail(Iphones $iphones)
     {
         $seo = new SEOData(
@@ -45,12 +46,27 @@ class PageController extends Controller
         return view('contacts', [
             'settings' => $this->setting,
             'overide' => new SEOData(
-                title: 'Contact Us | '. $this->setting->site_name,
+                title: 'Contact Us | ' . $this->setting->site_name,
                 description: 'Hubungi Aether Labs untuk pertanyaan, kolaborasi, atau dukungan pelanggan. Kami siap membantu Anda.',
                 author: $this->setting->site_name,
                 image: url('/assets/contact-preview.jpg'),
                 robots: 'index, follow',
             )
+        ]);
+    }
+
+    public function howtorent()
+    {
+        return view('how-to-rent', [
+            'how_to_rent' => $this->setting->how_to_rent
+        ]);
+    }
+
+    public function faq()
+    {
+        $faq = Faq::orderBy('created_at', 'desc')->get();
+        return view('user-faq', [
+            'faqs' => $faq
         ]);
     }
 }

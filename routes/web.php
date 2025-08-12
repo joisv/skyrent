@@ -8,22 +8,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', [PageController::class, 'welcome'])->name('welcome');
 
-Route::get('cara-sewa', function (GeneralSettings $setting) {
-    return view('how-to-rent', [
-        'how_to_rent' => $setting->how_to_rent
-    ]);
-})->name('howtorent');
+Route::get('cara-sewa', [PageController::class, 'howtorent'])->name('howtorent');
 
 Route::get('detail/{iphones:slug}', [PageController::class, 'detail'])->name('detail');
 
-Route::get('faqs', function () {
-
-    $faq = Faq::orderBy('created_at', 'desc')->get();
-
-    return view('user-faq', [
-        'faqs' => $faq
-    ]);
-})->name('faqs');
+Route::get('faqs', [PageController::class, 'faq'])->name('faqs');
 
 Route::get('contacts', [PageController::class, 'contacts'])->name('contacts');
 
