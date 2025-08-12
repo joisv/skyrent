@@ -2,8 +2,15 @@
     <x-mary-menu active-bg-color="bg-purple-500/10 ">
         <!-- Logo -->
         <div class="shrink-0 lg:flex items-center lg:mb-8 mb-0 hidden">
-            <a href="{{ route('dashboard') }}" wire:navigate>
-                <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+            <a href="{{ route('dashboard') }}" wire:navigate class="w-full ">
+                @if (!empty($setting->logo_cms))
+                    <img src="{{ asset('storage/' . $setting->logo_cms) }}" alt="" srcset=""
+                        class="w-full h-28 object-contain">
+                        @else
+                        <img src="{{ asset('storage/'.$setting->logo_cms) }}" alt="" srcset=""
+                            class="w-40 h-40 object-cover">
+                    <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                @endif
             </a>
         </div>
 
@@ -28,7 +35,7 @@
             <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
             <x-mary-menu-item title="Daftar User" icon="o-users" wire:navigate :href="route('settings.users')" :active="request()->routeIs('settings.users')" />
 
-            <x-mary-menu-item title="Slider" icon="o-photo" wire:navigate :href="route('settings.sliders')" :active="request()->routeIs('settings.sliders')"/>
+            <x-mary-menu-item title="Slider" icon="o-photo" wire:navigate :href="route('settings.sliders')" :active="request()->routeIs('settings.sliders')" />
 
         </x-mary-menu-sub>
         <x-mary-menu-separator />

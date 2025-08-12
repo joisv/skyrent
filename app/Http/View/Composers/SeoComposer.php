@@ -26,5 +26,7 @@ class SeoComposer
             description: $this->setting->description,
             robots: 'nofollow, noindex',
         ));
+
+        $view->with('setting', $this->setting);
     }
 }

@@ -69,4 +69,16 @@ class PageController extends Controller
             'faqs' => $faq
         ]);
     }
+
+    public function products()
+    {
+        return view('products', [
+            'overide' => new SEOData(
+                title: 'Daftar iPhone | ' . $this->setting->site_name,
+                description: 'Temukan berbagai pilihan iPhone untuk disewa harian, mingguan, atau bulanan dengan harga terjangkau di ' . $this->setting->site_name . '.',
+                author: $this->setting->site_name,
+                robots: 'index, follow',
+            )
+        ]);
+    }
 }
