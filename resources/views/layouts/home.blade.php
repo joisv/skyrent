@@ -227,7 +227,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="">
+                        <a href="{{ route('privacy') }}" wire:navigate>
                             Kebijakan Privasi
                         </a>
                     </li>

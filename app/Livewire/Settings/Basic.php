@@ -18,7 +18,6 @@ class Basic extends Component
     public string $wichImage;
     public string $tagline;
     public string $terms_conditions;
-    public string $privacy_policy;
 
     public function mount(GeneralSettings $settings)
     {
@@ -30,7 +29,6 @@ class Basic extends Component
         $this->description = $settings->description;
         $this->tagline = $settings->tagline;
         $this->terms_conditions = $settings->terms_conditions;
-        $this->privacy_policy = $settings->privacy_policy;
         
     }
 
@@ -46,7 +44,6 @@ class Basic extends Component
                 'primary_color' => 'required|string',
                 'tagline' => 'nullable|string',
                 'terms_conditions' => 'nullable|string',
-                'privacy_policy' => 'nullable|string',
                 
             ]);
 
@@ -60,7 +57,6 @@ class Basic extends Component
             $settings->primary_color = $this->primary_color;
             $settings->tagline = $this->tagline;
             $settings->terms_conditions = $this->terms_conditions;
-            $settings->privacy_policy = $this->privacy_policy;
 
             $settings->save();
 

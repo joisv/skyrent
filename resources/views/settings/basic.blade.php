@@ -28,6 +28,16 @@
                     <livewire:settings.how-to-rent />
                 </div>
             </div>
+            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                <div >
+                    <livewire:settings.privacy-policy />
+                </div>
+            </div>
+            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                <div >
+                    <livewire:settings.terms-conditions />
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

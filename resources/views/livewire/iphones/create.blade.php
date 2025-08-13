@@ -19,16 +19,8 @@
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
             <div class="flex items-center space-x-1 w-full">
-                <x-icons.loading wire:loading />
                 <h2>
                     Save
-                </h2>
-            </div>
-        </x-primary-button>
-        <x-primary-button type="button" class="ml-2" wire:click="test">
-            <div class="flex items-center space-x-1 w-full">
-                <h2>
-                    test
                 </h2>
             </div>
         </x-primary-button>

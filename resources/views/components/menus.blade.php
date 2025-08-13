@@ -6,9 +6,7 @@
                 @if (!empty($setting->logo_cms))
                     <img src="{{ asset('storage/' . $setting->logo_cms) }}" alt="" srcset=""
                         class="w-full h-28 object-contain">
-                        @else
-                        <img src="{{ asset('storage/'.$setting->logo_cms) }}" alt="" srcset=""
-                            class="w-40 h-40 object-cover">
+                @else
                     <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
                 @endif
             </a>

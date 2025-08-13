@@ -81,4 +81,17 @@ class PageController extends Controller
             )
         ]);
     }
+
+    public function privacy()
+    {
+        return view('privacy-policy', [
+            'privacy_policy' => $this->setting->privacy_policy,
+            'overide' => new SEOData(
+                title: 'Kebijakan Privasi | ' . $this->setting->site_name,
+                description: 'Baca Kebijakan Privasi ' . $this->setting->site_name . ' untuk mengetahui bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda saat menggunakan layanan sewa iPhone.',
+                author: $this->setting->site_name,
+                robots: 'index, follow',
+            ),
+        ]);
+    }
 }
