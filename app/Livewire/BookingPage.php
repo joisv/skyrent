@@ -20,7 +20,7 @@ class BookingPage extends Component
     {
         if (auth()->user()->can('update')) {
             try {
-                $booking = Booking::findOrFail($bookingId);
+                $booking = Booking::find($bookingId);
                 $booking->update(['status' => $status]);
                 LivewireAlert::title('Status berhasil diubah')
                     ->position('top-end')
@@ -31,7 +31,7 @@ class BookingPage extends Component
             } catch (\Throwable $th) {
                 LivewireAlert::title('Gagal mengubah status')
                     ->position('top-end')
-                    ->text('Terjadi kesalahan saat memperbarui status booking')
+                    ->text($th)
                     ->timer(5000)
                     ->error()
                     ->show();

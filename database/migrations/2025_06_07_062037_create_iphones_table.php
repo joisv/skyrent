@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->unsignedBigInteger('gallery_id');
-            $table->unsignedBigInteger('user_id');
+            $table->uuid('user_id');
             $table->text('description')->nullable();
             $table->string('slug');
             $table->boolean('is_booked')->default(false);

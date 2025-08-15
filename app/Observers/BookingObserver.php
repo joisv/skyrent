@@ -22,7 +22,8 @@ class BookingObserver
     public function updated(Booking $booking): void
     {
         if (!$booking->start_booking_date && $booking->requested_booking_date) {
-            $start = Carbon::createFromFormat('Y-m-d H:i', $booking->requested_booking_date . ' ' . $booking->requested_time);
+            $start = Carbon::createFromFormat('Y-m-d H:i:s', $booking->requested_booking_date . ' ' . $booking->requested_time);
+
             $end = $start->copy()->addHours($booking->duration);
 
             $booking->start_booking_date = $start->toDateString();
