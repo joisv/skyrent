@@ -37,7 +37,7 @@
                 <x-icons.dotmenu default="25px" />
             </button>
         </div>
-        <main>
+        <main >
             {{ $slot }}
         </main>
     </div>

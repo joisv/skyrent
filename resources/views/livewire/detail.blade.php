@@ -155,7 +155,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                                 <!-- Kalender -->
                                 <div
-                                    class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-[25vw] border-2 border-slate-900 shadow-xl">
+                                    class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 border-slate-900 shadow-xl">
                                     <div class="border-b-2 border-gray-300 pb-4">
                                         <div class="flex items-center  text-lg">
                                             <!-- Hour Picker -->

@@ -82,9 +82,9 @@ class Detail extends Component
 
     function generateAnonymousName(): string
     {
-        $prefix = 'anon';
+        $prefix = 'User';
         $code = strtoupper(Str::random(6)); // gunakan helper Laravel Str
-        return "@{$prefix}{$code}";
+        return "{$prefix}{$code}";
     }
 
     public function bookingNow()

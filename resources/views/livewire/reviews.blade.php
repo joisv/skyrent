@@ -25,17 +25,29 @@
          <div class="space-y-8 mt-7">
              @foreach ($reviews as $review)
                  <div class="space-y-3">
-                     <div class="flex justify-start items-start space-x-4">
-                         <div class="w-[40px] h-[40px] flex-none rounded-full overflow-hidden bg-red-500">
-                             <img src="https://placehold.co/600x400" alt="" srcset=""
-                                 class="object-cover w-full h-full">
+                     <div class="flex justify-start items-start space-x-4" x-data="{
+                         name: @js($review->name ?? ''),
+                         colors: ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'],
+                         initial: '',
+                         randomColor: '',
+                         init() {
+                             this.initial = this.name ? this.name.charAt(0).toUpperCase() : '?'
+                             this.randomColor = this.colors[Math.floor(Math.random() * this.colors.length)]
+                         }
+                     }">
+
+                         <div :class="randomColor"
+                             class="w-[40px] h-[40px] flex-none rounded-full flex items-center justify-center text-white font-bold text-lg">
+                             <span x-text="initial"></span>
                          </div>
+
                          <div class="space-y-2">
                              <div>
                                  <h3 class="font-semibold text-lg text-gray-600">{{ $review->name }}</h3>
-                                 <p class="text-sm text-gray-600 font-medium">{{ $review->created_at->diffForHumans() }}</p>
+                                 <p class="text-sm text-gray-600 font-medium">{{ $review->created_at->diffForHumans() }}
+                                 </p>
                              </div>
-                              <x-star-rating :rating="$review->rating" />
+                             <x-star-rating :rating="$review->rating" />
                              <p class="text-sm">{{ $review->comment }}</p>
                          </div>
                      </div>

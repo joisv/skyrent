@@ -1,7 +1,7 @@
 <div class="mt-10 p-3" wire:init="getIphones">
     <div>
         <h1 class="text-2xl font-semibold">{{ $title }}</h1>
-        <div class="grid  grid-cols-3 lg:grid-cols-4 lg:gap-3 gap-x-1 gap-y-4 sm:mt-10 mt-5">
+        <div class="grid  grid-cols-2 lg:grid-cols-4 lg:gap-3 gap-x-1 gap-y-4 sm:mt-10 mt-5">
             @empty(!$iphones)
 
                 @forelse ($iphones as $iphone)

@@ -3,8 +3,8 @@
         {!! seo($overide) !!}
     </x-slot>
     <div class="max-w-6xl mx-auto mt-10 items-center">
-        <div class="flex justify-center items-center w-full h-screen ">
-            <div class="w-[40%] h-[64%] flex flex-col justify-between">
+        <div class="sm:flex justify-center items-center w-full h-screen space-y-10 p-2 sm:p-0">
+            <div class="sm:w-[40%] sm:h-[64%] flex flex-col justify-between">
                 <div class=" space-y-10">
                     {{-- chat to us --}}
                     <div class="flex items-start space-x-7">
@@ -106,9 +106,9 @@
                 </div>
 
             </div>
-            <div class="w-[60%] bg-sky-300 p-9 rounded-3xl">
+            <div class="sm:w-[60%] bg-sky-300 p-4 sm:p-9 rounded-3xl">
                 <div class="space-y-2">
-                    <h1 class="text-6xl font-medium">Got ideas? We've got the skills. Let's team up.</h1>
+                    <h1 class="text-4xl sm:text-6xl font-medium">Got ideas? We've got the skills. Let's team up.</h1>
                     <p class="text-lg font-medium">Tell us more about yourselef and what's your're got in mind.</p>
                 </div>
                 {{-- Input --}}

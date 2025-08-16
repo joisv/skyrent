@@ -3,6 +3,7 @@
     permalink: false,
     duration: true,
     durations: $wire.durations,
+    seriesSetting: $persist(false),
 
     addDuration() {
         this.durations.push({
@@ -15,6 +16,10 @@
     deleteDuration(index) {
         this.durations.splice(index, 1);
     },
+
+    toggleSetting() {
+        this.seriesSetting = !this.seriesSetting;
+    },
 }">
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
@@ -24,8 +29,7 @@
                 </h2>
             </div>
         </x-primary-button>
-        <button type="button"
-            class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
+        <button type="button" class="absolute top-28 -right-2 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
             @click="toggleSetting">
             <x-icons.setting />
         </button>
@@ -47,7 +51,7 @@
                 </div>
             </div>
             {{-- Setting series --}}
-            <div id="series_setting"
+            <div id="series_setting" :class="!seriesSetting ? 'translate-x-full' : ''"
                 class="fixed lg:translate-x-0 right-0 w-full sm:w-[35vw] lg:w-[24vw] xl:w-[23vw] bg-white p-5 rounded-sm top-0 h-screen space-y-4 overflow-y-auto ease-in duration-100">
                 <div class="flex items-center space-x-2">
                     <button type="button" class="z-50 lg:hidden flex " @click="toggleSetting">
