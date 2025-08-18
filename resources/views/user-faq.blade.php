@@ -1,5 +1,5 @@
 <x-home>
-    <div class="space-y-4 max-w-4xl mx-auto mt-5">
+    <div class="space-y-4 max-w-4xl mx-auto mt-5 p-3 sm:p-0">
         <div class="text-lg font-semibold">
             FAQ
         </div>
