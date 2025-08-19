@@ -48,9 +48,11 @@
         {{-- <div class="swiper-pagination"></div> --}}
     </div>
     <script>
-        function updateSwiper() {
+        let reviewSwiper;
+
+        function updateReviewSwiper() {
             const screenWidth = window.innerWidth;
-            var slidePerView = 1;
+            let slidePerView = 1;
 
             if (screenWidth >= 768) {
                 slidePerView = 3;
@@ -58,11 +60,11 @@
                 slidePerView = 2;
             }
 
-            if (swiper) {
-                swiper.destroy();
+            if (reviewSwiper) {
+                reviewSwiper.destroy();
             }
 
-            swiper = new Swiper(".mySwiperReview", {
+            reviewSwiper = new Swiper(".mySwiperReview", {
                 slidesPerView: slidePerView,
                 centeredSlides: false,
                 loop: true,
@@ -72,22 +74,10 @@
                 },
                 spaceBetween: 30,
             });
-
-
         }
 
-        window.addEventListener('DOMContentLoaded', updateSwiper);
-        window.addEventListener('resize', updateSwiper);
+        window.addEventListener("DOMContentLoaded", updateReviewSwiper);
+        window.addEventListener("resize", updateReviewSwiper);
     </script>
-    {{-- <script>
-        var swiper = new Swiper(".mySwiperReview", {
-            slidesPerView: 4    ,
-            spaceBetween: 30,
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true,
-            },
-        });
-    </script> --}}
     {{-- Nothing in the world is as soft and yielding as water. --}}
 </div>

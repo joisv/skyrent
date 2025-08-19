@@ -106,8 +106,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
     <div class="md:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
         <div class="w-full xl:w-[70%] lg:flex space-x-3 xl:sticky top-10 h-fit ">
             <div class="lg:w-[45%] h-[50vh] relative">
-                <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
-                    class="w-full h-full object-contain absolute">
+                <img src="" data-src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
+                    class="w-full lazy h-full object-contain absolute">
             </div>
             <div class="lg:w-1/2 my-5 lg:my-0">
                 <h1 class="text-3xl font-semibold">{{ $iphone->name }}</h1>

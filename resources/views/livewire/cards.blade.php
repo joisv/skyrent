@@ -6,8 +6,8 @@
 
                 @forelse ($iphones as $iphone)
                     <div class="space-y-2 flex flex-col justify-center items-center">
-                        <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt=""
-                            class="w-full object-contain h-64">
+                        <img src="" data-src="{{ asset('storage/' . $iphone->gallery->image) }}" alt=""
+                            class="w-full object-contain h-64 lazy">
                         <h2 class="text-lg font-semibold text-center">{{ $iphone->name }}</h2>
                         <a href="{{ route('detail', $iphone->slug) }}" wire:navigate class="bg-slate-900 p-2 text-white w-fit px-3 text-center text-sm lg:px-5">Sewa Sekarang</a>
                     </div>
