@@ -110,16 +110,16 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     class="w-full lazy h-full object-contain absolute">
             </div>
             <div class="lg:w-1/2 my-5 lg:my-0">
-                <h1 class="text-3xl font-semibold">{{ $iphone->name }}</h1>
+                <h1 class="text-2xl md:text-3xl font-semibold">{{ $iphone->name }}</h1>
                 <span
                     class="proseprose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600 mt-5">{!! $iphone->description !!}</span>
             </div>
         </div>
-        <div class="md:full xl:w-[30%] h-fit border-2 border-slate-900 p-5 xl:sticky top-10 right-20 ">
+        <div class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
             <div class="space-y-4">
                 {{-- BOOKING --}}
                 <div class="space-y-3">
-                    <h1 class="text-2xl font-semibold ">Tanggal Booking</h1>
+                    <h1 class="text-lg md:text-2xl font-semibold ">Tanggal Booking</h1>
                     <div class="relative" x-data="{ open: false }" @click.outside="open = false"
                         @close.stop="open = false">
                         <div @click="open = ! open">
@@ -222,7 +222,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                 </div>
                 <div class="space-y-3">
-                    <h1 class="text-2xl font-semibold ">Durasi Sewa</h1>
+                    <h1 class="text-lg md:text-2xl font-semibold ">Durasi Sewa</h1>
                     <div class="flex space-x-2 w-full" x-data="{
                         activeTab: @entangle('selectedDuration').live,
                         price: @entangle('selectedPrice').live,
@@ -244,18 +244,18 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-semibold ">Status</h1>
+                    <h1 class="text-lg md:text-2xl font-semibold ">Status</h1>
                     <div class="relative">
                         <div class="{{ $is_available === true ? 'bg-green-200' : 'bg-red-200' }} p-2 w-fit">
                             @if ($is_available === true)
-                                <h1 class="text-green-600 font-semibold">tersedia</h1>
-                                <div class="text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
+                                <h1 class="text-green-600 font-semibold text-sm sm:text-base">tersedia</h1>
+                                <div class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
                                     <p>tersedia untuk hari yang dipilih</p>
                                 </div>
                             @else
                                 <div>
-                                    <h1 class="text-red-600 font-semibold">tidak tersedia</h1>
-                                    <div class="text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
+                                    <h1 class="text-red-600 font-semibold text-sm sm:text-base">tidak tersedia</h1>
+                                    <div class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
                                         <p>tidak tersedia untuk hari yang dipilih</p>
                                     </div>
 
@@ -267,10 +267,10 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
             </div>
             <div class="mt-14 space-y-2" x-data="{ price: @entangle('selectedPrice').live }">
-                <span class="text-2xl font-bold" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+                <span class="text-xl sm:text-2xl font-bold" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                 <button type="button" wire:click="bookingNow"
                     class="flex justify-between items-center space-x-4 bg-white text-black text-xl font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900 p-3 hover:bg-slate-900 hover:text-white transition duration-700 ease-in-out w-full">
-                    <h1 class="text-xl font-bold">
+                    <h1 class="text-lg sm:text-xl font-bold">
                         Sewa Sekarang
                     </h1>
                     <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
@@ -285,13 +285,13 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
             <div class="space-y-3">
                 <div class="flex justify-start items-center space-x-4">
-                    <div class="w-[60px] h-[60px] rounded-full overflow-hidden">
+                    <div class="w-[40px] sm:w-[60px] h-[40px] sm:h-[60px] rounded-full overflow-hidden">
                         <img src="https://placehold.co/600x400" alt="" srcset=""
                             class="object-cover w-full h-full">
                     </div>
                     <div class="space-y-2">
                         <div>
-                            <h3 class="font-semibold text-xl text-gray-600">{{ $name }}</h3>
+                            <h3 class="font-semibold text-lg sm:text-xl text-gray-600">{{ $name }}</h3>
                             <p class="text-sm text-gray-600 font-medium">Tulis review dengan nama anonimous</p>
                         </div>
                     </div>

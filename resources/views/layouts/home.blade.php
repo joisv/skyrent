@@ -223,7 +223,7 @@
             <div>
                 <ul class="md:flex items-center md:space-x-4 text-white mt-5 font-semibold space-y-2 md:space-y-0">
                     <li>
-                        <a href="">
+                        <a href="{{ route('terms') }}" wire:navigate>
                             Syarat & Ketentuan
                         </a>
                     </li>

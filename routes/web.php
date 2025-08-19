@@ -10,6 +10,7 @@ Route::view('/', [PageController::class, 'welcome'])->name('welcome');
 
 Route::get('cara-sewa', [PageController::class, 'howtorent'])->name('howtorent');
 Route::get('kebijakan-privasi', [PageController::class, 'privacy'])->name('privacy');
+Route::get('syarat-ketentuan', [PageController::class, 'terms'])->name('terms');
 
 Route::get('detail/{iphones:slug}', [PageController::class, 'detail'])->name('detail');
 

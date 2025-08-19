@@ -15,12 +15,15 @@
          </div>
          <div class="flex justify-end">
              <button wire:loading.attr="disabled" type="submit"
-                 class="py-1 px-4 bg-black disabled:bg-gray-300 text-white hover:bg-white hover:text-black border-2 border-black duration-150 transition-all ease-in">posting</button>
+                 class="py-1 px-4 bg-black disabled:bg-gray-300 text-white hover:bg-white hover:text-black border-2 border-black duration-150 transition-all ease-in text-sm sm:text-base">posting</button>
          </div>
      </form>
      <div>
          <div>
-             <h1 class="text-3xl font-semibold">Reviews</h1>
+            <div class="flex items-center space-x-1">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-semibold">Reviews</h1>
+                <div class="text-xl sm:text-2xl md:text-3xl font-semibold">{{ $avgRating }}</div>
+            </div>
          </div>
          <div class="space-y-8 mt-7">
              @foreach ($reviews as $review)
@@ -43,7 +46,7 @@
 
                          <div class="space-y-2">
                              <div>
-                                 <h3 class="font-semibold text-lg text-gray-600">{{ $review->name }}</h3>
+                                 <h3 class="font-semibold sm:text-lg text-gray-600">{{ $review->name }}</h3>
                                  <p class="text-sm text-gray-600 font-medium">{{ $review->created_at->diffForHumans() }}
                                  </p>
                              </div>

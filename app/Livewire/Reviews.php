@@ -14,12 +14,14 @@ class Reviews extends Component
     public $rating;
     public $name;
     public $reviews;
+    public $avgRating;
 
     public function mount($iphone_id, $rating, $name)
     {
         $this->iphone_id =  $iphone_id;
         $this->rating = $rating;
         $this->name = $name;
+        $this->avgRating = number_format(round(Review::avg('rating') * 2) / 2, 1);
         $this->getReviews();
     }
 

@@ -94,4 +94,17 @@ class PageController extends Controller
             ),
         ]);
     }
+    
+    public function terms()
+    {
+        return view('terms-conditions', [
+            'terms_conditions' => $this->setting->terms_conditions,
+            'overide' => new SEOData(
+                title: 'Syarat & Ketentuan | ' . $this->setting->site_name,
+                description: 'Baca Syarat & Ketentuan ' . $this->setting->site_name . ' untuk memahami aturan penggunaan layanan sewa iPhone, termasuk hak dan kewajiban pengguna serta ketentuan yang berlaku.',
+                author: $this->setting->site_name,
+                robots: 'index, follow',
+            ),
+        ]);
+    }
 }
