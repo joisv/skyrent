@@ -17,9 +17,9 @@ class Detail extends Component
     public $selectedPrice;
     public $selectedDateFormatted; // 25 Juli 2025, 20:51
     public $selectedDate; // Date object for the selected date
-    public $selectedDuration; // 24
-    public $selectedHour; // 20
-    public $selectedMinute; // 10
+    public int $selectedDuration; // 24
+    public int $selectedHour; // 20
+    public int $selectedMinute; // 10
     public $is_available = false;
     public $selectedIphoneId;
     public $customer_name;
@@ -57,7 +57,7 @@ class Detail extends Component
     {
         try {
             $start = Carbon::parse($this->selectedDate)->setTimezone('Asia/Jakarta');
-            $end = $start->copy()->addHours($this->selectedDuration);
+            $end = $start->copy()->addHours((int) $this->selectedDuration);
         } catch (\Exception $e) {
             $this->is_available = false;
             return;
@@ -71,7 +71,7 @@ class Detail extends Component
 
         foreach ($bookings as $booking) {
             $bookingStart = Carbon::parse("{$booking->requested_booking_date} {$booking->requested_time}", 'Asia/Jakarta');
-            $bookingEnd = $bookingStart->copy()->addHours($booking->duration);
+            $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
 
             if ($start->lt($bookingEnd) && $end->gt($bookingStart)) {
                 $this->is_available = false;

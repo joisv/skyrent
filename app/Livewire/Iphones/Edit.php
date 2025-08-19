@@ -103,13 +103,10 @@ class Edit extends Component
             return [
                 'index' => $index,
                 'hours' => $duration->hours,
-                'price' => (int) preg_replace('/[^\d]/', '', $duration->pivot->price),
+                'price' => (int) $duration->pivot->price,
 
             ];
         })->toArray();
-
-
-        // dd($this->durations);
 
         $this->iphone = $iphone;
         $this->name = $iphone->name;

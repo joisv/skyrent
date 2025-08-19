@@ -2,7 +2,7 @@
     poster: false,
     permalink: false,
     duration: true,
-    durations: $wire.durations,
+    durations: $wire.entangle('durations'),
 
     addDuration() {
         this.durations.push({
