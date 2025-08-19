@@ -58,12 +58,14 @@
                         <h3>telegram</h3> --}}
                     </div>
                 </div>
-                <div class="mt-8">
-                    <div x-cloak x-show="activeTab === 'whatsapp'">
-                        <h1>halo whatsapp</h1>
+                <div class="mt-14">
+                    <div x-cloak x-show="activeTab === 'whatsapp'" class="w-[80%] text-3xl font-extrabold space-y-2">
+                        <h1 >Butuh bantuan cepat? Hubungi kami via WhatsApp</h1>
+                        <h2 class="italic">Respon cepat jam 09.00 – 21.00 WIB</h2>
                     </div>
-                    <div x-cloak x-show="activeTab === 'instagram'">
-                        <h1>halo instagram</h1>
+                    <div x-cloak x-show="activeTab === 'instagram'" class="w-[80%] text-3xl font-extrabold space-y-2">
+                        <h1>Ikuti kami di Instagram untuk update terbaru 📷</h1>
+                        <h2>DM juga bisa kalau ada pertanyaan 😉</h2>
                     </div>
                 </div>
             </div>
