@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Illuminate\Support\Facades\Http;
 
 class Detail extends Component
 {
@@ -33,6 +34,9 @@ class Detail extends Component
 
     public $rating = 0;
     public $name;
+
+
+    public string $bookind_code;
 
     #[On('updated:selectedIphoneId')]
     #[On('updated:selectedDate')]
@@ -100,7 +104,6 @@ class Detail extends Component
         }
 
         $this->dispatch('open-modal', 'user-booking-create');
-        // $this->payments = Payment::orderBy('created_at', 'desc')->get();
     }
 
     public function booking()
@@ -125,7 +128,8 @@ class Detail extends Component
             'selectedDuration' => 'required|integer|min:1',
             'selectedPrice' => 'required|numeric|min:0',
         ]);
-        Booking::create([
+        
+        $booking = Booking::create([
             'iphone_id' => $this->selectedIphoneId,
             'customer_name' => $this->customer_name,
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
@@ -137,7 +141,53 @@ class Detail extends Component
             'price' => $this->selectedPrice,
             'status' => 'pending',
             'created' => Carbon::now('Asia/Jakarta'),
-            'booking_code' => self::generatePaymentCode($this->customer_name),
+            'booking_code' => Booking::generateBookingCode(),
+            'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
+        ]);
+
+        $message = "Halo {$booking->customer_name}, 👋\n\n"
+            . "Terima kasih telah melakukan booking di *SkyRental* 📱✨\n\n"
+            . "Berikut adalah detail booking Anda:\n"
+            . "──────────────────────\n"
+            . "📌 Kode Booking : *{$booking->booking_code}*\n"
+            . "Perangkat    : {$booking->iphone->name}\n"
+            . "Tanggal      : {$booking->requested_booking_date}\n"
+            . "Waktu        : {$booking->requested_time}\n"
+            . "Durasi       : {$booking->duration} jam\n"
+            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
+            . "──────────────────────\n\n"
+            . "Untuk memeriksa status booking Anda, silakan kunjungi link berikut:\n"
+            . url('/booking-status') . "\n\n"
+            . "Mohon pastikan nomor WhatsApp yang Anda gunakan benar agar dapat menerima informasi lebih lanjut.\n\n"
+            . "Terima kasih 🙏\n"
+            . "*SkyRental*";
+
+        $adminMessage = "📢 <b>Booking Baru Diterima</b>\n\n"
+            . "<b>Nama</b> : {$booking->customer_name}\n"
+            . "<b>HP</b>   : {$booking->customer_phone}\n"
+            . "<b>Email</b>: {$booking->customer_email}\n\n"
+            . "<b>Kode Booking</b>: {$booking->booking_code}\n"
+            . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
+            . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
+            . "<b>Waktu</b>       : {$booking->requested_time}\n"
+            . "<b>Durasi</b>      : {$booking->duration} jam\n"
+            . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
+            . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
+
+        $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
+        $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
+
+        Http::withHeaders([
+            'Authorization' => env('FONNTE_TOKEN'),
+        ])->post('https://api.fonnte.com/send', [
+            'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+            'message' => $message,
+        ]);
+
+        Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+            'chat_id'    => $chatId,
+            'text'       => $adminMessage,
+            'parse_mode' => 'HTML',
         ]);
 
         $this->dispatch('close-modal');
@@ -156,24 +206,31 @@ class Detail extends Component
         $now = Carbon::now('Asia/Jakarta');
         $this->selectedHour = $now->format('H');
         $this->selectedMinute = $now->format('i');
-        $this->dispatch('close-modal');
-         LivewireAlert::title('Success!')
-            ->text('Berhasil membuat booking cek status booking pada halaman booking')
-            ->success()
-            ->timer(50000)
+        LivewireAlert::title('Booking Berhasil')
+            ->text('Detail booking sudah dikirim ke WhatsApp Pastikan nomor yang kamu isi sudah benar. Untuk memeriksa status booking, gunakan *Kode Booking* di halaman status booking')
             ->toast()
-            ->position('top-end')
+            ->position('top')
+            ->success()
+            ->timer(10000)
             ->show();
     }
 
-    public static function generatePaymentCode($userName)
+    function formatPhoneNumber($phone)
     {
-        $userInitials = substr(strtoupper(preg_replace('/[^A-Za-z]/', '', $userName)), 0, 3);
-        $randomString = Str::random(6);
+        // hapus semua karakter non-digit
+        $digits = preg_replace('/\D/', '', $phone);
 
-        $code = $userInitials . $randomString;
+        // kalau nomor sudah diawali 62 -> biarkan
+        if (substr($digits, 0, 2) === '62') {
+            return $digits;
+        }
 
-        return $code;
+        // kalau diawali 0 -> ubah ke 62
+        if (substr($digits, 0, 1) === '0') {
+            return '62' . substr($digits, 1);
+        }
+
+        return $digits;
     }
 
     public function mount(Iphones $iphone)

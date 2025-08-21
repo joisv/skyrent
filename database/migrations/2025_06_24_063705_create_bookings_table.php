@@ -16,14 +16,13 @@ return new class extends Migration
             $table->unsignedBigInteger('iphone_id');
             $table->unsignedBigInteger('payment_id')->nullable();
 
-            $table->string('booking_code')->unique()->nullable();
+            $table->string('booking_code', 20)->unique();
             
             // Data penyewa non-login
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_email')->nullable();
             $table->decimal('price', 12, 2)->default(0.00);
-
 
             $table->date('requested_booking_date')->nullable();
             $table->time('requested_time')->nullable();

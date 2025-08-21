@@ -54,6 +54,7 @@
                     class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     wire:model.live="selectedAll">
             </x-tables.th>
+            <x-tables.th>Kode Booking</x-tables.th>
             <x-tables.th>Nama</x-tables.th>
             <x-tables.th>iPhone</x-tables.th>
             <x-tables.th>Durasi Sewa</x-tables.th>
@@ -67,11 +68,13 @@
         <x-slot name="tbody">
             @foreach ($bookings as $index => $booking)
                 <tr>
+
                     <x-tables.td>
                         <input id="default-{{ $index }}" type="checkbox"
-                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                            wire:model.live="mySelected" value="{{ $booking->id }}">
+                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                        wire:model.live="mySelected" value="{{ $booking->id }}">
                     </x-tables.td>
+                    <x-tables.td>{{ $booking->booking_code }}</x-tables.td>
 
                     <x-tables.td>{{ $booking->customer_name }}</x-tables.td>
                     <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
