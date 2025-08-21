@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -25,9 +26,20 @@ class Booking extends Model
         'status',
         'price',
         'created',
-        'booking_code'
+        'booking_code',
+        'payment_id', 
     ];
 
+    public static function generateBookingCode()
+    {
+        do {
+            // Format: SKY + TahunBulanTanggal + Random 4 digit
+            $code = 'SKY' . now()->format('ymd') . Str::upper(Str::random(4));
+        } while (self::where('booking_code', $code)->exists());
+
+        return $code;
+    }
+    
     public function revenue()
     {
         return $this->hasOne(Revenue::class);

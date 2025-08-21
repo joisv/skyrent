@@ -1,24 +1,20 @@
 <?php
 
 use App\Http\Controllers\Client\PageController;
-use App\Models\Faq;
 use App\Models\Iphones;
-use App\Settings\GeneralSettings;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', [PageController::class, 'welcome'])->name('welcome');
 
+
+Route::view('/', [PageController::class, 'welcome'])->name('welcome');
 Route::get('cara-sewa', [PageController::class, 'howtorent'])->name('howtorent');
 Route::get('kebijakan-privasi', [PageController::class, 'privacy'])->name('privacy');
 Route::get('syarat-ketentuan', [PageController::class, 'terms'])->name('terms');
-
 Route::get('detail/{iphones:slug}', [PageController::class, 'detail'])->name('detail');
-
 Route::get('faqs', [PageController::class, 'faq'])->name('faqs');
-
 Route::get('contacts', [PageController::class, 'contacts'])->name('contacts');
-
 Route::get('products', [PageController::class, 'products'])->name('products');
+Route::get('booking-status', [PageController::class, 'bookingStatus'])->name('booking.status');
 
 Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {

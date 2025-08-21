@@ -107,4 +107,14 @@ class PageController extends Controller
             ),
         ]);
     }
+
+    public function bookingStatus()
+    {
+        return view('booking-status', [
+            'overide' => new SEOData(
+                title: 'Cek Status Booking | ' . $this->setting->site_name,
+                description: 'Cek status booking iPhone Anda di ' . $this->setting->site_name . '. Pastikan informasi pemesanan Anda akurat untuk mendapatkan update terkini.',
+            ),
+        ]);
+    }
 }

@@ -135,6 +135,8 @@ class BookingPage extends Component
                 'customer_name',
                 'customer_phone',
                 'customer_email',
+                'booking_code',
+                'status',
                 'iphone.name' // relasi
             ], $this->search);
         }
