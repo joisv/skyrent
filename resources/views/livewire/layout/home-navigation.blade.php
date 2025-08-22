@@ -4,7 +4,7 @@
             <x-home-navlink :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate class="">Home</x-home-navlink>
             <x-home-navlink :href="route('products')" :active="request()->routeIs('products')" wire:navigate class="">Product</x-home-navlink>
             <x-home-navlink :href="route('booking.status')" :active="request()->routeIs('booking.status')" wire:navigate class="">Booking Status</x-home-navlink>
-            <x-home-navlink href="/" class="">Price</x-home-navlink>
+            <x-home-navlink :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate class="">Price</x-home-navlink>
             <x-home-navlink :href="route('faqs')" :active="request()->routeIs('faqs')" wire:navigate class="">FAQ</x-home-navlink>
             <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Contact</x-home-navlink>
         </div>
@@ -31,7 +31,7 @@
                             Booking Status
                         </x-responsif-link>
 
-                        <x-responsif-link href="/" >
+                        <x-responsif-link :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate >
                             Price
                         </x-responsif-link>
 
@@ -43,7 +43,7 @@
                             Contact
                         </x-responsif-link>
                     </ul>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 justify-center">
                         {{-- whatsapp --}}
                         <a href="{{ $setting->whatsapp }}" target="_blank">
                             <svg width="28px" height="28px" viewBox="0 0 24 24" fill="none"
@@ -111,7 +111,7 @@
                     </div>
 
                 </div>
-                <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-800 mx-5 pt-5">
+                <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-600 mx-5 pt-5">
                     <h1>Capture the Moment, Live the Experience</h1>
                 </div>
             </div>

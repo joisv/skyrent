@@ -5,8 +5,8 @@
     <form wire:submit.prevent="checkBooking" class="space-y-4">
         <div>
             <label for="bookingCode" class="block text-sm font-medium">Kode Booking</label>
-            <input type="text" id="bookingCode" wire:model="bookingCode" placeholder="Masukkan kode booking Anda"
-                class="w-full border rounded-lg px-3 py-2 mt-1 focus:ring focus:ring-blue-300">
+            <input type="text" id="bookingCode" wire:model="bookingCode" placeholder="Masukkan kode booking Anda SKY******"
+                class="w-full border rounded-lg px-3 py-2 mt-1 focus:ring focus:ring-blue-300" autocomplete="off">
             @error('bookingCode')
                 <span class="text-red-500 text-sm">{{ $message }}</span>
             @enderror

@@ -15,6 +15,7 @@ Route::get('faqs', [PageController::class, 'faq'])->name('faqs');
 Route::get('contacts', [PageController::class, 'contacts'])->name('contacts');
 Route::get('products', [PageController::class, 'products'])->name('products');
 Route::get('booking-status', [PageController::class, 'bookingStatus'])->name('booking.status');
+Route::get('prices', [PageController::class, 'prices'])->name('prices');
 
 Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
     ->group(function () {

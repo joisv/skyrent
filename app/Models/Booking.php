@@ -27,7 +27,7 @@ class Booking extends Model
         'price',
         'created',
         'booking_code',
-        'payment_id', 
+        'payment_id',
     ];
 
     public static function generateBookingCode()
@@ -39,7 +39,7 @@ class Booking extends Model
 
         return $code;
     }
-    
+
     public function revenue()
     {
         return $this->hasOne(Revenue::class);
@@ -54,5 +54,15 @@ class Booking extends Model
     public function payment()
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function returns()
+    {
+        return $this->hasMany(ReturnIphone::class);
+    }
+
+    public function latestReturn()
+    {
+        return $this->hasOne(ReturnIphone::class, 'booking_id')->latestOfMany();
     }
 }

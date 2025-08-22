@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('iphone_id');
             $table->unsignedBigInteger('payment_id')->nullable();
 
-            $table->string('booking_code', 20)->unique();
+            $table->string('booking_code', 20)->unique()->nullable();
             
             // Data penyewa non-login
             $table->string('customer_name');

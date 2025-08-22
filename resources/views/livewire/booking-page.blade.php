@@ -64,11 +64,11 @@
             <x-tables.th>Status</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
         </x-slot>
-
+        
         <x-slot name="tbody">
             @foreach ($bookings as $index => $booking)
                 <tr>
-
+                    
                     <x-tables.td>
                         <input id="default-{{ $index }}" type="checkbox"
                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
@@ -130,9 +130,11 @@
                     </x-tables.td>
 
                     <x-tables.td>
-                        {{-- <a href="{{ route('bookings.edit', $booking->id) }}">
-                            <x-primary-button type="button">edit</x-primary-button>
-                        </a> --}}
+                        <x-primary-button type="button"
+                            @click="() => {
+                                $dispatch('get-detail', { id : {{ $booking->id }} })
+                                $dispatch('open-modal', 'detail')
+                            }">detail</x-primary-button>
                         <x-danger-button type="button"
                             wire:click="destroyAlert({{ $booking->id }}, 'delete')">delete</x-danger-button>
                     </x-tables.td>
@@ -146,5 +148,8 @@
     </div>
     <x-modal name="booking-create" :show="$errors->isNotEmpty()">
         <livewire:booking.create />
+    </x-modal>
+    <x-modal name="detail" :show="$errors->isNotEmpty()">
+        <livewire:detail-booking />
     </x-modal>
 </div>

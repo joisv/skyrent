@@ -2,7 +2,7 @@
     <x-slot name="overide">
         {!! seo($overide) !!}
     </x-slot>
-    <div class="max-w-6xl mx-auto items-center ">
+    <div class="max-w-2xl mx-auto items-center ">
         {{-- mobile --}}
         <div class="w-full p-3 overflow-hidden" x-data="{
         

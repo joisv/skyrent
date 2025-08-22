@@ -7,7 +7,6 @@ use App\Models\Iphones;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Component;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 
 class Create extends Component

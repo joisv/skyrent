@@ -17,6 +17,7 @@
     hours: Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')),
     minutes: ['00', '15', '30', '45'],
 
+    price: @entangle('selectedPrice').live,
 
     init() {
         const today = new Date();
@@ -106,16 +107,21 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
     <div class="md:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
         <div class="w-full xl:w-[70%] lg:flex space-x-3 xl:sticky top-10 h-fit ">
             <div class="lg:w-[45%] h-[50vh] relative">
-                <img src="" data-src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
-                    class="w-full lazy h-full object-contain absolute">
+                <img src="" data-src="{{ asset('storage/' . $iphone->gallery->image) }}" alt=""
+                    srcset="" class="w-full lazy h-full object-contain absolute">
             </div>
             <div class="lg:w-1/2 my-5 lg:my-0">
-                <h1 class="text-2xl md:text-3xl font-semibold">{{ $iphone->name }}</h1>
-                <span
-                    class="proseprose-base lg:prose-lg prose-code:text-rose-500 prose-a:text-blue-600 mt-5">{!! $iphone->description !!}</span>
+                <div class="flex space-x-1 md:hidden">
+                    <h1 class="text-base font-medium">Rp</h1>
+                    <h1 class="text-2xl font-bold text-red-400" x-text="new Intl.NumberFormat('id-ID').format(price)">
+                    </h1>
+                </div>
+                <h1 class="text-xl font-semibold">{{ $iphone->name }}</h1>
+                <div class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex hidden">{!! $iphone->description !!}</div>
             </div>
         </div>
-        <div class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
+        <div
+            class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
             <div class="space-y-4">
                 {{-- BOOKING --}}
                 <div class="space-y-3">
@@ -141,7 +147,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                 <input
                                     class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
                                     placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
-                                    @click="$refs.dropdownButton.click()" />
+                                    @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalB' } }))" />
                             </div>
                         </div>
 
@@ -149,8 +155,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                             x-transition:leave="transition ease-in duration-75"
                             x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                            class="absolute z-50 mt-2 
-                    style="display: none;">
+                            class="absolute z-50 mt-2 hidden sm:flex" style="display: none;">
                             <div class="rounded-md ring-1 ring-black ring-opacity-5">
 
                                 <!-- Kalender -->
@@ -249,13 +254,15 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         <div class="{{ $is_available === true ? 'bg-green-200' : 'bg-red-200' }} p-2 w-fit">
                             @if ($is_available === true)
                                 <h1 class="text-green-600 font-semibold text-sm sm:text-base">tersedia</h1>
-                                <div class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
+                                <div
+                                    class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
                                     <p>tersedia untuk hari yang dipilih</p>
                                 </div>
                             @else
                                 <div>
                                     <h1 class="text-red-600 font-semibold text-sm sm:text-base">tidak tersedia</h1>
-                                    <div class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
+                                    <div
+                                        class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
                                         <p>tidak tersedia untuk hari yang dipilih</p>
                                     </div>
 
@@ -266,8 +273,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                 </div>
             </div>
-            <div class="mt-14 space-y-2" x-data="{ price: @entangle('selectedPrice').live }">
-                <span class="text-xl sm:text-2xl font-bold" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+            <div class="mt-14 space-y-2 hidden sm:flex flex-col" x-data="{ price: @entangle('selectedPrice').live }">
+                <span class="text-xl sm:text-2xl font-bold hidden md:flex" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                 <button type="button" wire:click="bookingNow"
                     class="flex justify-between items-center space-x-4 bg-white text-black text-xl font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900 p-3 hover:bg-slate-900 hover:text-white transition duration-700 ease-in-out w-full">
                     <h1 class="text-lg sm:text-xl font-bold">
@@ -280,6 +287,19 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
     </div>
+    <button type="button" wire:click="bookingNow"
+        class="flex justify-between items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-5 hover:bg-white hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0  sm:hidden">
+        <h1 class="text-xl font-bold">
+            Booking Sekarang
+        </h1>
+        <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
+            <svg width="64" height="20" viewBox="0 0 64 16" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M63.7071 8.70711C64.0976 8.31658 64.0976 7.68342 63.7071 7.29289L57.3431 0.928932C56.9526 0.538408 56.3195 0.538408 55.9289 0.928932C55.5384 1.31946 55.5384 1.95262 55.9289 2.34315L61.5858 8L55.9289 13.6569C55.5384 14.0474 55.5384 14.6805 55.9289 15.0711C56.3195 15.4616 56.9526 15.4616 57.3431 15.0711L63.7071 8.70711ZM0 8V9H63V8V7H0V8Z"
+                    fill="white" />
+            </svg>
+        </div>
+    </button>
     <div class="xl:w-[65%] min-h-[100vh] p-3 xl:p-0 mt-10 xl:mt-0">
         <div class="space-y-5">
 
@@ -301,7 +321,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </div>
     <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
-        <form wire:submit="booking" >
+        <form wire:submit="booking">
             @if ($errors->any())
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
                     <ul class="list-disc list-inside">
@@ -429,7 +449,70 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                 </div>
             </div>
-            <button type="submit" class="p-3 font-medium text-white bg-black w-full disabled:bg-gray-400" wire:loading.attr="disabled">Booking sekarang</button>
+            <button type="submit" class="p-3 font-medium text-white bg-black w-full disabled:bg-gray-400"
+                wire:loading.attr="disabled">Booking sekarang</button>
         </form>
     </x-modal>
+    <x-bottom-sheet id="sheetTanggalB" title="Form Booking">
+        <!-- Kalender -->
+        <div class=" bg-white dark:bg-gray-800 text-lg z-10 w-full ">
+            <div class="border-b-2 border-gray-300 pb-4">
+                <div class="flex items-center  text-lg">
+                    <!-- Hour Picker -->
+                    <div>
+                        <input type="number" x-model="selectedHour" min="0" max="23"
+                            class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
+                            placeholder="HH">
+                    </div>
+
+                    <div class="font-bold">:</div>
+
+                    <!-- Input Menit -->
+                    <div>
+                        <input type="number" x-model="selectedMinute" min="0" max="59" step="1"
+                            class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
+                            placeholder="MM">
+                    </div>
+                </div>
+                <div class="text-lg font-medium text-gray-700 dark:text-gray-200"
+                    x-text="monthNames[month] + ' ' + year"></div>
+            </div>
+            <!-- Header navigasi bulan -->
+            <div class="flex mb-2">
+                <button type="button" @click="prevMonth()"
+                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
+
+                <button type="button" @click="nextMonth()"
+                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
+            </div>
+
+            <!-- Hari -->
+            <div class="grid grid-cols-7 text-gray-500 mb-1">
+                <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
+                    <div x-text="day" class="text-center"></div>
+                </template>
+            </div>
+
+            <!-- Tanggal -->
+            <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
+                <!-- Sisipkan hari kosong -->
+                <template x-for="blank in blankdays">
+                    <div></div>
+                </template>
+
+                <!-- Tanggal -->
+                <template x-for="(date, index) in daysInMonth" :key="index">
+                    <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()" x-text="date"
+                        class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
+                        :class="{
+                            'bg-slate-900 text-white': isSelectedDate(date),
+                            'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
+                            'hover:border-slate-900': !isPastDate(date)
+                        }">
+                    </div>
+                </template>
+
+            </div>
+        </div>
+    </x-bottom-sheet>
 </div>

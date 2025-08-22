@@ -117,4 +117,14 @@ class PageController extends Controller
             ),
         ]);
     }
+
+    public function prices()
+    {
+        return view('prices', [
+            'overide' => new SEOData(
+                title: 'Harga Sewa iPhone | ' . $this->setting->site_name,
+                description: 'Lihat daftar harga sewa iPhone harian, mingguan, dan bulanan di ' . $this->setting->site_name . '. Temukan penawaran terbaik untuk kebutuhan Anda.',
+            ),
+        ]);
+    }
 }
