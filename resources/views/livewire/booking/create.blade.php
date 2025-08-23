@@ -1,4 +1,4 @@
-<div class="p-5 max-h-[90vh] h-fit" @close-modal="show = false">
+<div class="p-5 h-fit" @close-modal="show = false">
     <form wire:submit.prevent="save">
         <div class="text-xl font-semibold">
             <h1>Make new booking</h1>
@@ -202,6 +202,29 @@
                 @error('selectedDuration')
                     <span class="error">Pilih durasi sewa😊</span>
                 @enderror
+            </div>
+            {{-- Payment --}}
+            <div>
+                <div class="flex justify-between">
+
+                    <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
+                    <div class="space-y-2">
+                        @if (!empty($payments))
+                            <div class="w-48">
+                                <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
+                                    placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
+                                    option-label="name" />
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
+                    class="w-48 h-w-48 object-cover rounded-md">
+
+                <div class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
+                    <span>{{ $selectedPayment->description }}</span>
+                </div>
+
             </div>
             <div x-data="{ price: @entangle('selectedPrice').live }">
                 <div class="text-gray-700 text-xl font-semibold">

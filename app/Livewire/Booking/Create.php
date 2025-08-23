@@ -4,6 +4,7 @@ namespace App\Livewire\Booking;
 
 use App\Models\Booking;
 use App\Models\Iphones;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Component;
@@ -31,6 +32,10 @@ class Create extends Component
     public $end_booking_date;
     public $end_time;
     public $price = 0; // Assuming you have a way to calculate or set this
+
+    public $payments;
+    public $selectedPaymentId = 1;
+    public $selectedPayment;
 
     public $selectedDuration = null;
 
@@ -104,6 +109,7 @@ class Create extends Component
             'status' => 'pending',
             'created' => Carbon::now('Asia/Jakarta'),
             'booking_code' => Booking::generateBookingCode(),
+            'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
         ]);
 
         $message = "Halo {$booking->customer_name}, 👋\n\n"
@@ -216,6 +222,13 @@ class Create extends Component
     public function mount()
     {
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
+        $this->payments = Payment::where('is_active', true)->orderBy('created_at', 'desc')->get();
+         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
+
+        if (!$this->selectedPayment) {
+            $this->selectedPaymentId = optional($this->payments->first())->id ?? null;
+            $this->selectedPayment = $this->payments->first();
+        }
         $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
     }
 

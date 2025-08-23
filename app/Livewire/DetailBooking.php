@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Booking;
 use App\Models\ReturnIphone;
 use Carbon\Carbon;
+use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -40,11 +41,49 @@ class DetailBooking extends Component
 
 
         // reset input
-        $this->condition = '';
+        $this->reset('condition');
+        $this->updateStatusBooking($this->detailBookingIphones->id, 'returned');
+        $this->dispatch('close-modal');
 
-        $this->dispatch('saved'); // bisa dipakai untuk toast
     }
 
+    public function updateStatusBooking($bookingId, $status)
+    {
+        if (auth()->user()->can('update')) {
+            try {
+                $booking = Booking::find($bookingId);
+                $booking->update(['status' => $status]);
+                LivewireAlert::title('Status berhasil diubah')
+                    ->position('top-end')
+                    ->text('Status booking telah diperbarui')
+                    ->toast()
+                    ->success()
+                    ->show();
+            } catch (\Throwable $th) {
+                LivewireAlert::title('Gagal mengubah status')
+                    ->position('top-end')
+                    ->text($th)
+                    ->timer(5000)
+                    ->error()
+                    ->show();
+            }
+        } else {
+            LivewireAlert::title('Kamu tidak memiliki izin')
+                ->position('top-end')
+                ->text('Tidak dapat mengubah status booking')
+                ->timer(5000)
+                ->error()
+                ->show();
+        }
+
+        $this->dispatch('status-updated')->self(); // bisa dipakai untuk toast
+    }
+
+    #[On('status-updated')]
+    public function refreshStatus()
+    {
+    }
+    
     public function render()
     {
         return view('livewire.detail-booking');

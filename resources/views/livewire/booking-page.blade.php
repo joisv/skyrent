@@ -58,10 +58,9 @@
             <x-tables.th>Nama</x-tables.th>
             <x-tables.th>iPhone</x-tables.th>
             <x-tables.th>Durasi Sewa</x-tables.th>
-            <x-tables.th>Tanggal & Waktu Booking</x-tables.th>
+            {{-- <x-tables.th>Tanggal & Waktu Booking</x-tables.th> --}}
             <x-tables.th>Tanggal & Waktu Mulai</x-tables.th>
             <x-tables.th>Tanggal & Waktu Selesai</x-tables.th>
-            <x-tables.th>Status</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
         </x-slot>
         
@@ -79,9 +78,9 @@
                     <x-tables.td>{{ $booking->customer_name }}</x-tables.td>
                     <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
                     <x-tables.td>{{ $booking->duration }} jam</x-tables.td>
-                    <x-tables.td>
+                    {{-- <x-tables.td>
                         {{ $booking->requested_booking_date ? \Carbon\Carbon::parse($booking->requested_booking_date)->format('d M Y') . ' ' . $booking->requested_time : '-' }}
-                    </x-tables.td>
+                    </x-tables.td> --}}
 
                     <x-tables.td>
                         {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') . ' ' . $booking->start_time : '-' }}
@@ -90,45 +89,6 @@
                     <x-tables.td>
                         {{ $booking->end_booking_date ? \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') . ' ' . $booking->end_time : '-' }}
                     </x-tables.td>
-
-                    <x-tables.td>
-                        <x-mary-dropdown>
-                            <x-slot:trigger>
-                                <button
-                                    class="px-2 py-1 rounded text-xs font-semibold 
-                    {{ $booking->status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : ($booking->status === 'confirmed'
-                            ? 'bg-green-100 text-green-700'
-                            : ($booking->status === 'cancelled'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-gray-100 text-gray-700')) }}">{{ ucfirst($booking->status) }}
-                                </button>
-                            </x-slot:trigger>
-
-                            <div class="p-1">
-                                <button {{ $booking->status === 'pending' ? 'disabled' : '' }}
-                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-yellow-200"
-                                    wire:click="updateStatusBooking({{ $booking->id }}, 'pending')">pending</button>
-                            </div>
-                            <div class="p-1">
-                                <button {{ $booking->status === 'confirmed' ? 'disabled' : '' }}
-                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-green-200"
-                                    wire:click="updateStatusBooking({{ $booking->id }}, 'confirmed')">confirmed</button>
-                            </div>
-                            <div class="p-1">
-                                <button {{ $booking->status === 'returned' ? 'disabled' : '' }}
-                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-purple-200"
-                                    wire:click="updateStatusBooking({{ $booking->id }}, 'returned')">returned</button>
-                            </div>
-                            <div class="p-1">
-                                <button {{ $booking->status === 'cancelled' ? 'disabled' : '' }}
-                                    class="disabled:bg-gray-300 disabled:cursor-not-allowed p-2 text-center w-full text-sm font-semibold hover:bg-red-300"
-                                    wire:click="updateStatusBooking({{ $booking->id }}, 'cancelled')">cancelled</button>
-                            </div>
-                        </x-mary-dropdown>
-                    </x-tables.td>
-
                     <x-tables.td>
                         <x-primary-button type="button"
                             @click="() => {

@@ -16,36 +16,6 @@ class BookingPage extends Component
     public $selectedAll = false;
     public $mySelected = [];
 
-    public function updateStatusBooking($bookingId, $status)
-    {
-        if (auth()->user()->can('update')) {
-            try {
-                $booking = Booking::find($bookingId);
-                $booking->update(['status' => $status]);
-                LivewireAlert::title('Status berhasil diubah')
-                    ->position('top-end')
-                    ->text('Status booking telah diperbarui')
-                    ->toast()
-                    ->success()
-                    ->show();
-            } catch (\Throwable $th) {
-                LivewireAlert::title('Gagal mengubah status')
-                    ->position('top-end')
-                    ->text($th)
-                    ->timer(5000)
-                    ->error()
-                    ->show();
-            }
-        } else {
-            LivewireAlert::title('Kamu tidak memiliki izin')
-                ->position('top-end')
-                ->text('Tidak dapat mengubah status booking')
-                ->timer(5000)
-                ->error()
-                ->show();
-        }
-    }
-    
     public function destroy()
     {
         if (auth()->user()->can('delete')) {
