@@ -108,111 +108,113 @@ class Detail extends Component
 
     public function booking()
     {
-        if (!$this->is_available) {
-            LivewireAlert::title('Waktu Tidak Tersedia')
-                ->text('iPhone sedang dibooking pada waktu tersebut. Silakan pilih waktu lain.')
-                ->error()
-                ->toast()
-                ->position('top-end')
-                ->show();
-            return;
-        }
-        $this->validate([
-            'selectedIphoneId' => 'required|exists:iphones,id',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:15',
-            'customer_email' => 'nullable|email|max:255',
-            // potensial bugg
-            // 'requested_booking_date' => 'required|date',
-            // 'requested_time' => 'required|date_format:H:i',
-            'selectedDuration' => 'required|integer|min:1',
-            'selectedPrice' => 'required|numeric|min:0',
-        ]);
-        
-        $booking = Booking::create([
-            'iphone_id' => $this->selectedIphoneId,
-            'customer_name' => $this->customer_name,
-            'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
-            'customer_email' => $this->customer_email,
+        // if (!$this->is_available) {
+        //     LivewireAlert::title('Waktu Tidak Tersedia')
+        //         ->text('iPhone sedang dibooking pada waktu tersebut. Silakan pilih waktu lain.')
+        //         ->error()
+        //         ->toast()
+        //         ->position('top-end')
+        //         ->show();
+        //     return;
+        // }
+        // $this->validate([
+        //     'selectedIphoneId' => 'required|exists:iphones,id',
+        //     'customer_name' => 'required|string|max:255',
+        //     'customer_phone' => 'required|string|max:15',
+        //     'customer_email' => 'nullable|email|max:255',
+        //     // potensial bugg
+        //     // 'requested_booking_date' => 'required|date',
+        //     // 'requested_time' => 'required|date_format:H:i',
+        //     'selectedDuration' => 'required|integer|min:1',
+        //     'selectedPrice' => 'required|numeric|min:0',
+        // ]);
+        // $bookind_code = Booking::generateBookingCode();
+        // $booking = Booking::create([
+        //     'iphone_id' => $this->selectedIphoneId,
+        //     'customer_name' => $this->customer_name,
+        //     'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
+        //     'customer_email' => $this->customer_email,
 
-            'requested_booking_date' => Carbon::parse($this->selectedDate)->timezone('Asia/Jakarta')->toDateString(),
-            'requested_time' => sprintf('%02d:%02d', $this->selectedHour, $this->selectedMinute),
-            'duration' => $this->selectedDuration,
-            'price' => $this->selectedPrice,
-            'status' => 'pending',
-            'created' => Carbon::now('Asia/Jakarta'),
-            'booking_code' => Booking::generateBookingCode(),
-            'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
-        ]);
+        //     'requested_booking_date' => Carbon::parse($this->selectedDate)->timezone('Asia/Jakarta')->toDateString(),
+        //     'requested_time' => sprintf('%02d:%02d', $this->selectedHour, $this->selectedMinute),
+        //     'duration' => $this->selectedDuration,
+        //     'price' => $this->selectedPrice,
+        //     'status' => 'pending',
+        //     'created' => Carbon::now('Asia/Jakarta'),
+        //     'booking_code' => $bookind_code,
+        //     'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
+        // ]);
 
-        $message = "Halo {$booking->customer_name}, 👋\n\n"
-            . "Terima kasih telah melakukan booking di *SkyRental* 📱✨\n\n"
-            . "Berikut adalah detail booking Anda:\n"
-            . "──────────────────────\n"
-            . "📌 Kode Booking : *{$booking->booking_code}*\n"
-            . "Perangkat    : {$booking->iphone->name}\n"
-            . "Tanggal      : {$booking->requested_booking_date}\n"
-            . "Waktu        : {$booking->requested_time}\n"
-            . "Durasi       : {$booking->duration} jam\n"
-            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
-            . "──────────────────────\n\n"
-            . "Untuk memeriksa status booking Anda, silakan kunjungi link berikut:\n"
-            . url('/booking-status') . "\n\n"
-            . "Mohon pastikan nomor WhatsApp yang Anda gunakan benar agar dapat menerima informasi lebih lanjut.\n\n"
-            . "Terima kasih 🙏\n"
-            . "*SkyRental*";
+        // $message = "Halo {$booking->customer_name}, 👋\n\n"
+        //     . "Terima kasih telah melakukan booking di *SkyRental* 📱✨\n\n"
+        //     . "Berikut adalah detail booking Anda:\n"
+        //     . "──────────────────────\n"
+        //     . "📌 Kode Booking : *{$booking->booking_code}*\n"
+        //     . "Perangkat    : {$booking->iphone->name}\n"
+        //     . "Tanggal      : {$booking->requested_booking_date}\n"
+        //     . "Waktu        : {$booking->requested_time}\n"
+        //     . "Durasi       : {$booking->duration} jam\n"
+        //     . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
+        //     . "──────────────────────\n\n"
+        //     . "Untuk memeriksa status booking Anda, silakan kunjungi link berikut:\n"
+        //     . url('/booking-status') . "\n\n"
+        //     . "Mohon pastikan nomor WhatsApp yang Anda gunakan benar agar dapat menerima informasi lebih lanjut.\n\n"
+        //     . "Terima kasih 🙏\n"
+        //     . "*SkyRental*";
 
-        $adminMessage = "📢 <b>Booking Baru Diterima</b>\n\n"
-            . "<b>Nama</b> : {$booking->customer_name}\n"
-            . "<b>HP</b>   : {$booking->customer_phone}\n"
-            . "<b>Email</b>: {$booking->customer_email}\n\n"
-            . "<b>Kode Booking</b>: {$booking->booking_code}\n"
-            . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
-            . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
-            . "<b>Waktu</b>       : {$booking->requested_time}\n"
-            . "<b>Durasi</b>      : {$booking->duration} jam\n"
-            . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
-            . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
+        // $adminMessage = "📢 <b>Booking Baru Diterima</b>\n\n"
+        //     . "<b>Nama</b> : {$booking->customer_name}\n"
+        //     . "<b>HP</b>   : {$booking->customer_phone}\n"
+        //     . "<b>Email</b>: {$booking->customer_email}\n\n"
+        //     . "<b>Kode Booking</b>: {$booking->booking_code}\n"
+        //     . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
+        //     . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
+        //     . "<b>Waktu</b>       : {$booking->requested_time}\n"
+        //     . "<b>Durasi</b>      : {$booking->duration} jam\n"
+        //     . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
+        //     . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
 
-        $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
-        $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
+        // $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
+        // $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
 
-        Http::withHeaders([
-            'Authorization' => env('FONNTE_TOKEN'),
-        ])->post('https://api.fonnte.com/send', [
-            'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
-            'message' => $message,
-        ]);
+        // Http::withHeaders([
+        //     'Authorization' => env('FONNTE_TOKEN'),
+        // ])->post('https://api.fonnte.com/send', [
+        //     'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+        //     'message' => $message,
+        // ]);
 
-        Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
-            'chat_id'    => $chatId,
-            'text'       => $adminMessage,
-            'parse_mode' => 'HTML',
-        ]);
+        // Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+        //     'chat_id'    => $chatId,
+        //     'text'       => $adminMessage,
+        //     'parse_mode' => 'HTML',
+        // ]);
 
-        $this->dispatch('close-modal');
-        $this->reset([
-            'selectedIphoneId',
-            'customer_name',
-            'customer_phone',
-            'customer_email',
-            'selectedDate',
-            'selectedHour',
-            'selectedMinute',
-            'selectedPrice',
+        // $this->dispatch('close-modal');
+        // $this->reset([
+        //     'selectedIphoneId',
+        //     'customer_name',
+        //     'customer_phone',
+        //     'customer_email',
+        //     'selectedDate',
+        //     'selectedHour',
+        //     'selectedMinute',
+        //     'selectedPrice',
 
-        ]);
+        // ]);
 
-        $now = Carbon::now('Asia/Jakarta');
-        $this->selectedHour = $now->format('H');
-        $this->selectedMinute = $now->format('i');
+        // $now = Carbon::now('Asia/Jakarta');
+        // $this->selectedHour = $now->format('H');
+        // $this->selectedMinute = $now->format('i');
         LivewireAlert::title('Booking Berhasil')
-            ->text('Detail booking sudah dikirim ke WhatsApp Pastikan nomor yang kamu isi sudah benar. Untuk memeriksa status booking, gunakan *Kode Booking* di halaman status booking')
+            ->text('Untuk memeriksa status booking, gunakan *Kode Booking* di halaman status booking')
             ->toast()
             ->position('top')
             ->success()
             ->timer(10000)
             ->show();
+
+        $this->redirectRoute('booking.status', ['code' => 'SKY250823G8QJ']);
     }
 
     function formatPhoneNumber($phone)

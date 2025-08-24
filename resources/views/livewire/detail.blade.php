@@ -120,8 +120,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 <div class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex hidden">{!! $iphone->description !!}</div>
             </div>
         </div>
-        <div
-            class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
+        <div class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
             <div class="space-y-4">
                 {{-- BOOKING --}}
                 <div class="space-y-3">
@@ -415,7 +414,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                 <p>24 jam</p>
                             </div>
                             <div class="flex justify-between items-center font-medium">
-                                <p>Tanggal dan waktu booking</p>
+                                <p>Tanggal booking</p>
                                 <p>{{ $selectedDateFormatted }}</p>
                             </div>
                             <div class="flex justify-between items-center font-medium" x-data="{ price: @entangle('selectedPrice').live }">
@@ -426,7 +425,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between">
+                        <div class="sm:flex justify-between">
 
                             <h1 class="text-2xl font-semibold mb-4">Metode Pembayaran</h1>
                             <div class="space-y-2">
@@ -449,8 +448,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                 </div>
             </div>
-            <button type="submit" class="p-3 font-medium text-white bg-black w-full disabled:bg-gray-400"
-                wire:loading.attr="disabled">Booking sekarang</button>
+            <button type="submit" class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400"
+                wire:loading.attr="disabled">Buat Boooking</button>
         </form>
     </x-modal>
     <x-bottom-sheet id="sheetTanggalB" title="Form Booking">

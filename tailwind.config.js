@@ -16,13 +16,13 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
-            typography: (theme) => ({
-                DEFAULT: {
-                    css: {
-                        color: theme('colors.gray.300'),
-                    },
-                },
-            }),
+            // typography: (theme) => ({
+            //     DEFAULT: {
+            //         css: {
+            //             color: theme('colors.gray.300'),
+            //         },
+            //     },
+            // }),
         },
     },
 

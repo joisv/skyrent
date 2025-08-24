@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Faq;
 use App\Models\Iphones;
 use App\Settings\GeneralSettings;
+use Illuminate\Http\Request;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
 
 class PageController extends Controller
@@ -108,8 +109,10 @@ class PageController extends Controller
         ]);
     }
 
-    public function bookingStatus()
+    public function bookingStatus(Request $request)
     {
+        $bookingCode = $request->query('code');
+        dd($bookingCode);
         return view('booking-status', [
             'overide' => new SEOData(
                 title: 'Cek Status Booking | ' . $this->setting->site_name,
