@@ -4,6 +4,7 @@ namespace App\Livewire\Payments;
 
 use App\Models\Payment;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Index extends Component
@@ -51,7 +52,6 @@ class Index extends Component
 
     public function destroy()
     {
-        // dd($this->mySelected);
         if (auth()->user()->can('delete')) {
             if ($this->mySelected) {
                 try {
@@ -115,6 +115,29 @@ class Index extends Component
         return $query;
     }
 
+        public function updatedSelectedAll($val)
+    {
+        $val ? $this->mySelected = $this->getData()->limit($this->paginate)->pluck('id') : $this->mySelected = [];
+    }
+
+    public function updatedMySelected()
+    {
+        if (count($this->mySelected) === $this->paginate) {
+            $this->selectedAll = true;
+        } else {
+            $this->selectedAll = false;
+        }
+    }
+
+    public function updatedPage($page)
+    {
+        $this->mySelected = [];
+        $this->selectedAll = false;
+    }
+    
+    #[On('refresh-payment')]
+    public function reRender() {}
+    
     public function render()
     {
         return view('livewire.payments.index', [

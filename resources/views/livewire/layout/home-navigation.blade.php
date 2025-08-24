@@ -2,11 +2,10 @@
     <div class="w-full h-24 lg:flex items-center justify-between hidden ">
         <div class="flex items-center space-x-4 w-[60%] text-slate-950 dark:text-slate-200 font-medium text-base">
             <x-home-navlink :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate class="">Home</x-home-navlink>
-            <x-home-navlink :href="route('products')" :active="request()->routeIs('products')" wire:navigate class="">Product</x-home-navlink>
+            <x-home-navlink :href="route('products')" :active="request()->routeIs('products')" wire:navigate class="">iPhones</x-home-navlink>
             <x-home-navlink :href="route('booking.status')" :active="request()->routeIs('booking.status')" wire:navigate class="">Booking Status</x-home-navlink>
-            <x-home-navlink :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate class="">Price</x-home-navlink>
-            <x-home-navlink :href="route('faqs')" :active="request()->routeIs('faqs')" wire:navigate class="">FAQ</x-home-navlink>
-            <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Contact</x-home-navlink>
+            <x-home-navlink :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate class="">Harga</x-home-navlink>
+            <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Hubungi Kami</x-home-navlink>
         </div>
         <div class="flex items-center space-x-3 w-[40%] h-full justify-end">
             <x-mary-theme-toggle />
@@ -25,22 +24,18 @@
                         </x-responsif-link>
 
                         <x-responsif-link :href="route('products')" :active="request()->routeIs('products')" wire:navigate>
-                            Product
+                            iPhones
                         </x-responsif-link>
                         <x-responsif-link :href="route('booking.status')" :active="request()->routeIs('booking.status')" wire:navigate>
                             Booking Status
                         </x-responsif-link>
 
                         <x-responsif-link :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate >
-                            Price
-                        </x-responsif-link>
-
-                        <x-responsif-link :href="route('faqs')" :active="request()->routeIs('faqs')" wire:navigate>
-                            FAQ
+                            Harga
                         </x-responsif-link>
 
                         <x-responsif-link :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate>
-                            Contact
+                            Hubungi Kami
                         </x-responsif-link>
                     </ul>
                     <div class="flex items-center space-x-2 justify-center">

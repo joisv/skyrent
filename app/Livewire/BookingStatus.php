@@ -13,6 +13,14 @@ class BookingStatus extends Component
     public $bookingCode;
     public $booking;
 
+    public function mount($code)
+    {
+        $this->bookingCode = $code;
+        if ($this->bookingCode) {
+            $this->checkBooking();
+        }
+    }
+    
     public function checkBooking()
     {
         $this->validate([

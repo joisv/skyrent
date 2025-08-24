@@ -9,7 +9,7 @@
         </x-slot>
         <x-slot name="addBtn">
             <x-tables.addbtn type="button" x-data="" @click="$dispatch('open-modal', 'create-payment')">
-                Add iPhone
+                Add Payment
             </x-tables.addbtn>
         </x-slot>
         <x-slot name="sort">

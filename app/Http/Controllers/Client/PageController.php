@@ -112,8 +112,8 @@ class PageController extends Controller
     public function bookingStatus(Request $request)
     {
         $bookingCode = $request->query('code');
-        dd($bookingCode);
         return view('booking-status', [
+            'code' => $bookingCode ?? '',
             'overide' => new SEOData(
                 title: 'Cek Status Booking | ' . $this->setting->site_name,
                 description: 'Cek status booking iPhone Anda di ' . $this->setting->site_name . '. Pastikan informasi pemesanan Anda akurat untuk mendapatkan update terkini.',

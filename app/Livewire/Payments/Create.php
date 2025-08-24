@@ -42,6 +42,8 @@ class Create extends Component
         ]);
         $this->dispatch('close-modal');
         $this->reset(['name', 'icon', 'description']);
+        $this->dispatch('refresh-payment');
+
         LivewireAlert::title('Payment method berhasil dibuat')
             ->text('Berhasil menambahkan payment')
             ->success()

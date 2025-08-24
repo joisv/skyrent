@@ -54,6 +54,7 @@ class Edit extends Component
 
         $this->dispatch('close-modal');
         $this->reset(['name', 'icon', 'description', 'is_active']);
+        $this->dispatch('refresh-payment');
 
         LivewireAlert::title('Payment method berhasil diperbarui')
             ->text('Data payment telah diupdate')
@@ -76,7 +77,7 @@ class Edit extends Component
 
         return $slug;
     }
-
+    
     #[On('edit')]
     public function getPayment($payment)
     {

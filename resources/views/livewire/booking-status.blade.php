@@ -1,8 +1,6 @@
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="w-full ">
         <div class="flex items-center justify-center">
-            {{-- <img class="w-20 h-[70px] md:w-[160px] md:h-[140px] object-contain"
-                            src="{{ url('IMG_0976-removebg-preview1.png') }}" alt="" srcset=""> --}}
             <span class="text-5xl font-semibold">SKYRENTAL</span>
         </div>
         <div>
@@ -20,7 +18,7 @@
             <label for="bookingCode" class="block text-sm font-semibold text-blue-800">Kode Booking</label>
             <input type="text" id="bookingCode" wire:model="bookingCode"
                 placeholder="Masukkan kode booking Anda (contoh: SKY123456)"
-                class="w-full border border-gray-400 rounded-lg px-4 py-2 mt-1 
+                class="w-full border border-gray-400 px-4 py-2 mt-1 
                    focus:outline-none focus:ring-2 focus:ring-blue-300 
                    placeholder:text-gray-400 bg-white"
                 autocomplete="off">
@@ -32,7 +30,7 @@
         {{-- Tombol --}}
         <button type="submit"
             class="w-full py-2 bg-blue-800 hover:bg-blue-900 text-white 
-               font-semibold rounded-lg shadow transition">
+               font-semibold shadow transition sm:text-lg">
             Cek Status
         </button>
 
@@ -89,6 +87,10 @@
                         <td class="text-right">{{ $booking->duration }} Jam</td>
                     </tr>
                     <tr class="text-blue-800">
+                        <td class="py-2">Pembayaran</td>
+                        <td class="text-right">{{ $booking->payment->name }}</td>
+                    </tr>
+                    <tr class="text-blue-800">
                         <td class="py-2">Status</td>
                         <td class="text-right capitalize">{{ $booking->status }}</td>
                     </tr>
@@ -98,9 +100,9 @@
                     </tr>
                 </tbody>
             </table>
-
+           
             {{-- Payment --}}
-            <div class="flex justify-between items-end text-sm">
+            <div class="flex justify-between items-start text-sm">
                 <div class="space-y-2">
                     <h2 class="font-bold text-blue-800">PAYMENTS</h2>
                     <p class="text-blue-800">Scan QRIS pembayaran otomatis.</p>
@@ -120,6 +122,23 @@
                 @else
                     <p><em>Belum ada data pembayaran</em></p>
                 @endif
+            </div>
+             {{-- Tombol Konfirmasi Pembayaran --}}
+            <div class="mt-1">
+                <button wire:click="confirmPayment({{ $booking->id }})"
+                    class="w-full sm:w-auto px-6 py-3 bg-gray-900 hover:bg-white hover:text-black 
+               text-white font-semibold shadow-xl 
+               transition duration-200 ease-in-out flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m6.75-1.5a9 9 0
+                  11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Konfirmasi Pembayaran
+                </button>
+                <p class="text-xs text-gray-500 mt-2 italic">
+                    *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
+                </p>
             </div>
         </div>
     @endif

@@ -4,6 +4,6 @@
     </x-slot>
     
     <div class="min-h-screen max-w-screen-2xl mx-auto">
-        <livewire:booking-status/>
+        <livewire:booking-status :code="$code"/>
     </div>
 </x-home>
