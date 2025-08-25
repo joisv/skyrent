@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Faq;
 use App\Models\Iphones;
 use App\Settings\GeneralSettings;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use RalphJSmit\Laravel\SEO\Support\SEOData;
 
@@ -27,8 +28,25 @@ class PageController extends Controller
         ]);
     }
 
-    public function detail(Iphones $iphones)
-    {
+    public function detail(Iphones $iphones, Request $request)
+    {   
+        // dd($request->all());
+        $date   = $request->query('date');   // "2025-08-25"
+        // $date   = Carbon::parse($request->query('date'));   // "2025-08-25T04:17:06.8822"
+        $hour   = $request->query('hour');   // "14"
+        $minute = $request->query('minute');
+
+        // $cleanDate = preg_replace('/\s*\(.*\)$/', '', $date);
+        // // Hasil: "Mon Aug 25 2025 12:17:18 GMT+0700"
+
+        // $selectedDateTime = Carbon::parse($cleanDate);
+
+        // // kalau mau format ke ISO 8601 dengan microseconds
+        // $isoFormat = $selectedDateTime->format('Y-m-d\TH:i:s.u');
+
+        // // format ke ISO 8601 dengan microseconds
+        // $isoFormat = $selectedDateTime?->format('Y-m-d\TH:i:s.u');
+        // dd($date, $hour, $minute);
         $seo = new SEOData(
             site_name: $iphones->name,
             title: $iphones->name . ' - ' . $this->setting->site_name,
@@ -37,6 +55,9 @@ class PageController extends Controller
         );
 
         return view('detail', [
+            'date' => $date,
+            'hour' => $hour,
+            'minute' => $minute,
             'iphone' => $iphones->load(['gallery', 'bookings']),
             'overide' => $seo
         ]);
@@ -95,7 +116,7 @@ class PageController extends Controller
             ),
         ]);
     }
-    
+
     public function terms()
     {
         return view('terms-conditions', [

@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\Payment;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -17,10 +18,12 @@ class Detail extends Component
     public $iphone;
     public $selectedPrice;
     public $selectedDateFormatted; // 25 Juli 2025, 20:51
-    public $selectedDate; // Date object for the selected date
     public int $selectedDuration; // 24
+
+    public $selectedDate; // Date object for the selected date
     public int $selectedHour; // 20
     public int $selectedMinute; // 10
+
     public $is_available = false;
     public $selectedIphoneId;
     public $customer_name;
@@ -235,10 +238,12 @@ class Detail extends Component
         return $digits;
     }
 
-    public function mount(Iphones $iphone)
+    public function mount(Iphones $iphone, $date, $hour, $minute)
     {
+        $this->selectedDate = $date;
+        $this->selectedHour = (int)$hour;
+        $this->selectedMinute = (int)$minute;
         $this->iphone = $iphone;
-
         $now = Carbon::now('Asia/Jakarta');
         $this->selectedHour = $now->format('H');
         $this->selectedMinute = $now->format('i');

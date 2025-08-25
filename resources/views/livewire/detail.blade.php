@@ -1,7 +1,6 @@
 <div x-data="{
     open: false,
     showDatepicker: false,
-    selectedDate: @entangle('selectedDate').live,
     selectedDateFormatted: @entangle('selectedDateFormatted').live,
     month: null,
     year: null,
@@ -12,6 +11,7 @@
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ],
 
+    selectedDate: @entangle('selectedDate').live,
     selectedHour: @entangle('selectedHour').live,
     selectedMinute: @entangle('selectedMinute').live,
     hours: Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')),
@@ -20,10 +20,15 @@
     price: @entangle('selectedPrice').live,
 
     init() {
-        const today = new Date();
-        this.month = today.getMonth();
-        this.year = today.getFullYear();
-        this.selectedDate = today;
+        if (this.selectedDate) {
+            this.selectedDate = new Date(this.selectedDate);
+        } else {
+            const today = new Date();
+            this.selectedDate = today;
+        }
+        
+        this.month = this.selectedDate.getMonth();
+        this.year = this.selectedDate.getFullYear();
         this.selectedDateFormatted = this.formatDate(this.selectedDate);
         this.calculateDays();
     },
@@ -117,10 +122,13 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </h1>
                 </div>
                 <h1 class="text-xl font-semibold">{{ $iphone->name }}</h1>
-                <div class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex hidden">{!! $iphone->description !!}</div>
+                <div
+                    class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex hidden">
+                    {!! $iphone->description !!}</div>
             </div>
         </div>
-        <div class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
+        <div
+            class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
             <div class="space-y-4">
                 {{-- BOOKING --}}
                 <div class="space-y-3">
@@ -273,7 +281,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
             </div>
             <div class="mt-14 space-y-2 hidden sm:flex flex-col" x-data="{ price: @entangle('selectedPrice').live }">
-                <span class="text-xl sm:text-2xl font-bold hidden md:flex" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+                <span class="text-xl sm:text-2xl font-bold hidden md:flex"
+                    x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                 <button type="button" wire:click="bookingNow"
                     class="flex justify-between items-center space-x-4 bg-white text-black text-xl font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900 p-3 hover:bg-slate-900 hover:text-white transition duration-700 ease-in-out w-full">
                     <h1 class="text-lg sm:text-xl font-bold">

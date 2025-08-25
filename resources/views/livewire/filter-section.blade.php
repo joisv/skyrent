@@ -1,7 +1,6 @@
 <div x-data="{
     open: false,
     showDatepicker: false,
-    selectedDate: @entangle('selectedDate').live,
     selectedDateFormatted: @entangle('selectedDateFormatted').live,
     month: null,
     year: null,
@@ -12,6 +11,7 @@
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ],
 
+    selectedDate: @entangle('selectedDate').live,
     selectedHour: @entangle('selectedHour').live,
     selectedMinute: @entangle('selectedMinute').live,
     hours: Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')),
@@ -25,6 +25,7 @@
         this.selectedDate = today;
         this.selectedDateFormatted = this.formatDate(this.selectedDate);
         this.calculateDays();
+        console.log(this.selectedDate);
     },
 
     isToday(date) {
@@ -34,6 +35,10 @@
     },
 
     formatDate(date) {
+        if (!(date instanceof Date)) {
+            date = new Date(date);
+        }
+
         const day = date.getDate();
         const month = this.monthNames[date.getMonth()];
         const year = date.getFullYear();
@@ -75,7 +80,8 @@
 
     isSelectedDate(date) {
         const d = new Date(this.year, this.month, date);
-        return this.selectedDate.toDateString() === d.toDateString();
+        const selected = new Date(this.selectedDate); // konversi string → Date
+        return selected.toDateString() === d.toDateString();
     },
 
     pickDate(date) {
@@ -134,7 +140,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             @click="$refs.dropdownButton.click()" /> --}}
                         <input
                             class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
-                            placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalA' } }))"/>
+                            placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
+                            @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalA' } }))" />
                     </div>
                 </div>
 
@@ -360,7 +367,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             <h1 x-text="formatRupiah(price)"></h1>
                         </div>
                         <div>
-                            <a href="{{ route('detail', $iphone->slug) }}" wire:navigate
+                            <a x-bind:href="`{{ route('detail', $iphone->slug) }}?date=${selectedDate.toISOString()}&hour=${selectedHour}&minute=${selectedMinute}`"
+                                wire:navigate
                                 class="mt-2 bg-black py-2 px-4 text-white text-base font-semibold rounded">
                                 Booking
                             </a>
@@ -369,12 +377,30 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
             @endforeach
         @else
+            {{-- Loading Spinner --}}
+            <div class="w-full h-32 flex justify-center items-center col-span-4" wire:loading.flex>
+                <svg width="64px" height="64px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" class="animate-spin">
+                    <g fill="#f43f5e" fill-rule="evenodd" clip-rule="evenodd">
+                        <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"
+                            opacity=".2"></path>
+                        <path
+                            d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z">
+                        </path>
+                    </g>
+                </svg>
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="p-5 text-center" wire:loading.remove>
+                <h1 class="text-lg font-semibold">Maaf, tidak ada iPhone tersedia pada tanggal tersebut.</h1>
+                <p class="mt-2 text-gray-600">Silakan pilih tanggal lain atau hubungi kami untuk informasi lebih
+                    lanjut.</p>
+            </div>
         @endif
     </x-modal>
     <x-bottom-sheet id="sheetTanggalA" title="Form Booking">
         <!-- Kalender -->
-        <div
-            class=" dark:bg-gray-800 text-lg z-10 w-full">
+        <div class=" dark:bg-gray-800 text-lg z-10 w-full">
             <div class="border-b-2 border-gray-300 pb-4">
                 <div class="flex items-center  text-lg">
                     <!-- Hour Picker -->
