@@ -55,8 +55,11 @@
         <h2 class="text-sm font-semibold mb-2 text-gray-700">iPhone</h2>
         @if ($detailBookingIphones?->iphone)
             <div class="text-sm text-gray-600 space-y-1">
-                <p><span class="font-medium">Nama:</span> {{ $detailBookingIphones->iphone->name }}</p>
-                <p><span class="font-medium">Deskripsi:</span> {{ $detailBookingIphones->iphone->description }}</p>
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('storage/' . $detailBookingIphones->iphone->gallery->image) }}" alt=""
+                                 class="w-12 h-12 rounded-lg object-cover">
+                    <p>{{ $detailBookingIphones->iphone->name }}</p>
+                </div>
             </div>
         @else
             <p class="text-gray-400 italic">Tidak ada data iPhone</p>

@@ -123,7 +123,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
                 <h1 class="text-xl font-semibold">{{ $iphone->name }}</h1>
                 <div
-                    class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex md:flex-col hidden">
+                    class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex flex-col hidden">
                     {!! $iphone->description !!}</div>
             </div>
         </div>
