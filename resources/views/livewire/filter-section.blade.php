@@ -304,7 +304,9 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                         <!-- COLLAPSE AREA -->
                         <div x-show="showDetail" x-collapse class="mt-3 text-sm text-gray-700 border-t pt-3 w-full">
-                            <p><strong>Deskripsi:</strong> {{ $iphone->description ?? 'Tidak ada deskripsi.' }}</p>
+                            <div
+                                class="prose prose-sm prose-invert text-black prose-li:text-black prose-li:text-sm prose-a:text-blue-600 max-w-none md:flex md:flex-col hidden">
+                                {!! $iphone->description !!}</div>
                             {{-- <p><strong>Warna:</strong> {{ $iphone->color ?? '-' }}</p>
                             <p><strong>Serial:</strong> {{ $iphone->serial_number ?? '-' }}</p> --}}
                             <!-- Tambahkan info lainnya sesuai kebutuhan -->

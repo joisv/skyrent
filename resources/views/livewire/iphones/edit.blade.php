@@ -34,13 +34,6 @@
                 </h2>
             </div>
         </x-primary-button>
-        <x-primary-button type="button" class="ml-2" wire:click="test">
-            <div class="flex items-center space-x-1 w-full">
-                <h2>
-                    test
-                </h2>
-            </div>
-        </x-primary-button>
         <button type="button"
             class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
             @click="toggleSetting">
