@@ -26,7 +26,7 @@
             const today = new Date();
             this.selectedDate = today;
         }
-        
+
         this.month = this.selectedDate.getMonth();
         this.year = this.selectedDate.getFullYear();
         this.selectedDateFormatted = this.formatDate(this.selectedDate);
@@ -110,174 +110,168 @@
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));" class="max-w-screen-2xl mx-auto">
     <div class="md:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
-        <div class="w-full xl:w-[70%] lg:flex space-x-3 xl:sticky top-10 h-fit ">
-            <div class="lg:w-[45%] h-[50vh] relative">
+        <div class="w-full xl:w-[70%] lg:flex md:space-x-3 xl:sticky top-10 h-fit ">
+            <div class="lg:w-[45%] h-[40vh] relative">
                 <img src="" data-src="{{ asset('storage/' . $iphone->gallery->image) }}" alt=""
                     srcset="" class="w-full lazy h-full object-contain absolute">
             </div>
-            <div class="lg:w-1/2 my-5 lg:my-0">
-                <div class="flex space-x-1 md:hidden">
-                    <h1 class="text-base font-medium">Rp</h1>
-                    <h1 class="text-2xl font-bold text-red-400" x-text="new Intl.NumberFormat('id-ID').format(price)">
-                    </h1>
+            <div class="lg:w-1/2 lg:my-0 p-2 mt-6">
+                <div class="flex justify-end space-x-1 items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                        class="w-5 h-5 text-yellow-400">
+                        <path
+                            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
+                    <span class="text-sm font-semibold">( {{ $rating }} )</span>
                 </div>
-                <h1 class="text-xl font-semibold">{{ $iphone->name }}</h1>
+                <div class="flex items-center justify-between">
+                    <h1 class="text-3xl font-semibold">{{ $iphone->name }}</h1>
+                    <div>
+                        <div class="flex space-x-1 md:hidden">
+                            <h1 class="text-base font-medium">Rp</h1>
+                            <h1 class="text-xl font-bold " x-text="new Intl.NumberFormat('id-ID').format(price)">
+                            </h1>
+                        </div>
+                    </div>
+
+                </div>
                 <div
                     class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex flex-col hidden">
                     {!! $iphone->description !!}</div>
             </div>
         </div>
         <div
-            class="md:full xl:w-[30%] h-fit border md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
+            class="md:full xl:w-[30%] h-fit border-none md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
             <div class="space-y-4">
                 {{-- BOOKING --}}
-                <div class="space-y-3">
-                    <h1 class="text-lg md:text-2xl font-semibold ">Tanggal Booking</h1>
-                    <div class="relative" x-data="{ open: false }" @click.outside="open = false"
-                        @close.stop="open = false">
-                        <div @click="open = ! open">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 start-0 flex items-center p-3 pointer-events-none">
-                                    <svg width="30px" height="30px" viewBox="0 0 24.00 24.00" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M20 10V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V10M20 10V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V10M20 10H4M8 3V7M16 3V7"
-                                            stroke="#000000" stroke-width="1.344" stroke-linecap="round"></path>
-                                        <rect x="6" y="12" width="3" height="3" rx="0.5"
-                                            fill="#000000" />
-                                        <rect x="10.5" y="12" width="3" height="3" rx="0.5"
-                                            fill="#000000" />
-                                        <rect x="15" y="12" width="3" height="3" rx="0.5"
-                                            fill="#000000" />
-                                    </svg>
+                <div class="flex flex-col-reverse">
+                    <div class="space-y-3 mt-3">
+                        <h1 class="text-lg md:text-2xl font-semibold ">Tanggal</h1>
+                        <div class="relative" x-data="{ open: false }" @click.outside="open = false"
+                            @close.stop="open = false">
+                            <div @click="open = ! open">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 start-0 flex items-center p-3 pointer-events-none">
+                                        <svg width="30px" height="30px" viewBox="0 0 24.00 24.00" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M20 10V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V10M20 10V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V10M20 10H4M8 3V7M16 3V7"
+                                                stroke="#000000" stroke-width="1.344" stroke-linecap="round"></path>
+                                            <rect x="6" y="12" width="3" height="3" rx="0.5"
+                                                fill="#000000" />
+                                            <rect x="10.5" y="12" width="3" height="3" rx="0.5"
+                                                fill="#000000" />
+                                            <rect x="15" y="12" width="3" height="3" rx="0.5"
+                                                fill="#000000" />
+                                        </svg>
+                                    </div>
+                                    <input
+                                        class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
+                                        placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
+                                        @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalB' } }))" />
                                 </div>
-                                <input
-                                    class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
-                                    placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
-                                    @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalB' } }))" />
                             </div>
-                        </div>
 
-                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                            class="absolute z-50 mt-2 hidden sm:flex" style="display: none;">
-                            <div class="rounded-md ring-1 ring-black ring-opacity-5">
+                            <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95" class="absolute z-50 mt-2 hidden sm:flex"
+                                style="display: none;">
+                                <div class="rounded-md ring-1 ring-black ring-opacity-5">
 
-                                <!-- Kalender -->
-                                <div
-                                    class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 border-slate-900 shadow-xl">
-                                    <div class="border-b-2 border-gray-300 pb-4">
-                                        <div class="flex items-center  text-lg">
-                                            <!-- Hour Picker -->
-                                            <div>
-                                                <input type="number" x-model="selectedHour" min="0"
-                                                    max="23"
-                                                    class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
-                                                    placeholder="HH">
+                                    <!-- Kalender -->
+                                    <div
+                                        class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 border-slate-900 shadow-xl">
+                                        <div class="border-b-2 border-gray-300 pb-4">
+                                            <div class="flex items-center  text-lg">
+                                                <!-- Hour Picker -->
+                                                <div>
+                                                    <input type="number" x-model="selectedHour" min="0"
+                                                        max="23"
+                                                        class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
+                                                        placeholder="HH">
+                                                </div>
+
+                                                <div class="font-bold">:</div>
+
+                                                <!-- Input Menit -->
+                                                <div>
+                                                    <input type="number" x-model="selectedMinute" min="0"
+                                                        max="59" step="1"
+                                                        class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
+                                                        placeholder="MM">
+                                                </div>
                                             </div>
-
-                                            <div class="font-bold">:</div>
-
-                                            <!-- Input Menit -->
-                                            <div>
-                                                <input type="number" x-model="selectedMinute" min="0"
-                                                    max="59" step="1"
-                                                    class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
-                                                    placeholder="MM">
-                                            </div>
+                                            <div class="text-lg font-medium text-gray-700 dark:text-gray-200"
+                                                x-text="monthNames[month] + ' ' + year"></div>
                                         </div>
-                                        <div class="text-lg font-medium text-gray-700 dark:text-gray-200"
-                                            x-text="monthNames[month] + ' ' + year"></div>
-                                    </div>
-                                    <!-- Header navigasi bulan -->
-                                    <div class="flex mb-2">
-                                        <button type="button" @click="prevMonth()"
-                                            class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
+                                        <!-- Header navigasi bulan -->
+                                        <div class="flex mb-2">
+                                            <button type="button" @click="prevMonth()"
+                                                class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
 
-                                        <button type="button" @click="nextMonth()"
-                                            class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
-                                    </div>
+                                            <button type="button" @click="nextMonth()"
+                                                class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
+                                        </div>
 
-                                    <!-- Hari -->
-                                    <div class="grid grid-cols-7 text-gray-500 mb-1">
-                                        <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
-                                            <div x-text="day" class="text-center"></div>
-                                        </template>
-                                    </div>
-
-                                    <!-- Tanggal -->
-                                    <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
-                                        <!-- Sisipkan hari kosong -->
-                                        <template x-for="blank in blankdays">
-                                            <div></div>
-                                        </template>
+                                        <!-- Hari -->
+                                        <div class="grid grid-cols-7 text-gray-500 mb-1">
+                                            <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
+                                                <div x-text="day" class="text-center"></div>
+                                            </template>
+                                        </div>
 
                                         <!-- Tanggal -->
-                                        <template x-for="(date, index) in daysInMonth" :key="index">
-                                            <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()"
-                                                x-text="date"
-                                                class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
-                                                :class="{
-                                                    'bg-slate-900 text-white': isSelectedDate(date),
-                                                    'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
-                                                    'hover:border-slate-900': !isPastDate(date)
-                                                }">
-                                            </div>
-                                        </template>
+                                        <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
+                                            <!-- Sisipkan hari kosong -->
+                                            <template x-for="blank in blankdays">
+                                                <div></div>
+                                            </template>
 
+                                            <!-- Tanggal -->
+                                            <template x-for="(date, index) in daysInMonth" :key="index">
+                                                <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()"
+                                                    x-text="date"
+                                                    class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
+                                                    :class="{
+                                                        'bg-slate-900 text-white': isSelectedDate(date),
+                                                        'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
+                                                        'hover:border-slate-900': !isPastDate(date)
+                                                    }">
+                                                </div>
+                                            </template>
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="space-y-3">
-                    <h1 class="text-lg md:text-2xl font-semibold ">Durasi Sewa</h1>
-                    <div class="flex space-x-2 w-full" x-data="{
-                        activeTab: @entangle('selectedDuration').live,
-                        price: @entangle('selectedPrice').live,
-                    
-                        setActiveTab(tab, priceValue) {
-                            console.log(tab, priceValue);
-                            this.activeTab = tab;
-                            this.price = priceValue;
-                        }
-                    }">
-                        @foreach ($iphone->durations as $item)
-                            <div @click="setActiveTab({{ $item['hours'] }}, {{ $item->pivot->price }})"
-                                :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
-                                class="p-2 cursor-pointer text-black w-full font-semibold text-center border-2 border-slate-900">
-                                {{ $item['hours'] }} jam
-                            </div>
-                        @endforeach
-
-                    </div>
-                </div>
-                <div>
-                    <h1 class="text-lg md:text-2xl font-semibold ">Status</h1>
-                    <div class="relative">
-                        <div class="{{ $is_available === true ? 'bg-green-200' : 'bg-red-200' }} p-2 w-fit">
-                            @if ($is_available === true)
-                                <h1 class="text-green-600 font-semibold text-sm sm:text-base">tersedia</h1>
-                                <div
-                                    class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
-                                    <p>tersedia untuk hari yang dipilih</p>
+                    <div class="space-y-3">
+                        <h1 class="text-lg md:text-2xl font-semibold ">Durasi</h1>
+                        <div class="flex space-x-2 w-full" x-data="{
+                            activeTab: @entangle('selectedDuration').live,
+                            price: @entangle('selectedPrice').live,
+                        
+                            setActiveTab(tab, priceValue) {
+                                console.log(tab, priceValue);
+                                this.activeTab = tab;
+                                this.price = priceValue;
+                            }
+                        }">
+                            @foreach ($iphone->durations as $item)
+                                <div @click="setActiveTab({{ $item['hours'] }}, {{ $item->pivot->price }})"
+                                    :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
+                                    class="p-2.5 cursor-pointer text-black w-full font-semibold text-center border-2 border-slate-900">
+                                    {{ $item['hours'] }} jam
                                 </div>
-                            @else
-                                <div>
-                                    <h1 class="text-red-600 font-semibold text-sm sm:text-base">tidak tersedia</h1>
-                                    <div
-                                        class="text-xs sm:text-sm font-semibold text-slate-500 absolute -bottom-5 -left-[1px]">
-                                        <p>tidak tersedia untuk hari yang dipilih</p>
-                                    </div>
+                            @endforeach
 
-                                </div>
-                            @endif
                         </div>
-
                     </div>
+
                 </div>
             </div>
             <div class="mt-14 space-y-2 hidden sm:flex flex-col" x-data="{ price: @entangle('selectedPrice').live }">
@@ -293,12 +287,40 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                 </button>
             </div>
+            <div x-data="{ expanded: false }">
+                <div class="border-b-2 border-gray-200 py-4 mt-3 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
+                    @click="expanded = ! expanded">
+                    <h1>Deskripsi</h1>
+                    <div>
+                        <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
+                            class="ease-in duration-200" :class="expanded ? 'rotate-180' : ''"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                            </g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                                    stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                                </path>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div x-show="expanded" x-collapse class="mt-4" x-cloak>
+                    <div
+                        class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex flex-col">
+                        {!! $iphone->description !!}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <button type="button" wire:click="bookingNow"
-        class="flex justify-between items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-5 hover:bg-white hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0  sm:hidden">
+        class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-5 hover:bg-white hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0  sm:hidden">
         <h1 class="text-xl font-bold">
-            Booking Sekarang
+            {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
         </h1>
         <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
             <svg width="64" height="20" viewBox="0 0 64 16" xmlns="http://www.w3.org/2000/svg">
@@ -308,6 +330,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </svg>
         </div>
     </button>
+    {{-- Reviews --}}
     <div class="xl:w-[65%] min-h-[100vh] p-3 xl:p-0 mt-10 xl:mt-0">
         <div class="space-y-5">
 
@@ -347,7 +370,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
                     </div>
                     <div>
-                        <h1 class="text-xl font-medium ">Nomor telephone</h1>
+                        <h1 class="text-xl font-medium ">Nomor Whatsapp</h1>
                         <div x-data="{
                             countryCode: @entangle('countryCode'),
                             customerPhone: @entangle('customer_phone').live,
