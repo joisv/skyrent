@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Models\Iphones;
 use App\Models\Review;
 use Illuminate\Support\Str;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
+use Livewire\Attributes\Modelable;
+use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
 class Reviews extends Component
@@ -13,21 +16,18 @@ class Reviews extends Component
     public $comment;
     public $rating;
     public $name;
+    #[Reactive]
     public $reviews;
+    #[Modelable]
     public $avgRating;
 
-    public function mount($iphone_id, $rating, $name)
+    public function mount($iphone_id, $rating, $name , $reviews, $avgRating)
     {
         $this->iphone_id =  $iphone_id;
         $this->rating = $rating;
         $this->name = $name;
-        $this->avgRating = number_format(round(Review::avg('rating') * 2) / 2, 1);
-        $this->getReviews();
-    }
-
-    public function getReviews()
-    {
-        $this->reviews = Review::orderBy('created_at', 'desc')->get();
+        $this->reviews = $reviews;
+        $this->avgRating = $avgRating;
     }
 
     public function save()
@@ -55,8 +55,8 @@ class Reviews extends Component
             ->toast()
             ->position('top-end')
             ->show();
-
-        $this->getReviews();
+        $this->dispatch('get-reviews');
+        // $this->getReviews();
     }
 
     function generateAnonymousName(): string

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\Payment;
+use App\Models\Review;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -37,6 +38,9 @@ class Detail extends Component
 
     public $rating = 0;
     public $name;
+
+    public $reviews;
+    public $avgRating;
 
 
     public string $bookind_code;
@@ -149,7 +153,7 @@ class Detail extends Component
         ]);
 
         $message = "Halo {$booking->customer_name}, 👋\n\n"
-            . "Terima kasih telah melakukan booking di *SkyRental* 📱✨\n\n"
+            . "Terima kasih telah melakukan booking di *Skyrental* 📱✨\n\n"
             . "Berikut adalah detail booking Anda:\n"
             . "──────────────────────\n"
             . "📌 Kode Booking : *{$booking->booking_code}*\n"
@@ -160,7 +164,7 @@ class Detail extends Component
             . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
             . "──────────────────────\n\n"
             . "Untuk memeriksa status booking Anda, silakan kunjungi link berikut:\n"
-            . url('/booking-status') . "\n\n"
+            . url('/booking-status')  . "\n\n"
             . "Mohon pastikan nomor WhatsApp yang Anda gunakan benar agar dapat menerima informasi lebih lanjut.\n\n"
             . "Terima kasih 🙏\n"
             . "*SkyRental*";
@@ -175,7 +179,7 @@ class Detail extends Component
             . "<b>Waktu</b>       : {$booking->requested_time}\n"
             . "<b>Durasi</b>      : {$booking->duration} jam\n"
             . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
-            . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
+            . "🔗 <a href='" . url('/admin/bookings/') . "'>Lihat detail di Admin Panel</a>";
 
         $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
         $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
@@ -251,6 +255,16 @@ class Detail extends Component
         $this->selectedDuration = $iphone->durations->first()->hours ?? 1; // Default to first duration or 1 hour
         $this->selectedPrice = $iphone->durations->first()->pivot->price ?? 0; // Default to first duration price or 0
         $this->name = $this->generateAnonymousName();
+        $this->getReviews();
+    }
+
+    #[On('get-reviews')]
+    public function getReviews()
+    {
+        $this->reviews = Review::where('iphone_id', $this->selectedIphoneId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $this->avgRating = number_format(round($this->reviews->avg('rating') * 2) / 2, 1);
     }
 
     public function render()

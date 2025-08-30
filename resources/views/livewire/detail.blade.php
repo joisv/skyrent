@@ -122,7 +122,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         <path
                             d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                     </svg>
-                    <span class="text-sm font-semibold">( {{ $rating }} )</span>
+                    <span class="text-sm font-semibold">( {{ $avgRating }} )</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <h1 class="text-3xl font-semibold">{{ $iphone->name }}</h1>
@@ -141,7 +141,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
         <div
-            class="md:full xl:w-[30%] h-fit border-none md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
+            class="md:full xl:w-[30%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
             <div class="space-y-4">
                 {{-- BOOKING --}}
                 <div class="flex flex-col-reverse">
@@ -274,20 +274,28 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                 </div>
             </div>
-            <div class="mt-14 space-y-2 hidden sm:flex flex-col" x-data="{ price: @entangle('selectedPrice').live }">
+            <div class="mt-5 space-y-2 hidden sm:flex flex-col" x-data="{ price: @entangle('selectedPrice').live }">
                 <span class="text-xl sm:text-2xl font-bold hidden md:flex"
                     x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                 <button type="button" wire:click="bookingNow"
-                    class="flex justify-between items-center space-x-4 bg-white text-black text-xl font-semibold group overflow-hidden cursor-pointer border-2 border-slate-900 p-3 hover:bg-slate-900 hover:text-white transition duration-700 ease-in-out w-full">
-                    <h1 class="text-lg sm:text-xl font-bold">
-                        Sewa Sekarang
-                    </h1>
+                    class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-4 hover:bg-gray-300 border-2 hover:border-black hover:text-black transition duration-700 ease-in-out w-full hidden sm:flex">
+                    <div class="text-start">
+                        <h1 class="text-xl font-bold">
+                            {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
+                        </h1>
+                    </div>
                     <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
-                        <x-icons.arrow1 />
+                        <svg width="64" height="20" viewBox="0 0 64 16" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M63.7071 8.70711C64.0976 8.31658 64.0976 7.68342 63.7071 7.29289L57.3431 0.928932C56.9526 0.538408 56.3195 0.538408 55.9289 0.928932C55.5384 1.31946 55.5384 1.95262 55.9289 2.34315L61.5858 8L55.9289 13.6569C55.5384 14.0474 55.5384 14.6805 55.9289 15.0711C56.3195 15.4616 56.9526 15.4616 57.3431 15.0711L63.7071 8.70711ZM0 8V9H63V8V7H0V8Z"
+                                fill="white" />
+                        </svg>
                     </div>
                 </button>
+                <span
+                    class="text-xs italic text-red-500">{{ !$is_available ? 'tidak tersedia untuk tanggal yang dipilih' : '' }}</span>
             </div>
-            <div x-data="{ expanded: false }">
+            <div x-data="{ expanded: false }" class="flex flex-col md:hidden">
                 <div class="border-b-2 border-gray-200 py-4 mt-3 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
                     @click="expanded = ! expanded">
                     <h1>Deskripsi</h1>
@@ -317,11 +325,16 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
     </div>
+    {{--  --}}
     <button type="button" wire:click="bookingNow"
-        class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-5 hover:bg-white hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0  sm:hidden">
-        <h1 class="text-xl font-bold">
-            {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
-        </h1>
+        class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-3 hover:bg-gray-300 hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0  sm:hidden hover:border-2 hover:border-black">
+        <div class="text-start">
+            <h1 class="text-xl font-bold">
+                {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
+            </h1>
+            <span
+                class="text-xs italic text-red-500">{{ !$is_available ? 'tidak tersedia untuk tanggal yang dipilih' : '' }}</span>
+        </div>
         <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
             <svg width="64" height="20" viewBox="0 0 64 16" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -331,10 +344,28 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </button>
     {{-- Reviews --}}
-    <div class="xl:w-[65%] min-h-[100vh] p-3 xl:p-0 mt-10 xl:mt-0">
-        <div class="space-y-5">
+    <div class="xl:w-[65%] p-3 xl:p-0 xl:mt-0" x-data="{ reviewsOpen: false }">
+        <div class="border-b-2 border-gray-200 py-4 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
+            @click="reviewsOpen = ! reviewsOpen">
+            <h1>Lihat Reviews</h1>
+            <div>
+                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" class="ease-in duration-200"
+                    :class="reviewsOpen ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                    </g>
+                    <g id="SVGRepo_iconCarrier">
+                        <path
+                            d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                            stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                        </path>
+                    </g>
+                </svg>
+            </div>
+        </div>
+        <div class="space-y-5" x-show="reviewsOpen" x-collapse x-cloak class="">
 
-            <div class="space-y-3">
+            <div class="space-y-3 mt-4">
                 <div class="flex justify-start items-center space-x-4">
                     <div class="w-[40px] sm:w-[60px] h-[40px] sm:h-[60px] rounded-full overflow-hidden">
                         <img src="https://placehold.co/600x400" alt="" srcset=""
@@ -347,10 +378,11 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                     </div>
                 </div>
-                <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name" />
+                <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name" :avgRating="$avgRating" :reviews="$reviews" />
             </div>
         </div>
     </div>
+    <livewire:cards lazy="on-load" :title="'Mungkin anda tertarik'" />
     <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
         <form wire:submit="booking">
             @if ($errors->any())

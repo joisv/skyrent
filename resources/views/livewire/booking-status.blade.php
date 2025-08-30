@@ -47,6 +47,27 @@
                 <div class="text-right text-sm text-blue-800">
                     <p>{{ $booking->booking_code ?? '-' }}</p>
                     <p>{{ \Carbon\Carbon::parse($booking->created)->format('d M Y') }}</p>
+                    <div class="flex items-center justify-center gap-2 mt-1">
+                        @if ($booking->status == 'pending')
+                            <span
+                                class="px-3 py-1 rounded bg-yellow-500 text-white font-medium flex items-center gap-1">
+                                <x-heroicon-o-clock class="w-4 h-4" /> Menunggu Pembayaran
+                            </span>
+                        @elseif($booking->status == 'confirmed')
+                            <span class="px-3 py-1 rounded bg-green-500 text-white font-medium flex items-center gap-1">
+                                <x-heroicon-o-check-circle class="w-4 h-4" /> Dikonfirmasi
+                            </span>
+                        @elseif($booking->status == 'returned')
+                            <span class="px-3 py-1 rounded bg-blue-500 text-white font-medium flex items-center gap-1">
+                                <x-heroicon-o-arrow-uturn-left class="w-4 h-4" /> Dikembalikan
+                            </span>
+                        @elseif($booking->status == 'cancelled')
+                            <span class="px-3 py-1 rounded bg-red-500 text-white font-medium flex items-center gap-1">
+                                <x-heroicon-o-x-circle class="w-4 h-4" /> Dibatalkan
+                            </span>
+                        @endif
+                    </div>
+
                 </div>
             </div>
 
@@ -90,17 +111,13 @@
                         <td class="py-2">Pembayaran</td>
                         <td class="text-right">{{ $booking->payment->name }}</td>
                     </tr>
-                    <tr class="text-blue-800">
-                        <td class="py-2">Status</td>
-                        <td class="text-right capitalize">{{ $booking->status }}</td>
-                    </tr>
                     <tr class="font-bold text-blue-800 border-t border-gray-400">
                         <td class="py-2">TOTAL</td>
                         <td class="text-right">Rp {{ number_format($booking->price, 0, ',', '.') }}</td>
                     </tr>
                 </tbody>
             </table>
-           
+
             {{-- Payment --}}
             <div class="flex justify-between items-start text-sm">
                 <div class="space-y-2">
@@ -118,21 +135,27 @@
                 {{-- QR Code --}}
                 @if ($booking->payment)
                     <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
-                        class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md">
+                        class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md"
+                        @click="() => $dispatch('open-modal', 'payment')">
                 @else
                     <p><em>Belum ada data pembayaran</em></p>
                 @endif
             </div>
-             {{-- Tombol Konfirmasi Pembayaran --}}
+            {{-- Tombol Konfirmasi Pembayaran --}}
             <div class="mt-1">
                 <button wire:click="confirmPayment({{ $booking->id }})"
                     class="w-full sm:w-auto px-6 py-3 bg-gray-900 hover:bg-white hover:text-black 
                text-white font-semibold shadow-xl 
                transition duration-200 ease-in-out flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m6.75-1.5a9 9 0
-                  11-18 0 9 9 0 0118 0z" />
+                    <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g id="SVGRepo_iconCarrier">
+                            <circle cx="12" cy="12" r="10" stroke="#ffffff" stroke-width="1.5"></circle>
+                            <path d="M8.5 12.5L10.5 14.5L15.5 9.5" stroke="#ffffff" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round"></path>
+                        </g>
                     </svg>
                     Konfirmasi Pembayaran
                 </button>
@@ -141,6 +164,11 @@
                 </p>
             </div>
         </div>
+        @if ($booking->payment)
+            <x-modal name="payment" :show="$errors->isNotEmpty()">
+                <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
+                        class="w-full h-full object-cover " >
+            </x-modal>
+        @endif  
     @endif
-
 </div>
