@@ -13,10 +13,10 @@
     </div>
     <div>
         <div x-cloak x-data
-            class="flex flex-col lg:hidden w-full  bg-black h-screen fixed z-50 p-2 right-0 ease-in duration-100 top-0"
+            class="flex flex-col lg:hidden w-full  bg-black dark:bg-white h-screen fixed z-50 p-2 right-0 ease-in duration-100 top-0"
             :class="{ 'translate-x-full': !setNav, '': setNav }">
             <div
-                class=" w-full flex flex-col justify-center items-center text-gray-200 h-full text-center text-3xl font-medium ">
+                class=" w-full flex flex-col justify-center items-center text-gray-200 dark:text-black dark:font-bold h-full text-center text-3xl font-medium ">
                 <div class="space-y-10">
                     <ul class="space-y-2">
                         <x-responsif-link :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate >
@@ -106,8 +106,10 @@
                     </div>
 
                 </div>
-                <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-600 mx-5 pt-5">
+                <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-600 mx-5 pt-5 dark:text-gray-200">
                     <h1>Capture the Moment, Live the Experience</h1>
+                    <x-mary-theme-toggle />
+
                 </div>
             </div>
 
@@ -136,8 +138,8 @@
             </ul> --}}
             <button class="absolute top-4 right-4" @click="setNav = false">
                 <div class="flex space-x-3 items-center">
-                    <h3 class="text-gray-200 text-xl font-medium">close</h3>
-                    <svg fill="#e5e7eb" width="20px" height="20px" viewBox="0 0 16 16"
+                    <h3 class="text-gray-200 text-xl font-medium dark:text-black">close</h3>
+                    <svg class="fill-[#e5e7eb] dark:fill-black" width="20px" height="20px" viewBox="0 0 16 16"
                         xmlns="http://www.w3.org/2000/svg" stroke="#e5e7eb" stroke-width="0.00016">
                         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                         <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
