@@ -34,7 +34,8 @@ class BookingObserver
             $booking->saveQuietly(); // agar tidak loop observer
         }
 
-        if (!$booking->revenue) {
+        if (!$booking->revenue && $booking->status !== 'cancelled') {
+            
             Revenue::create([
                 'booking_id' => $booking->id,
                 'amount' => $booking->price,

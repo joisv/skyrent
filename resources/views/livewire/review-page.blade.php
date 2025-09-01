@@ -45,7 +45,6 @@
 
 
         </div>
-        {{-- <div class="swiper-pagination"></div> --}}
     </div>
     <script>
         reviewSwiper = new Swiper(".mySwiperReview", {

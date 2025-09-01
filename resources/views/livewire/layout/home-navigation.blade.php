@@ -4,11 +4,11 @@
             <x-home-navlink :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate class="">Home</x-home-navlink>
             <x-home-navlink :href="route('products')" :active="request()->routeIs('products')" wire:navigate class="">iPhones</x-home-navlink>
             <x-home-navlink :href="route('booking.status')" :active="request()->routeIs('booking.status')" wire:navigate class="">Booking Status</x-home-navlink>
-            <x-home-navlink :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate class="">Harga</x-home-navlink>
+            {{-- <x-home-navlink :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate class="">Harga</x-home-navlink> --}}
             <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Hubungi Kami</x-home-navlink>
         </div>
         <div class="flex items-center space-x-3 w-[40%] h-full justify-end">
-            <x-mary-theme-toggle />
+            {{-- <x-mary-theme-toggle /> --}}
         </div>
     </div>
     <div>
@@ -30,9 +30,9 @@
                             Booking Status
                         </x-responsif-link>
 
-                        <x-responsif-link :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate >
+                        {{-- <x-responsif-link :href="route('prices')" :active="request()->routeIs('prices')" wire:navigate >
                             Harga
-                        </x-responsif-link>
+                        </x-responsif-link> --}}
 
                         <x-responsif-link :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate>
                             Hubungi Kami
@@ -108,7 +108,7 @@
                 </div>
                 <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-600 mx-5 pt-5 dark:text-gray-200">
                     <h1>Capture the Moment, Live the Experience</h1>
-                    <x-mary-theme-toggle />
+                    {{-- <x-mary-theme-toggle /> --}}
 
                 </div>
             </div>

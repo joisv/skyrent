@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Booking;
+use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\Http;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
@@ -12,6 +13,7 @@ class BookingStatus extends Component
 
     public $bookingCode;
     public $booking;
+    public $expireAt;
 
     public function mount($code)
     {
@@ -20,7 +22,7 @@ class BookingStatus extends Component
             $this->checkBooking();
         }
     }
-    
+
     public function checkBooking()
     {
         $this->validate([
@@ -31,9 +33,24 @@ class BookingStatus extends Component
             ->where('booking_code', $this->bookingCode)
             ->first();
 
+        $requestedAt = Carbon::parse($this->booking->requested_booking_date . ' ' . $this->booking->requested_time);
+        $this->expireAt = $requestedAt->copy()->addMinutes(30)->timestamp;
+
         if (!$this->booking) {
             $this->addError('bookingCode', 'Kode booking tidak ditemukan.');
         }
+    }
+
+    public function cancelBooking()
+    {
+        if ($this->booking->status === 'pending') {
+            $this->booking->update([
+                'status' => 'cancelled',
+            ]);
+        }
+
+        // refresh data biar status terbaru kebaca di view
+        $this->booking->refresh();
     }
 
     public function confirmPayment($bookingId)
@@ -63,6 +80,8 @@ class BookingStatus extends Component
             ->toast()
             ->success()
             ->show(); // event JS/alert
+
+        $this->dispatch('close-modal');
     }
 
     public function render()

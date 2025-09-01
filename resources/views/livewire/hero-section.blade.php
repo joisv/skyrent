@@ -35,13 +35,13 @@
             <div class="swiper mySwiper w-full h-[40vh] sm:h-[60vh] lg:h-[70vh]">
                 <div class="swiper-wrapper ">
                     @foreach ($sliders as $slider)
-                        <div class="swiper-slide flex justify-center items-center ">
+                        <a href="{{ route('detail', $slider->iphone->slug) }}" class="swiper-slide flex justify-center items-center ">
                             <img src="{{ asset('storage/' . $slider->main) }}" alt="iPhone"
                                 class="w-full h-full object-contain">
-                        </div>
+                        </a>
                     @endforeach
                 </div>
-
+                <div class="swiper-pagination"></div>
             </div>
         </div>
 
@@ -57,6 +57,9 @@
                     slidesPerView: 1, // di desktop
                     spaceBetween: 0,
                 }
+            },
+            pagination: {
+                el: ".swiper-pagination",
             },
             loop: true,
             loopedSlides: 5,

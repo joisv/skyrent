@@ -1,4 +1,24 @@
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-4xl mx-auto space-y-6" x-data="{
+    expireAt: {{ $expireAt }} * 1000,
+    now: Date.now(),
+    minutes: 0,
+    seconds: 0,
+    expired: false,
+    updateTimer() {
+        let distance = this.expireAt - this.now;
+        if (distance <= 0) {
+            this.minutes = 0;
+            this.seconds = 0;
+            if (!this.expired) {
+                this.expired = true;
+                $wire.cancelBooking(); // panggil Livewire
+            }
+            return;
+        }
+        this.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        this.seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    }
+}">
     <div class="w-full ">
         <div class="flex items-center justify-center">
             <span class="text-5xl font-semibold">SKYRENTAL</span>
@@ -135,29 +155,33 @@
                 {{-- QR Code --}}
                 @if ($booking->payment)
                     <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
-                        class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md"
-                        @click="() => $dispatch('open-modal', 'payment')">
+                        class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md">
                 @else
                     <p><em>Belum ada data pembayaran</em></p>
                 @endif
             </div>
             {{-- Tombol Konfirmasi Pembayaran --}}
-            <div class="mt-1">
-                <button wire:click="confirmPayment({{ $booking->id }})"
-                    class="w-full sm:w-auto px-6 py-3 bg-gray-900 hover:bg-white hover:text-black 
-               text-white font-semibold shadow-xl 
-               transition duration-200 ease-in-out flex items-center justify-center gap-2">
-                    <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                        <g id="SVGRepo_iconCarrier">
-                            <circle cx="12" cy="12" r="10" stroke="#ffffff" stroke-width="1.5"></circle>
-                            <path d="M8.5 12.5L10.5 14.5L15.5 9.5" stroke="#ffffff" stroke-width="1.5"
-                                stroke-linecap="round" stroke-linejoin="round"></path>
-                        </g>
-                    </svg>
-                    Konfirmasi Pembayaran
+            <div class="mt-3">
+                <button @click="() => $dispatch('open-modal', 'payment')" :disabled="expired"
+                    class="w-full sm:w-auto px-6 py-3 
+           bg-gray-900 hover:bg-white hover:text-black 
+           text-white font-semibold shadow-xl 
+           transition duration-200 ease-in-out 
+           flex items-center justify-center gap-2
+           disabled:opacity-50 disabled:cursor-not-allowed">
+
+                    <template x-if="expired">
+                        <span>Expired</span>
+                    </template>
+
+                    <template x-if="!expired">
+                        <div class="flex space-x-1">
+                            <p>Klik untuk pembayaran</p>
+                            <span class="text-red-500">
+                                <span x-text="minutes"></span>m <span x-text="seconds"></span>s
+                            </span>
+                        </div>
+                    </template>
                 </button>
                 <p class="text-xs text-gray-500 mt-2 italic">
                     *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
@@ -165,10 +189,65 @@
             </div>
         </div>
         @if ($booking->payment)
-            <x-modal name="payment" :show="$errors->isNotEmpty()">
-                <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
-                        class="w-full h-full object-cover " >
+            <x-modal name="payment" :show="true">
+                <div class="max-w-md mx-auto bg-white overflow-hidden " x-init="setInterval(() => { now = Date.now(); updateTimer() }, 1000)" @close-modal.window="show = false">
+                    <!-- Header -->
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-800">Konfirmasi Pembayaran</h2>
+                            <p class="text-sm text-gray-500">Booking #{{ $booking->booking_code }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="px-6 py-4 space-y-3">
+                        <!-- Timer -->
+                        <div class="text-center">
+                            <template x-if="!expired">
+                                <span class="text-red-600 font-bold text-lg">
+                                    <span x-text="minutes"></span>m <span x-text="seconds"></span>s
+                                </span>
+                            </template>
+                            <template x-if="expired">
+                                <span class="text-gray-400 font-semibold text-lg">⏰ Expired</span>
+                            </template>
+                        </div>
+
+                        <!-- Info Booking -->
+                        <div class="text-sm text-gray-700 space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Tanggal</span>
+                                <span
+                                    class="font-medium">{{ \Carbon\Carbon::parse($booking->created_at)->format('d M Y') }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Durasi</span>
+                                <span class="font-medium">{{ $booking->duration }} Jam</span>
+                            </div>
+                            <div class="flex justify-between border-t pt-2 mt-2">
+                                <span class="font-semibold">Total</span>
+                                <span
+                                    class="font-bold text-gray-900">Rp{{ number_format($booking->price, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt="Payment Icon"
+                                class="w-full h-full object-contain">
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                        <button :disabled="expired" wire:click="confirmPayment({{ $booking->id }})"
+                            class="flex-1 mr-2 px-5 py-3 bg-blue-600 text-white font-semibold 
+                   hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            Konfirmasi
+                        </button>
+                        <button class="flex-1 ml-2 px-5 py-3 text-gray-600 font-medium hover:text-red-600" @click="show = false">
+                            Batalkan
+                        </button>
+                    </div>
+                </div>
+
             </x-modal>
-        @endif  
+        @endif
     @endif
 </div>
