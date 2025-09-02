@@ -57,8 +57,8 @@ class BookingStatus extends Component
     {
         $booking = Booking::with('payment')->findOrFail($bookingId);
 
-        $token  = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
+        $token   = config('services.telegram.bot_token');
+        $chatId  = config('services.telegram.chat_id');
 
         $message = "📢 <b>Konfirmasi Pembayaran</b>\n\n"
             . "<b>Kode Booking</b>: {$booking->booking_code}\n"

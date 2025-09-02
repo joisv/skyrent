@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id'   => env('TELEGRAM_CHAT_ID'),
+    ],
+
+    'expired' => [
+        'minutes' => env('BOOKING_EXPIRE_MINUTES', 30),
+    ],
+
 ];

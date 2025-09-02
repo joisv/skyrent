@@ -189,7 +189,7 @@
             </div>
         </div>
         @if ($booking->payment)
-            <x-modal name="payment" :show="true">
+            <x-modal name="payment" :show="$errors->isNotEmpty()" >
                 <div class="max-w-md mx-auto bg-white overflow-hidden " x-init="setInterval(() => { now = Date.now(); updateTimer() }, 1000)" @close-modal.window="show = false">
                     <!-- Header -->
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">

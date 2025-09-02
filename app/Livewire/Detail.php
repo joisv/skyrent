@@ -7,7 +7,6 @@ use App\Models\Iphones;
 use App\Models\Payment;
 use App\Models\Review;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -181,17 +180,18 @@ class Detail extends Component
             . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
             . "🔗 <a href='" . url('/admin/bookings/') . "'>Lihat detail di Admin Panel</a>";
 
-        $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
-        $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
+        $telegramToken   = config('services.telegram.bot_token');
+        $chatId  = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
 
         Http::withHeaders([
-            'Authorization' => env('FONNTE_TOKEN'),
+            'Authorization' => $whatsappToken,
         ])->post('https://api.fonnte.com/send', [
             'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
             'message' => $message,
         ]);
 
-        Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+        Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
             'chat_id'    => $chatId,
             'text'       => $adminMessage,
             'parse_mode' => 'HTML',
