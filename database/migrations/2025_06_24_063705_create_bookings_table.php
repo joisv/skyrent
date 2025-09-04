@@ -33,6 +33,8 @@ return new class extends Migration
             $table->date('end_booking_date')->nullable();
             $table->time('end_time')->nullable();
 
+            $table->boolean('reminder_sent')->default(false);
+            
             $table->integer('duration');
             $table->timestamp('created');
 
