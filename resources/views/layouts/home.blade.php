@@ -32,11 +32,82 @@
     <div class="antialiased font-sans dark:bg-gray-900" x-data="{ setNav: false, }">
         <div class="w-full flex justify-between items-center p-3 lg:hidden" wire:ignore>
             <button @click="setNav = true" class="">
-                <svg width="54px" height="54px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 8.25H4.5V6.75H19.5V8.25Z" fill="#000000"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 12.75H4.5V11.25H19.5V12.75Z" fill="#000000"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 17.25H4.5V15.75H19.5V17.25Z" fill="#000000"></path> </g></svg>
+                <svg width="54px" height="54px" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 8.25H4.5V6.75H19.5V8.25Z" fill="#000000">
+                        </path>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 12.75H4.5V11.25H19.5V12.75Z"
+                            fill="#000000"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M19.5 17.25H4.5V15.75H19.5V17.25Z"
+                            fill="#000000"></path>
+                    </g>
+                </svg>
             </button>
         </div>
         <div class="">
             <livewire:layout.home-navigation />
+            @if (!request()->routeIs('detail'))
+                <div x-data="{ open: false }"
+                    class="fixed bottom-6 right-6 sm:right-20 flex flex-col-reverse items-end space-y-reverse space-y-3"
+                    @click.outside="open = false">
+                    <button @click="open = !open" class="relative inline-block px-4 py-3 font-medium group">
+                        <span
+                            class="absolute inset-0 w-full h-full transition duration-200 ease-out transform translate-x-1 translate-y-1 bg-black group-hover:-translate-x-0 group-hover:-translate-y-0"></span>
+                        <span
+                            class="absolute inset-0 w-full h-full bg-white border-2 border-black group-hover:bg-black"></span>
+                        <span class="relative text-black group-hover:text-white">Customer service</span>
+                    </button>
+
+                    <!-- Tombol Sosial Media -->
+                    <div class="flex flex-col items-end space-y-3 mb-3" x-show="open"
+                        x-transition:enter="transition transform duration-300"
+                        x-transition:enter-start="opacity-0 translate-y-4"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition transform duration-300"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 translate-y-4" x-cloak>
+
+                        <!-- WhatsApp -->
+                        <a href="{{ $setting->whatsapp }}" target="_blank"
+                            class="relative inline-block px-4 py-2 font-medium group">
+                            <span
+                                class="absolute inset-0 w-full h-full transition duration-200 ease-out transform translate-x-1 translate-y-1 bg-green-600 group-hover:translate-x-0 group-hover:translate-y-0"></span>
+                            <span
+                                class="absolute inset-0 w-full h-full bg-white border-2 border-green-600 group-hover:bg-green-600"></span>
+                            <span class="relative text-green-600 group-hover:text-white flex items-center gap-2">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </span>
+                        </a>
+
+                        <!-- Instagram -->
+                        <a href="{{ $setting->instagram }}" target="_blank"
+                            class="relative inline-block px-4 py-2 font-medium group">
+                            <span
+                                class="absolute inset-0 w-full h-full transition duration-200 ease-out transform translate-x-1 translate-y-1 bg-pink-500 group-hover:translate-x-0 group-hover:translate-y-0"></span>
+                            <span
+                                class="absolute inset-0 w-full h-full bg-white border-2 border-pink-500 group-hover:bg-pink-500"></span>
+                            <span class="relative text-pink-500 group-hover:text-white flex items-center gap-2">
+                                <i class="fab fa-instagram"></i> Instagram
+                            </span>
+                        </a>
+
+                        <!-- Email -->
+                        <a href="mailto:email@example.com" class="relative inline-block px-4 py-2 font-medium group">
+                            <span
+                                class="absolute inset-0 w-full h-full transition duration-200 ease-out transform translate-x-1 translate-y-1 bg-red-600 group-hover:translate-x-0 group-hover:translate-y-0"></span>
+                            <span
+                                class="absolute inset-0 w-full h-full bg-white border-2 border-red-600 group-hover:bg-red-600"></span>
+                            <span class="relative text-red-600 group-hover:text-white flex items-center gap-2">
+                                <i class="fas fa-envelope"></i> Email
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            @endif
+
             {{-- <button type="button" class="p-2 bg-primary bottom-3 right-3 flex  z-50"
                 @click="setNav = true" :class="setNav ? 'hidden' : ''">
                 <x-icons.dotmenu default="25px" />
@@ -57,10 +128,12 @@
                         <g id="SVGRepo_iconCarrier">
                             <path
                                 d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z"
-                                stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
                             <path
                                 d="M12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8C10.8954 8 10 8.89543 10 10C10 11.1046 10.8954 12 12 12Z"
-                                stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                stroke="#4b5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
                         </g>
                     </svg>
                     <span class="text-gray-600 font-semibold">Indonesia</span>

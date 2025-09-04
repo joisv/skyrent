@@ -3,6 +3,7 @@
     permalink: false,
     duration: true,
     durations: $wire.entangle('durations'),
+    seriesSetting: $persist(false),
 
     addDuration() {
         this.durations.push({
@@ -15,16 +16,49 @@
     deleteDuration(index) {
         this.durations.splice(index, 1);
     },
+
+    toggleSetting() {
+        this.seriesSetting = !this.seriesSetting;
+    },
 }">
     @if ($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
-            <ul class="list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div x-data="{ show: true }" {{-- auto hilang setelah 5 detik --}} x-show="show"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-[-10px]"
+            x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-300"
+            x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-[-10px]"
+            class="fixed top-6 right-6 w-full max-w-sm bg-white border border-red-300 rounded-lg shadow-lg p-4 z-50">
+
+            <div class="flex items-start gap-3">
+                <!-- Icon Error -->
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01M12 5a7 7 0 100 14a7 7 0 000-14z" />
+                    </svg>
+                </div>
+
+                <!-- Text -->
+                <div class="flex-1">
+                    <p class="font-medium text-gray-900">Error</p>
+                    <ul class="mt-1 text-sm text-gray-700 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <!-- Close button -->
+                <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </div>
     @endif
+
+
     <form wire:submit="save">
         <x-primary-button type="submit" class="disabled:bg-gray-600" wire:loading.attr="disabled">
             <div class="flex items-center space-x-1 w-full">
@@ -34,8 +68,7 @@
                 </h2>
             </div>
         </x-primary-button>
-        <button type="button"
-            class="absolute -top-16 -right-5 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
+        <button type="button" class="absolute top-28 -right-2 sm:-right-12 lg:hidden flex bg-blue-500 w-10 sm:w-20 p-1"
             @click="toggleSetting">
             <x-icons.setting />
         </button>
@@ -57,7 +90,7 @@
                 </div>
             </div>
             {{-- Setting series --}}
-            <div id="series_setting"
+            <div id="series_setting" :class="!seriesSetting ? 'translate-x-full' : ''"
                 class="fixed lg:translate-x-0 right-0 w-full sm:w-[35vw] lg:w-[24vw] xl:w-[23vw] bg-white p-5 rounded-sm top-0 h-screen space-y-4 overflow-y-auto ease-in duration-100">
                 <div class="flex items-center space-x-2">
                     <button type="button" class="z-50 lg:hidden flex " @click="toggleSetting">

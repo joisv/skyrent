@@ -326,14 +326,15 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </div>
     {{--  --}}
+    <span class="fixed bottom-16 text-sm italic text-red-500">{{ !$is_available ? 'tidak tersedia untuk tanggal yang dipilih' : '' }}</span>
+    
     <button type="button" wire:click="bookingNow"
-        class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-3 hover:bg-gray-300 hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0  sm:hidden hover:border-2 hover:border-black">
+        class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-4 hover:bg-gray-300 hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0 sm:hidden hover:border-2 hover:border-black">
         <div class="text-start">
             <h1 class="text-xl font-bold">
                 {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
             </h1>
-            <span
-                class="text-xs italic text-red-500">{{ !$is_available ? 'tidak tersedia untuk tanggal yang dipilih' : '' }}</span>
+            
         </div>
         <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
             <svg width="64" height="20" viewBox="0 0 64 16" xmlns="http://www.w3.org/2000/svg">

@@ -129,7 +129,7 @@
                     </tr>
                     <tr class="text-blue-800">
                         <td class="py-2">Pembayaran</td>
-                        <td class="text-right">{{ $booking->payment->name }}</td>
+                        <td class="text-right">{{ $booking->payment?->name }}</td>
                     </tr>
                     <tr class="font-bold text-blue-800 border-t border-gray-400">
                         <td class="py-2">TOTAL</td>

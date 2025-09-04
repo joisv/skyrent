@@ -8,7 +8,7 @@
             <x-home-navlink :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate class="">Hubungi Kami</x-home-navlink>
         </div>
         <div class="flex items-center space-x-3 w-[40%] h-full justify-end">
-            {{-- <x-mary-theme-toggle /> --}}
+            <x-mary-theme-toggle />
         </div>
     </div>
     <div>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-600 mx-5 pt-5 dark:text-gray-200">
                     <h1>Capture the Moment, Live the Experience</h1>
-                    {{-- <x-mary-theme-toggle /> --}}
+                    <x-mary-theme-toggle />
 
                 </div>
             </div>

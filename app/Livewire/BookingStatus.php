@@ -33,8 +33,12 @@ class BookingStatus extends Component
             ->where('booking_code', $this->bookingCode)
             ->first();
 
-        $requestedAt = Carbon::parse($this->booking->requested_booking_date . ' ' . $this->booking->requested_time);
-        $this->expireAt = $requestedAt->copy()->addMinutes(30)->timestamp;
+        if ($this->booking) {
+            $requestedAt = Carbon::parse($this->booking->requested_booking_date . ' ' . $this->booking->requested_time);
+            $this->expireAt = $requestedAt->copy()->addMinutes(30)->timestamp;
+        }else{
+            $this->addError('bookingCode', 'Kode booking tidak ditemukan.');
+        }
 
         if (!$this->booking) {
             $this->addError('bookingCode', 'Kode booking tidak ditemukan.');
