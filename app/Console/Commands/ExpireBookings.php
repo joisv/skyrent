@@ -29,7 +29,7 @@ class ExpireBookings extends Command
     {
         // Cek booking yang statusnya 'pending' dan waktu sekarang sudah lewat dari requested_booking_date + requested_time + 30 menit
         // Jika ada, ubah statusnya menjadi 'expired' dan kirim notifikasi ke admin & customer
-        $compareTime = now()->subMinutes(5); // Ubah ke 30 untuk produksi
+        $compareTime = now()->subMinutes(30); // Ubah ke 30 untuk produksi
         $token   = config('services.telegram.bot_token');
         $chatId  = config('services.telegram.chat_id');
         $whatsappToken = config('services.fonnte.token');
