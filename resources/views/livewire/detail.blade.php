@@ -326,15 +326,16 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </div>
     {{--  --}}
-    <span class="fixed bottom-16 text-sm italic text-red-500">{{ !$is_available ? 'tidak tersedia untuk tanggal yang dipilih' : '' }}</span>
-    
+    <span
+        class="fixed sm:hidden flex bottom-16 text-sm italic text-red-500">{{ !$is_available ? 'tidak tersedia untuk tanggal yang dipilih' : '' }}</span>
+
     <button type="button" wire:click="bookingNow"
         class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-4 hover:bg-gray-300 hover:text-black transition duration-700 ease-in-out w-full fixed bottom-0 sm:hidden hover:border-2 hover:border-black">
         <div class="text-start">
             <h1 class="text-xl font-bold">
                 {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
             </h1>
-            
+
         </div>
         <div class="w-fit h-full group-hover:translate-x-24 transition duration-200 ease-in-out">
             <svg width="64" height="20" viewBox="0 0 64 16" xmlns="http://www.w3.org/2000/svg">
@@ -379,7 +380,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                     </div>
                 </div>
-                <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name" :avgRating="$avgRating" :reviews="$reviews" />
+                <livewire:reviews :iphone_id="$selectedIphoneId" :rating="$rating" :name="$name" :avgRating="$avgRating"
+                    :reviews="$reviews" />
             </div>
         </div>
     </div>
@@ -387,12 +389,43 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
     <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
         <form wire:submit="booking">
             @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
-                    <ul class="list-disc list-inside">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div x-data="{ show: true }" x-show="show" {{-- auto hilang setelah 5 detik --}}
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-[-10px]"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-300"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-[-10px]"
+                    class=" fixed top-6 sm:right-20 sm:max-w-lg w-full bg-white border border-red-300 rounded-lg shadow-lg p-4 z-50">
+
+                    <div class="flex items-start gap-3">
+                        <!-- Icon Error -->
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01M12 5a7 7 0 100 14a7 7 0 000-14z" />
+                            </svg>
+                        </div>
+
+                        <!-- Text -->
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">Error</p>
+                            <ul class="mt-1 text-sm text-gray-700 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                        <!-- Close button -->
+                        <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             @endif
             <div class="p-4 border" x-on:close-modal.window="show = false">
@@ -401,6 +434,9 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         <h1 class="text-xl font-medium ">Nama</h1>
                         <input type="text" wire:model.live.debounce.250ms="customer_name"
                             class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
+                        @error('customer_name')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <h1 class="text-xl font-medium ">Nomor Whatsapp</h1>
@@ -430,13 +466,14 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                             <!-- Input Nomor -->
                             <input type="tel" id="customer_phone" x-model="customerPhone"
-                                @input="
-            let raw = $event.target.value.replace(/[^0-9]/g, '');
-            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';
-        "
+                                @input=" let raw = $event.target.value.replace(/[^0-9]/g, '');
+                                            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';"
                                 class="w-full p-2 border-2 border-slate-900" placeholder="8123-4567-8901" />
 
                         </div>
+                         @error('customer_phone')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div>
                         <h1 class="text-xl font-medium ">Email</h1>
@@ -447,25 +484,6 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                 {{-- Invoice --}}
                 <div class="mt-7 space-y-5">
-                    <div class="flex justify-between items-start w-full">
-                        {{-- <div class="">
-                            <div class="font-medium">
-                                <h1 class="text-2xl font-semibold mb-2">Rincian sewa</h1>
-                                <h2>{{ $customer_name }}</h2>
-                            <h2>{{ $customer_phone }}</h2>
-                            <h2>{{ $customer_email }}</h2>
-                                <h2>Jois Vanka</h2>
-                                <h2>+6283-1321-4535-4231</h2>
-                                <h2>joisvanka@gmail.com</h2>
-                            </div>
-                        </div> --}}
-                        {{-- <div class="w-full flex flex-col items-end font-medium">
-                            <h2>
-                                {{ $selectedDateFormatted }}
-                            </h2>
-                            <h3 class="font-semibold">Invoice no. #432893</h3>
-                        </div> --}}
-                    </div>
                     <div>
                         <h1 class="text-2xl font-semibold mb-4">Deskripsi</h1>
                         <div class="border-y-2 border-gray-400 py-6 my-py-6 space-y-1">
@@ -476,7 +494,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             </div>
                             <div class="flex justify-between items-center font-medium">
                                 <p>Durasi</p>
-                                <p>24 jam</p>
+                                <p>{{ $selectedDuration }} jam</p>
                             </div>
                             <div class="flex justify-between items-center font-medium">
                                 <p>Tanggal booking</p>
