@@ -88,7 +88,7 @@ class Create extends Component
             $bookingStart = Carbon::parse($booking->requested_booking_date . ' ' . $booking->requested_time);
 
             // Hitung bookingEnd berdasarkan requested + durasi
-            $bookingEnd = $bookingStart->copy()->addHours($booking->duration);
+            $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
 
             // Cek apakah waktu booking lama bertabrakan dengan booking baru
             return $bookingStart < $end && $bookingEnd > $start;
