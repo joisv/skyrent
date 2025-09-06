@@ -23,7 +23,6 @@ class Edit extends Component
 
     public function update()
     {
-        // dd($this->icon);
         $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',

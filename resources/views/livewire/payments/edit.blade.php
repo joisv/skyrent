@@ -12,9 +12,9 @@
         </div>
         <div>
             <label for="icon" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Icon</label>
-            @if ($payment)
+            @if ($icon)
                 <x-mary-file wire:model="icon" accept="image/png, image/jpeg">
-                    <img src="{{ $payment->icon ? asset('storage/' . $payment->icon) : '' }}" class="h-40 rounded-lg" />
+                    <img src="{{ $icon ? asset('storage/' . $icon) : 'https://placehold.co/600x400?text=placeholder' }}" class="h-40 rounded-lg" />
                 </x-mary-file>
             @endif
         </div>

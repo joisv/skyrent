@@ -12,9 +12,9 @@
         </div>
         <div>
             <label for="icon" class="block mb-1 text-sm font-medium text-gray-900 dark:text-white">Icon</label>
-            <x-mary-file wire:model="icon" accept="image/png, image/jpeg">
+            <x-mary-file wire:model.live="icon" accept="image/png, image/jpeg">
                 <img src="https://placehold.co/600x400?text=placeholder" class="h-40 rounded-lg" />
-                </x-file>
+            </x-mary-file>
         </div>
         <div>
             <x-mary-textarea label="Description" wire:model="description" placeholder="Here ..." hint="Max 1000 chars"

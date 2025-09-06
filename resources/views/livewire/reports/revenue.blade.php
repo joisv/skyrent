@@ -116,7 +116,7 @@
                         </x-tables.td>
 
                         <x-tables.td>
-                            {{ $revenue->booking->duration ?? '-' }} Menit
+                            {{ $revenue->booking->duration ?? '-' }} Jam
                         </x-tables.td>
 
                         <x-tables.td>

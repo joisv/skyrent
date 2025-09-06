@@ -41,6 +41,15 @@ class Create extends Component
 
     public $durations = [];
 
+    public function updatedSelectedPaymentId()
+    {
+        $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
+        if (!$this->selectedPayment) {
+            $this->selectedPaymentId = optional($this->payments->first())->id ?? null;
+            $this->selectedPayment = $this->payments->first();
+        }
+    }
+
     public function save()
     {
         // Validasi input awal
@@ -223,7 +232,7 @@ class Create extends Component
     {
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
         $this->payments = Payment::where('is_active', true)->orderBy('created_at', 'desc')->get();
-         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
+        $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
 
         if (!$this->selectedPayment) {
             $this->selectedPaymentId = optional($this->payments->first())->id ?? null;

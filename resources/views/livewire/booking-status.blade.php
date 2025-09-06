@@ -161,36 +161,40 @@
                 @endif
             </div>
             {{-- Tombol Konfirmasi Pembayaran --}}
-            <div class="mt-3">
-                <button @click="() => $dispatch('open-modal', 'payment')" :disabled="expired"
-                    class="w-full sm:w-auto px-6 py-3 
+            @if ($booking->status != 'confirmed')
+                <div class="mt-3">
+                    <button @click="() => $dispatch('open-modal', 'payment')" :disabled="expired"
+                        class="w-full sm:w-auto px-6 py-3 
            bg-gray-900 hover:bg-white hover:text-black 
            text-white font-semibold shadow-xl 
            transition duration-200 ease-in-out 
            flex items-center justify-center gap-2
            disabled:opacity-50 disabled:cursor-not-allowed">
 
-                    <template x-if="expired">
-                        <span>Expired</span>
-                    </template>
+                        <template x-if="expired">
+                            <span>Expired</span>
+                        </template>
 
-                    <template x-if="!expired">
-                        <div class="flex space-x-1">
-                            <p>Klik untuk pembayaran</p>
-                            <span class="text-red-500">
-                                <span x-text="minutes"></span>m <span x-text="seconds"></span>s
-                            </span>
-                        </div>
-                    </template>
-                </button>
-                <p class="text-xs text-gray-500 mt-2 italic">
-                    *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
-                </p>
-            </div>
+                        <template x-if="!expired">
+                            <div class="flex space-x-1">
+                                <p>Klik untuk pembayaran</p>
+                                <span class="text-red-500">
+                                    <span x-text="minutes"></span>m <span x-text="seconds"></span>s
+                                </span>
+                            </div>
+                        </template>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2 italic">
+                        *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
+                    </p>
+                </div>
+            @endif
         </div>
         @if ($booking->payment)
-            <x-modal name="payment" :show="$errors->isNotEmpty()" >
-                <div class="max-w-md mx-auto bg-white overflow-hidden " x-init="setInterval(() => { now = Date.now(); updateTimer() }, 1000)" @close-modal.window="show = false">
+            <x-modal name="payment" :show="$errors->isNotEmpty()">
+                <div class="max-w-md mx-auto bg-white overflow-hidden " x-init="setInterval(() => { now = Date.now();
+                    updateTimer() }, 1000)"
+                    @close-modal.window="show = false">
                     <!-- Header -->
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                         <div>
@@ -231,7 +235,7 @@
                             </div>
                         </div>
                         <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt="Payment Icon"
-                                class="w-full h-full object-contain">
+                            class="w-full h-full object-contain">
                     </div>
 
                     <!-- Footer -->
@@ -241,7 +245,8 @@
                    hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                             Konfirmasi
                         </button>
-                        <button class="flex-1 ml-2 px-5 py-3 text-gray-600 font-medium hover:text-red-600" @click="show = false">
+                        <button class="flex-1 ml-2 px-5 py-3 text-gray-600 font-medium hover:text-red-600"
+                            @click="show = false">
                             Batalkan
                         </button>
                     </div>
