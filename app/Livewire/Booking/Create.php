@@ -82,7 +82,9 @@ class Create extends Component
         $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
 
         // 🔍 Cek apakah ada booking bentrok
-        $bookings = Booking::where('iphone_id', $this->selectedIphoneId)->get();
+        $bookings = Booking::where('iphone_id', $this->selectedIphoneId)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->get();
 
         $conflict = $bookings->contains(function ($booking) use ($start, $end) {
             $bookingStart = Carbon::parse($booking->requested_booking_date . ' ' . $booking->requested_time);
