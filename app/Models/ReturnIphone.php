@@ -33,7 +33,7 @@ class ReturnIphone extends Model
         );
 
         // Waktu pengembalian (default ke sekarang kalau belum ada)
-        $returnedAt = $this->returned_at 
+        $returnedAt = $this->returned_at
             ? Carbon::parse($this->returned_at, 'Asia/Jakarta')
             : Carbon::now('Asia/Jakarta');
 
@@ -44,4 +44,18 @@ class ReturnIphone extends Model
         return $hoursLate * 5000;
     }
 
+    protected static function booted()
+    {
+        static::created(function ($returnIphone) {
+            // hanya kalau ada denda
+            if ($returnIphone->penalty_fee > 0) {
+                Revenue::create([
+                    'booking_id' => $returnIphone->booking_id,
+                    'amount'     => $returnIphone->penalty_fee,
+                    'type'       => 'penalty',
+                    'created'    => now(),
+                ]);
+            }
+        });
+    }
 }

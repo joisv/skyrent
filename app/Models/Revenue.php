@@ -13,6 +13,7 @@ class Revenue extends Model
     protected $fillable = [
         'booking_id',
         'amount',
+        'type',
         'created'
     ];
 

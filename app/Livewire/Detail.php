@@ -184,18 +184,18 @@ class Detail extends Component
         $chatId  = config('services.telegram.chat_id');
         $whatsappToken = config('services.fonnte.token');
 
-        Http::withHeaders([
-            'Authorization' => $whatsappToken,
-        ])->post('https://api.fonnte.com/send', [
-            'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
-            'message' => $message,
-        ]);
+        // Http::withHeaders([
+        //     'Authorization' => $whatsappToken,
+        // ])->post('https://api.fonnte.com/send', [
+        //     'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+        //     'message' => $message,
+        // ]);
 
-        Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
-            'chat_id'    => $chatId,
-            'text'       => $adminMessage,
-            'parse_mode' => 'HTML',
-        ]);
+        // Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+        //     'chat_id'    => $chatId,
+        //     'text'       => $adminMessage,
+        //     'parse_mode' => 'HTML',
+        // ]);
 
         $this->dispatch('close-modal');
         $this->reset([
