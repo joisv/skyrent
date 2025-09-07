@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Booking;
+use App\Models\Payment;
+use App\Models\Revenue;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -16,6 +18,32 @@ class BookingPage extends Component
     public $selectedAll = false;
     public $mySelected = [];
 
+     public $bookingTotal;
+    public $bookingPending;
+    public $bookingConfirmed;
+    public $bookingCancelled;
+    public $bookingReturned;
+    public $revenueToday;
+
+    public function mount()
+    {
+        $this->loadStats();
+    }
+
+    public function loadStats()
+    {
+        $this->bookingTotal     = Booking::count();
+        $this->bookingPending   = Booking::where('status', 'pending')->count();
+        $this->bookingConfirmed = Booking::where('status', 'confirmed')->count();
+        $this->bookingCancelled = Booking::where('status', 'cancelled')->count();
+        $this->bookingReturned  = Booking::where('status', 'returned')->count();
+
+        // contoh ambil revenue dari tabel payment
+        $this->revenueToday = Revenue::whereDate('created_at', now()->toDateString())->sum('amount'); 
+        // kalau revenue ada di Booking -> total_price, ganti saja:
+        // $this->revenueTotal = Booking::sum('total_price');
+    }
+    
     public function destroy()
     {
         if (auth()->user()->can('delete')) {

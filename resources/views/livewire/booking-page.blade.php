@@ -4,6 +4,19 @@
         $dispatch('open-modal', 'booking-create')
     },
 }">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        <x-mary-stat title="Total Booking" :value="$bookingTotal" icon="o-clipboard-document-list" color="text-primary" />
+
+        <x-mary-stat title="Pending" :value="$bookingPending" icon="o-clock" color="text-warning" />
+
+        <x-mary-stat title="Confirmed" :value="$bookingConfirmed" icon="o-check-badge" color="text-success" />
+
+        <x-mary-stat title="Cancelled" :value="$bookingCancelled" icon="o-x-circle" color="text-error" />
+
+        <x-mary-stat title="Returned" :value="$bookingReturned" icon="o-arrow-uturn-left" color="text-info" />
+
+        <x-mary-stat title="Pendapatan Hari ini" :value="'Rp ' . number_format($revenueToday, 0, ',', '.')" icon="o-banknotes" color="text-success" />
+    </div>
     <x-tables.table name="Booking">
         <x-slot name="secondBtn">
             <button
@@ -55,25 +68,57 @@
                     wire:model.live="selectedAll">
             </x-tables.th>
             <x-tables.th>Kode Booking</x-tables.th>
+            <x-tables.th>Status</x-tables.th>
             <x-tables.th>Nama</x-tables.th>
             <x-tables.th>iPhone</x-tables.th>
             <x-tables.th>Durasi Sewa</x-tables.th>
-            {{-- <x-tables.th>Tanggal & Waktu Booking</x-tables.th> --}}
             <x-tables.th>Tanggal & Waktu Mulai</x-tables.th>
             <x-tables.th>Tanggal & Waktu Selesai</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
         </x-slot>
-        
+
         <x-slot name="tbody">
             @foreach ($bookings as $index => $booking)
                 <tr>
-                    
+
                     <x-tables.td>
                         <input id="default-{{ $index }}" type="checkbox"
-                        class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        wire:model.live="mySelected" value="{{ $booking->id }}">
+                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                            wire:model.live="mySelected" value="{{ $booking->id }}">
                     </x-tables.td>
                     <x-tables.td>{{ $booking->booking_code }}</x-tables.td>
+                    <x-tables.td>
+                        @switch($booking->status)
+                            @case('pending')
+                                <span class="px-2 py-1 rounded bg-yellow-500 text-white font-medium text-sm">
+                                    Menunggu Pembayaran
+                                </span>
+                            @break
+
+                            @case('confirmed')
+                                <span class="px-2 py-1 rounded bg-green-500 text-white font-medium text-sm">
+                                    Dikonfirmasi
+                                </span>
+                            @break
+
+                            @case('returned')
+                                <span class="px-2 py-1 rounded bg-blue-500 text-white font-medium text-sm">
+                                    Dikembalikan
+                                </span>
+                            @break
+
+                            @case('cancelled')
+                                <span class="px-2 py-1 rounded bg-red-500 text-white font-medium text-sm">
+                                    Dibatalkan
+                                </span>
+                            @break
+
+                            @default
+                                <span class="px-2 py-1 rounded bg-gray-400 text-white font-medium text-sm">
+                                    {{ ucfirst($booking->status) }}
+                                </span>
+                        @endswitch
+                    </x-tables.td>
 
                     <x-tables.td>{{ $booking->customer_name }}</x-tables.td>
                     <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
