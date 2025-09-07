@@ -28,7 +28,7 @@ class ReturnIphone extends Model
 
         // Gabungkan tanggal & jam akhir booking → lalu parse ke Carbon
         $endDateTime = Carbon::parse(
-            $this->booking->end_booking_date . ' ' . $this->booking->start_time,
+            $this->booking->end_booking_date . ' ' . $this->booking->end_time,
             'Asia/Jakarta'
         );
 
@@ -41,7 +41,7 @@ class ReturnIphone extends Model
         $hoursLate = $returnedAt->greaterThan($endDateTime)
             ? $endDateTime->diffInHours($returnedAt)
             : 0;
-
+        dd($returnedAt, $endDateTime);
         return $hoursLate * 5000;
     }
 
