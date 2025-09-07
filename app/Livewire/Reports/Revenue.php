@@ -19,6 +19,7 @@ class Revenue extends Component
     public $revenueThisMonth;
     public $revenueTotal;
     public $revenueLastMonth;
+    public $revenuePenalty;
     public $revenueThisMonthPercentage;
 
     public function mount()
@@ -40,6 +41,9 @@ class Revenue extends Component
         // Revenue Total
         $this->revenueTotal = ModelsRevenue::sum('amount');
 
+        $this->revenuePenalty = ModelsRevenue::where('type', 'penalty')->sum('amount');
+
+        
         // Persentase Kenaikan/Penurunan Bulan Ini vs Bulan Lalu
         if ($this->revenueLastMonth > 0) {
             $growth = (($this->revenueThisMonth - $this->revenueLastMonth) / $this->revenueLastMonth) * 100;

@@ -218,9 +218,6 @@
                         @endif
                     </div>
                 </div>
-                <img src="{{ asset('storage/' . $selectedPayment->icon) }}" alt=""
-                    class="w-48 h-w-48 object-cover rounded-md">
-
                 <div class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
                     <span>{{ $selectedPayment->description }}</span>
                 </div>
@@ -231,6 +228,9 @@
                     <span x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                 </div>
             </div>
+            <hr>
+            <x-mary-checkbox label="Kirim pesan WhatsApp ke customer" wire:model="sendWhatsapp"
+                hint="Centang jika ingin mengirim pesan otomatis" />
 
 
             <button type="submit" class="w-full p-3 text-center bg-black text-white font-semibold text-xl">Buat

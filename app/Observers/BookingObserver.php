@@ -39,6 +39,7 @@ class BookingObserver
             Revenue::create([
                 'booking_id' => $booking->id,
                 'amount' => $booking->price,
+                'type' =>  'booking',
                 'created' => now('Asia/Jakarta'),
             ]);
         }

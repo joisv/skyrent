@@ -1,5 +1,5 @@
 <div>
-    <div class="grid md:grid-cols-4 grid-cols-2 gap-x-2">
+    <div class="grid md:grid-cols-5 grid-cols-2 gap-x-2">
         {{-- Revenue Hari Ini --}}
         <x-mary-stat title="Hari Ini" description="{{ now()->format('d F Y') }}"
             value="Rp {{ number_format($revenueToday, 0, ',', '.') }}" icon="o-banknotes" color="text-green-600" />
@@ -12,6 +12,11 @@
         <x-mary-stat title="Total Semua Waktu" value="Rp {{ number_format($revenueTotal, 0, ',', '.') }}"
             icon="o-currency-dollar" color="text-purple-600" />
 
+        {{-- Revenue Denda --}}
+        <x-mary-stat title="Revenue Denda" description="Total semua denda"
+            value="Rp {{ number_format($revenuePenalty, 0, ',', '.') }}" icon="o-exclamation-circle"
+            color="text-red-600" />
+
         {{-- Persentase Kenaikan/Penurunan Bulan Ini --}}
         <x-mary-stat title="Perubahan Bulanan"
             description="{{ $revenueThisMonthPercentage >= 0 ? 'Kenaikan' : 'Penurunan' }}"
@@ -20,6 +25,7 @@
             color="{{ $revenueThisMonthPercentage >= 0 ? 'text-green-600' : 'text-red-600' }}"
             tooltip-right="Dibanding bulan lalu" />
     </div>
+
 
     {{-- datatable --}}
     <div class="mt-10">
@@ -72,8 +78,9 @@
                     {{-- <input type="hidden" wire:model.live="firstId" value="{{ $serieses[0]->id }}"> --}}
                 </x-tables.th>
                 <x-tables.th>Amount</x-tables.th>
+                <x-tables.th>Type</x-tables.th>
                 <x-tables.th>Customer</x-tables.th>
-                <x-tables.th>Phone</x-tables.th>
+                <x-tables.th>WA</x-tables.th>
                 <x-tables.th>iPhone</x-tables.th>
                 <x-tables.th>Start Date</x-tables.th>
                 <x-tables.th>End Date</x-tables.th>
@@ -93,6 +100,22 @@
 
                         <x-tables.td>
                             Rp{{ number_format($revenue->amount, 0, ',', '.') }}
+                        </x-tables.td>
+
+                        <x-tables.td>
+                            @if ($revenue->type === 'booking')
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                    Booking
+                                </span>
+                            @elseif($revenue->type === 'penalty')
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                    Denda
+                                </span>
+                            @else
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                    -
+                                </span>
+                            @endif
                         </x-tables.td>
 
                         <x-tables.td>

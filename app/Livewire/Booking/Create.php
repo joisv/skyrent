@@ -40,6 +40,7 @@ class Create extends Component
     public $selectedDuration = null;
 
     public $durations = [];
+    public $sendWhatsapp = true;
 
     public function updatedSelectedPaymentId()
     {
@@ -155,18 +156,21 @@ class Create extends Component
         $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
         $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
 
-        Http::withHeaders([
-            'Authorization' => env('FONNTE_TOKEN'),
-        ])->post('https://api.fonnte.com/send', [
-            'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
-            'message' => $message,
-        ]);
-
-        Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
-            'chat_id'    => $chatId,
-            'text'       => $adminMessage,
-            'parse_mode' => 'HTML',
-        ]);
+        if ($this->sendWhatsapp) {
+            Http::withHeaders([
+                'Authorization' => env('FONNTE_TOKEN'),
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+                'message' => $message,
+            ]);
+    
+            Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id'    => $chatId,
+                'text'       => $adminMessage,
+                'parse_mode' => 'HTML',
+            ]);
+        }
+        
 
         // Reset
         $this->dispatch('close-modal');
