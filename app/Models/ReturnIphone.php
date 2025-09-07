@@ -41,7 +41,6 @@ class ReturnIphone extends Model
         $hoursLate = $returnedAt->greaterThan($endDateTime)
             ? $endDateTime->diffInHours($returnedAt)
             : 0;
-        dd($returnedAt, $endDateTime);
         return $hoursLate * 5000;
     }
 
