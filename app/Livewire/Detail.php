@@ -78,10 +78,21 @@ class Detail extends Component
             ->get();
 
         $this->is_available = true;
+        
+        // start = 2025-09-09 19:28:35.515 Asia/Jakarta (+07:00)
+        // end = 2025-09-10 19:28:35.515 Asia/Jakarta (+07:00)
+        // bookingStart =  2025-09-08 15:35:00.0 Asia/Jakarta (+07:00)
+        // bookingEnd = 2025-09-09 15:35:00.0 Asia/Jakarta (+07:00)
+        // now = 2025-09-09 18:51:59.697095 Asia/Jakarta (+07:00)
 
         foreach ($bookings as $booking) {
             $bookingStart = Carbon::parse("{$booking->requested_booking_date} {$booking->requested_time}", 'Asia/Jakarta');
             $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
+
+            // Lewati booking yang sudah selesai
+            if ($bookingEnd->lte(Carbon::now('Asia/Jakarta'))) {
+                continue;
+            }
 
             if ($start->lt($bookingEnd) && $end->gt($bookingStart)) {
                 $this->is_available = false;
@@ -184,18 +195,18 @@ class Detail extends Component
         $chatId  = config('services.telegram.chat_id');
         $whatsappToken = config('services.fonnte.token');
 
-        // Http::withHeaders([
-        //     'Authorization' => $whatsappToken,
-        // ])->post('https://api.fonnte.com/send', [
-        //     'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
-        //     'message' => $message,
-        // ]);
+        Http::withHeaders([
+            'Authorization' => $whatsappToken,
+        ])->post('https://api.fonnte.com/send', [
+            'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+            'message' => $message,
+        ]);
 
-        // Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
-        //     'chat_id'    => $chatId,
-        //     'text'       => $adminMessage,
-        //     'parse_mode' => 'HTML',
-        // ]);
+        Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+            'chat_id'    => $chatId,
+            'text'       => $adminMessage,
+            'parse_mode' => 'HTML',
+        ]);
 
         $this->dispatch('close-modal');
         $this->reset([

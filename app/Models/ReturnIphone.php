@@ -48,7 +48,7 @@ class ReturnIphone extends Model
     {
         static::created(function ($returnIphone) {
             // hanya kalau ada denda
-            if ($returnIphone->penalty_fee > 0) {
+            if ($returnIphone->penalty_fee > 5000) {
                 Revenue::create([
                     'booking_id' => $returnIphone->booking_id,
                     'amount'     => $returnIphone->penalty_fee,

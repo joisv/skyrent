@@ -4,16 +4,23 @@
         $dispatch('open-modal', 'booking-create')
     },
 }">
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        <x-mary-stat title="Total Booking" :value="$bookingTotal" icon="o-clipboard-document-list" color="text-primary" />
-
-        <x-mary-stat title="Pending" :value="$bookingPending" icon="o-clock" color="text-warning" />
-
-        <x-mary-stat title="Confirmed" :value="$bookingConfirmed" icon="o-check-badge" color="text-success" />
-
-        <x-mary-stat title="Cancelled" :value="$bookingCancelled" icon="o-x-circle" color="text-error" />
-
-        <x-mary-stat title="Returned" :value="$bookingReturned" icon="o-arrow-uturn-left" color="text-info" />
+    {{-- @dump($returnToday) --}}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <button @click="() => {
+            $dispatch('open-modal', 'list')    
+        }" class="shadow-2xl">
+            <x-mary-stat title="iPhone Tersedia" :value="$iphonesAvailable->count() . ' Unit'" icon="o-device-phone-mobile" color="text-green-600" />
+        </button>
+        <button @click="() => {
+            $dispatch('open-modal', 'return')    
+        }" class="shadow-2xl">
+            <x-mary-stat title="Dikembalikan Hari Ini" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left"
+                color="text-purple-600" />
+        </button>
+        <button @click="() => { $dispatch('open-modal', 'booking-today') }" class="shadow-2xl">
+            <x-mary-stat title="Booking Hari Ini" :value="$bookingToday->count() . ' Booking'" icon="o-clipboard-document-list"
+                color="text-blue-600" />
+        </button>
 
         <x-mary-stat title="Pendapatan Hari ini" :value="'Rp ' . number_format($revenueToday, 0, ',', '.')" icon="o-banknotes" color="text-success" />
     </div>
@@ -156,5 +163,140 @@
     </x-modal>
     <x-modal name="detail" :show="$errors->isNotEmpty()">
         <livewire:detail-booking />
+    </x-modal>
+    <x-modal name="list" :show="$errors->isNotEmpty()">
+        @if (!empty($iphonesAvailable))
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Daftar iPhone Tersedia</h2>
+
+                @if ($iphonesAvailable->count() > 0)
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @foreach ($iphonesAvailable as $iphone)
+                            <div
+                                class="bg-white border rounded-2xl shadow-sm p-4 hover:shadow-md transition duration-200">
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="flex items-center justify-center w-12 h-12 bg-green-100 text-green-600 rounded-xl">
+                                        <x-mary-icon name="o-device-phone-mobile" class="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-900">iPhone {{ $iphone->name }}</h3>
+                                        {{-- <p class="text-sm text-gray-500">Kode: {{ $iphone->kode ?? '-' }}</p> --}}
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Status: <span
+                                            class="font-medium text-green-600">Tersedia</span></span>
+                                    {{-- <button wire:click="bookingNow({{ $iphone->id }})"
+                                        class="px-3 py-1.5 bg-green-600 text-white text-sm rounded-xl hover:bg-green-700 transition">
+                                        Booking
+                                    </button> --}}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-500 text-center py-6">Tidak ada iPhone tersedia saat ini.</p>
+                @endif
+            </div>
+        @endif
+    </x-modal>
+    <x-modal name="return">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">iPhone Dikembalikan Hari Ini</h2>
+
+            @if ($returnToday->count() > 0)
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach ($returnToday as $booking)
+                        <div class="bg-white border rounded-2xl shadow-sm p-4 hover:shadow-md transition duration-200">
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="flex items-center justify-center w-12 h-12 bg-yellow-100 text-yellow-600 rounded-xl">
+                                    <x-mary-icon name="o-clock" class="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">
+                                        iPhone {{ $booking->iphone->name }}
+                                    </h3>
+                                    <p class="text-sm text-gray-500">
+                                        Pengembalian:
+                                        <span class="font-semibold text-gray-700">
+                                            {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="text-sm text-gray-600">
+                                    Status:
+                                    <span class="font-medium text-yellow-600">Harus dikembalikan</span>
+                                </span>
+                                {{-- Jika mau tombol aksi bisa ditaruh di sini --}}
+                                {{-- <button wire:click="reminder({{ $booking->id }})"
+                            class="px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-xl hover:bg-yellow-700 transition">
+                            Ingatkan
+                        </button> --}}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-gray-500 text-center py-6">Tidak ada pengembalian hari ini.</p>
+            @endif
+        </div>
+    </x-modal>
+    <x-modal name="booking-today" maxWidth="2xl">
+        <div class="p-4">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Booking yang dibuat hari ini</h2>
+            @if ($bookingToday->count() > 0)
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach ($bookingToday as $booking)
+                        <div class="bg-white border rounded-2xl shadow-sm p-4 hover:shadow-md transition duration-200">
+
+                            <div class="flex items-center space-x-3">
+                                <div
+                                    class="flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 rounded-xl">
+                                    <x-mary-icon name="o-device-phone-mobile" class="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">
+                                        iPhone {{ $booking->iphone->name }}
+                                    </h3>
+                                    <p class="text-sm text-gray-500">
+                                        Booking Code:
+                                        <span class="font-semibold text-gray-700">
+                                            {{ $booking->booking_code }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 flex justify-between items-center">
+                                @php
+                                    $statusColors = [
+                                        'confirmed' => 'text-green-600',
+                                        'pending' => 'text-yellow-600',
+                                        'cancelled' => 'text-red-600',
+                                    ];
+                                    $color = $statusColors[$booking->status] ?? 'text-gray-600';
+                                @endphp
+
+                                <span class="text-sm text-gray-600">
+                                    Status:
+                                    <span class="font-medium {{ $color }}">
+                                        {{ ucfirst($booking->status) }}
+                                    </span>
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($booking->created_at)->format('H:i') }}
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-gray-500 text-center py-6">Belum ada booking yang dibuat hari ini.</p>
+            @endif
+        </div>
     </x-modal>
 </div>
