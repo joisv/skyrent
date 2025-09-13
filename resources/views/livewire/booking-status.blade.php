@@ -17,6 +17,7 @@
         }
         this.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         this.seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        console.log(this.expired)
     }
 }">
     <div class="w-full ">
@@ -192,8 +193,10 @@
         </div>
         @if ($booking->payment)
             <x-modal name="payment" :show="$errors->isNotEmpty()">
-                <div class="max-w-md mx-auto bg-white overflow-hidden " x-init="setInterval(() => { now = Date.now();
-                    updateTimer() }, 1000)"
+                <div class="max-w-md mx-auto bg-white overflow-hidden " x-init="setInterval(() => {
+                    now = Date.now();
+                    updateTimer()
+                }, 1000)"
                     @close-modal.window="show = false">
                     <!-- Header -->
                     <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -237,12 +240,15 @@
                         <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt="Payment Icon"
                             class="w-full h-full object-contain">
                     </div>
-
+                    <div x-show="!expired">
+                        <x-mary-file wire:model="payment_proof" label="Bukti pembayaran" hint="Upload bukti pembayaran"
+                            accept="image/jpeg, image/png, image/webp" />
+                    </div>
                     <!-- Footer -->
                     <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
                         <button :disabled="expired" wire:click="confirmPayment({{ $booking->id }})"
                             class="flex-1 mr-2 px-5 py-3 bg-blue-600 text-white font-semibold 
-                   hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                   hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-blue-300" wire:loading.attr="disabled">
                             Konfirmasi
                         </button>
                         <button class="flex-1 ml-2 px-5 py-3 text-gray-600 font-medium hover:text-red-600"

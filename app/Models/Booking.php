@@ -66,4 +66,9 @@ class Booking extends Model
     {
         return $this->hasOne(ReturnIphone::class, 'booking_id')->latestOfMany();
     }
+
+    public function paymentProofs()
+    {
+        return $this->hasMany(PaymentProof::class);
+    }
 }

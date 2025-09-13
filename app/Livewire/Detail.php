@@ -78,7 +78,7 @@ class Detail extends Component
             ->get();
 
         $this->is_available = true;
-        
+
         // start = 2025-09-09 19:28:35.515 Asia/Jakarta (+07:00)
         // end = 2025-09-10 19:28:35.515 Asia/Jakarta (+07:00)
         // bookingStart =  2025-09-08 15:35:00.0 Asia/Jakarta (+07:00)
@@ -125,6 +125,7 @@ class Detail extends Component
 
     public function booking()
     {
+        // dd($this->customer_phone);
         if (!$this->is_available) {
             LivewireAlert::title('Waktu Tidak Tersedia')
                 ->text('iPhone sedang dibooking pada waktu tersebut. Silakan pilih waktu lain.')
@@ -135,16 +136,19 @@ class Detail extends Component
             return;
         }
         $this->validate([
-            'selectedIphoneId' => 'required|exists:iphones,id',
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:15',
-            'customer_email' => 'nullable|email|max:255',
-            // potensial bugg
-            // 'requested_booking_date' => 'required|date',
-            // 'requested_time' => 'required|date_format:H:i',
-            'selectedDuration' => 'required|integer|min:1',
-            'selectedPrice' => 'required|numeric|min:0',
+            'selectedIphoneId'   => 'required|exists:iphones,id',
+            'customer_name'      => 'required|string|max:255',
+            'customer_phone'     => [
+                'required',
+                'regex:/^[0-9]{4}-[0-9]{4}-[0-9]{3}$/', // format: 8314-6838-432
+            ],
+            'customer_email'     => 'nullable|email|max:255',
+            'selectedDuration'   => 'required|integer|min:1',
+            'selectedPrice'      => 'required|numeric|min:0',
+        ], [
+            'customer_phone.regex' => 'Format nomor tidak boleh diawali 0 atau 62.',
         ]);
+
         $bookind_code = Booking::generateBookingCode();
         $booking = Booking::create([
             'iphone_id' => $this->selectedIphoneId,

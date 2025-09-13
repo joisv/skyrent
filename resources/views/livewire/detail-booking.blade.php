@@ -57,7 +57,7 @@
             <div class="text-sm text-gray-600 space-y-1">
                 <div class="flex items-center gap-3">
                     <img src="{{ asset('storage/' . $detailBookingIphones->iphone->gallery->image) }}" alt=""
-                                 class="w-12 h-12 rounded-lg object-cover">
+                        class="w-12 h-12 rounded-lg object-cover">
                     <p>{{ $detailBookingIphones->iphone->name }}</p>
                 </div>
             </div>
@@ -80,6 +80,27 @@
             </div>
         @else
             <p class="text-gray-400 italic">Belum ada metode pembayaran</p>
+        @endif
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-4 mt-4">
+        <h2 class="text-sm font-semibold mb-2 text-gray-700">Bukti Pembayaran</h2>
+        @php
+            $paymentProof = $detailBookingIphones?->paymentProofs()->latest()->first();
+        @endphp
+
+        @if ($paymentProof)
+            @if (Str::endsWith($paymentProof->file_path, ['.jpg', '.jpeg', '.png']))
+                <img src="{{ asset('storage/' . $paymentProof->file_path) }}" alt="Bukti Pembayaran"
+                    class="w-32 h-32 rounded-lg object-cover">
+            @elseif (Str::endsWith($paymentProof->file_path, '.pdf'))
+                <a href="{{ asset('storage/' . $paymentProof->file_path) }}" target="_blank"
+                    class="text-blue-600 underline">
+                    Lihat Bukti Pembayaran (PDF)
+                </a>
+            @endif
+        @else
+            <p class="text-gray-400 italic">Belum ada bukti pembayaran</p>
         @endif
     </div>
 

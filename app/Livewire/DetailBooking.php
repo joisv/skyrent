@@ -18,7 +18,6 @@ class DetailBooking extends Component
     #[On('get-detail')]
     public function getDetailIphone($id)
     {
-        // dd($id);
         $this->detailBookingIphones = Booking::with(['revenue', 'iphone', 'payment', 'returns'])->findOrFail($id);
         $this->returns = $this->detailBookingIphones->returns()->latest()->get();
     }

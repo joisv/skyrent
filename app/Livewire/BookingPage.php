@@ -14,9 +14,10 @@ use Livewire\Component;
 class BookingPage extends Component
 {
     public $search = '';
-    public $sortField = 'created_at';
-    public $sortDirection = 'desc';
-    public $paginate = 10;
+    public $sortField = 'status';       // default sort pakai status
+    public $sortDirection = 'asc';      // bisa diatur 'asc' / 'desc'
+    public $filterStatus = '';
+    public $paginate = 50;
     public $selectedAll = false;
     public $mySelected = [];
 
@@ -24,7 +25,8 @@ class BookingPage extends Component
     public $revenueToday;
     public $returnToday;
     public $bookingToday;
-    
+    public $returnTodayCount;
+
     public function mount()
     {
         $this->loadStats();
@@ -35,9 +37,15 @@ class BookingPage extends Component
         $this->iphonesAvailable = Iphones::whereDoesntHave('bookings', function ($q) {
             $q->where('status', 'confirmed');
         })->get();
-        $this->returnToday = Booking::whereDate('end_booking_date', Carbon::today())->get();
+
         $this->revenueToday = Revenue::whereDate('created_at', now()->toDateString())->sum('amount');
         $this->bookingToday = Booking::whereDate('created_at', Carbon::today())->get();
+        $this->getReturnToday();
+    }
+
+    public function getReturnToday()
+    {
+        $this->returnToday = Booking::where('status', 'confirmed')->whereDate('end_booking_date', Carbon::today())->get();
     }
 
     public function destroy()
@@ -124,6 +132,12 @@ class BookingPage extends Component
     {
         $query = Booking::query()->with('iphone');
 
+        // Filter status (default: confirmed)
+        if ($this->filterStatus) {
+            $query->where('status', $this->filterStatus);
+        }
+
+        // Search
         if ($this->search) {
             $query->search([
                 'customer_name',
@@ -131,22 +145,28 @@ class BookingPage extends Component
                 'customer_email',
                 'booking_code',
                 'status',
-                'iphone.name' // relasi
+                'iphone.name'
             ], $this->search);
         }
 
-        if (in_array($this->sortField, [
+        // Sorting
+        if ($this->sortField === 'status') {
+            $query->orderByRaw("
+            FIELD(status, 'pending', 'confirmed', 'returned', 'cancelled')
+        {$this->sortDirection}");
+        } elseif (in_array($this->sortField, [
             'start_booking_date',
             'end_booking_date',
             'start_time',
             'end_time',
             'price',
             'duration',
-            'status',
             'created_at',
             'updated_at'
         ])) {
             $query->orderBy($this->sortField, $this->sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
         return $query;
@@ -170,11 +190,6 @@ class BookingPage extends Component
     {
         $this->mySelected = [];
         $this->selectedAll = false;
-    }
-
-    public function test()
-    {
-        dd('halo dunia');
     }
 
     #[On('close-modal')]

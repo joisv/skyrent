@@ -11,10 +11,13 @@
         }" class="shadow-2xl">
             <x-mary-stat title="iPhone Tersedia" :value="$iphonesAvailable->count() . ' Unit'" icon="o-device-phone-mobile" color="text-green-600" />
         </button>
-        <button @click="() => {
-            $dispatch('open-modal', 'return')    
-        }" class="shadow-2xl">
-            <x-mary-stat title="Dikembalikan Hari Ini" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left"
+        <button
+            @click="() => {
+            $dispatch('open-modal', 'return') 
+            $wire.getReturnToday()   
+        }"
+            class="shadow-2xl">
+            <x-mary-stat title="Kembali Hari Ini" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left"
                 color="text-purple-600" />
         </button>
         <button @click="() => { $dispatch('open-modal', 'booking-today') }" class="shadow-2xl">
@@ -50,17 +53,17 @@
                     </select>
                 </div>
                 <div class="w-fit">
-                    <select id="sort"
+                    <select id="status"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 px-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        wire:model.live="sortField">
+                        wire:model.live="filterStatus">
 
-                        <option disabled selected>Sort by</option>
-                        <option value="created_at">Terbaru</option>
-                        <option value="updated_at">Updated</option>
-                        <option value="start_booking_date">Tanggal Mulai</option>
-                        <option value="status">Status</option>
-                        <option value="price">Harga</option>
+                        <option value="">Semua Booking</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="pending">Pending</option>
+                        <option value="returned">Returned</option>
+                        <option value="cancelled">Cancelled</option>
                     </select>
+
                 </div>
 
             </div>
@@ -196,16 +199,17 @@
                         @endforeach
                     </div>
                 @else
-                    <p class="text-gray-500 text-center py-6">Tidak ada iPhone tersedia saat ini.</p>
+                    <p class="mt-2 text-gray-600">Silakan pilih tanggal lain atau hubungi kami untuk informasi lebih
+                        lanjut.</p>
                 @endif
             </div>
         @endif
     </x-modal>
     <x-modal name="return">
-        <div class="p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">iPhone Dikembalikan Hari Ini</h2>
+        @if (isset($returnToday) && $returnToday->isNotEmpty())
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">iPhone Dikembalikan Hari Ini</h2>
 
-            @if ($returnToday->count() > 0)
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     @foreach ($returnToday as $booking)
                         <div class="bg-white border rounded-2xl shadow-sm p-4 hover:shadow-md transition duration-200">
@@ -233,17 +237,33 @@
                                 </span>
                                 {{-- Jika mau tombol aksi bisa ditaruh di sini --}}
                                 {{-- <button wire:click="reminder({{ $booking->id }})"
-                            class="px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-xl hover:bg-yellow-700 transition">
-                            Ingatkan
-                        </button> --}}
+                        class="px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-xl hover:bg-yellow-700 transition">
+                        Ingatkan
+                    </button> --}}
                             </div>
                         </div>
                     @endforeach
                 </div>
-            @else
-                <p class="text-gray-500 text-center py-6">Tidak ada pengembalian hari ini.</p>
-            @endif
-        </div>
+            </div>
+        @else
+            <div class="w-full h-32 flex justify-center items-center col-span-4" wire:loading.flex>
+                <svg width="64px" height="64px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" class="animate-spin">
+                    <g fill="#f43f5e" fill-rule="evenodd" clip-rule="evenodd">
+                        <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z"
+                            opacity=".2"></path>
+                        <path
+                            d="M7.25.75A.75.75 0 018 0a8 8 0 018 8 .75.75 0 01-1.5 0A6.5 6.5 0 008 1.5a.75.75 0 01-.75-.75z">
+                        </path>
+                    </g>
+                </svg>
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="p-5 text-center" wire:loading.remove>
+                <h1 class="text-lg font-semibold">Tidak ada iPhone yang dikembalikan hari ini.</h1>
+                <p class="mt-2 text-gray-600">Tidak ada iPhone yang perlu ditindaklanjuti untuk proses pengembalian hari ini.</p>
+            </div>
+        @endif
     </x-modal>
     <x-modal name="booking-today" maxWidth="2xl">
         <div class="p-4">
