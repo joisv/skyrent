@@ -76,7 +76,30 @@ class Edit extends Component
 
         return $slug;
     }
-    
+
+    public function updateActive($id, $status)
+    {
+        try {
+            $payment = Payment::where('id', $id)->first();
+            $payment->update([
+                'is_active' => $status
+            ]);
+            LivewireAlert::title('Status berhasil diubah')
+                ->position('top-end')
+                ->text('Status payment telah diperbarui')
+                ->toast()
+                ->success()
+                ->show();
+        } catch (\Throwable $th) {
+            LivewireAlert::title('Gagal mengubah status')
+                ->position('top-end')
+                ->text($th)
+                ->timer(5000)
+                ->error()
+                ->show();
+        }
+    }
+
     #[On('edit')]
     public function getPayment($payment)
     {

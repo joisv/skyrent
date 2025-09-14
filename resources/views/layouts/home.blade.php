@@ -53,7 +53,7 @@
                 <div x-data="{ open: false }"
                     class="fixed bottom-6 right-6 sm:right-20 flex flex-col-reverse items-end space-y-reverse space-y-3"
                     @click.outside="open = false">
-                    <button @click="open = !open" class="relative inline-block px-4 py-3 font-medium group">
+                    <button @click="open = !open" class="relative inline-block px-4 py-3 font-medium group z-50">
                         <span
                             class="absolute inset-0 w-full h-full transition duration-200 ease-out transform translate-x-1 translate-y-1 bg-black group-hover:-translate-x-0 group-hover:-translate-y-0"></span>
                         <span
@@ -95,7 +95,7 @@
                         </a>
 
                         <!-- Email -->
-                        <a href="mailto:email@example.com" class="relative inline-block px-4 py-2 font-medium group">
+                        <a href="mailto:gwennrepair@gmail.com" class="relative inline-block px-4 py-2 font-medium group">
                             <span
                                 class="absolute inset-0 w-full h-full transition duration-200 ease-out transform translate-x-1 translate-y-1 bg-red-600 group-hover:translate-x-0 group-hover:translate-y-0"></span>
                             <span

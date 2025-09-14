@@ -400,9 +400,9 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         @endif
     </x-modal>
-    <x-bottom-sheet id="sheetTanggalA" title="Form Booking">
+    <x-bottom-sheet id="sheetTanggalA" title="Form Booking" glass="">
         <!-- Kalender -->
-        <div class=" dark:bg-gray-800 text-lg z-10 w-full">
+        {{-- <div class=" dark:bg-gray-800 text-lg z-10 w-full">
             <div class="border-b-2 border-gray-300 pb-4">
                 <div class="flex items-center  text-lg">
                     <!-- Hour Picker -->
@@ -460,6 +460,82 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </template>
 
             </div>
+        </div> --}}
+        {{-- glass --}}
+        <div
+            class="relative text-lg z-10 w-full 
+            bg-white/20 dark:bg-gray-800/30 
+            backdrop-blur-xl border border-white/20 
+            rounded-2xl shadow-xl p-4">
+
+            <!-- Header jam & bulan -->
+            <div class="border-b border-white/20 dark:border-gray-700/40 pb-4">
+                <div class="flex items-center text-lg gap-2">
+                    <!-- Hour Picker -->
+                    <div>
+                        <input type="number" x-model="selectedHour" min="0" max="23"
+                            class="w-16 text-center bg-transparent text-white 
+                           border border-transparent 
+                           focus:border-white/40 dark:focus:border-gray-500 
+                           focus:outline-none px-2 py-1 rounded 
+                           text-2xl font-bold placeholder-gray-300"
+                            placeholder="HH">
+                    </div>
+
+                    <div class="font-bold text-white">:</div>
+
+                    <!-- Input Menit -->
+                    <div>
+                        <input type="number" x-model="selectedMinute" min="0" max="59" step="1"
+                            class="w-16 text-center bg-transparent text-white 
+                           border border-transparent 
+                           focus:border-white/40 dark:focus:border-gray-500 
+                           focus:outline-none px-2 py-1 rounded 
+                           text-2xl font-bold placeholder-gray-300"
+                            placeholder="MM">
+                    </div>
+                </div>
+                <div class="text-lg font-medium text-white/90 dark:text-gray-200 mt-2"
+                    x-text="monthNames[month] + ' ' + year"></div>
+            </div>
+
+            <!-- Header navigasi bulan -->
+            <div class="flex mb-2 mt-2">
+                <button type="button" @click="prevMonth()"
+                    class="px-2 py-1 text-white/80 hover:bg-white/10 rounded">&lt;</button>
+                <button type="button" @click="nextMonth()"
+                    class="px-2 py-1 text-white/80 hover:bg-white/10 rounded">&gt;</button>
+            </div>
+
+            <!-- Hari -->
+            <div class="grid grid-cols-7 text-white/70 mb-1">
+                <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
+                    <div x-text="day" class="text-center"></div>
+                </template>
+            </div>
+
+            <!-- Tanggal -->
+            <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
+                <!-- Sisipkan hari kosong -->
+                <template x-for="blank in blankdays">
+                    <div></div>
+                </template>
+
+                <!-- Tanggal -->
+                <template x-for="(date, index) in daysInMonth" :key="index">
+                    <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()" x-text="date"
+                        class="text-center cursor-pointer p-4 flex justify-center 
+                       transition-colors duration-200 ease-in-out 
+                       border border-transparent rounded-lg"
+                        :class="{
+                            'bg-white/20 text-white backdrop-blur-sm border-white/40': isSelectedDate(date),
+                            'text-white/40 cursor-not-allowed opacity-50': isPastDate(date),
+                            'hover:border-white/40 hover:bg-white/10': !isPastDate(date)
+                        }">
+                    </div>
+                </template>
+            </div>
         </div>
+
     </x-bottom-sheet>
 </div>

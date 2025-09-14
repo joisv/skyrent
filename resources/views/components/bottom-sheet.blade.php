@@ -1,6 +1,9 @@
 @props([
     'id' => 'bottomSheet',
     'title' => null,
+    'glass' => 'bg-white/20 dark:bg-gray-800/30 
+            backdrop-blur-xl border border-white/20 
+            rounded-2xl shadow-xl'
 ])
 
 <div 
@@ -17,13 +20,13 @@
 >
     <!-- Overlay -->
     <div 
-        class="absolute inset-0 bg-black/50 "
+        class="absolute inset-0 bg-black/35 "
         @click="open = false"
     ></div>
 
     <!-- Bottom Sheet Container -->
     <div 
-        class="relative bg-white w-full rounded-t-2xl p-5 shadow-lg transform transition-all duration-300 overflow-y-auto max-h-[90vh] "
+        class="relative w-full {{ $glass }} rounded-t-2xl p-3 shadow-lg transform transition-all duration-300 overflow-y-auto max-h-[90vh] "
         x-show="open"
         x-transition:enter="translate-y-full"
         x-transition:enter-end="translate-y-0"

@@ -13,7 +13,8 @@
     </div>
     <div>
         <div x-cloak x-data
-            class="flex flex-col lg:hidden w-full  bg-black dark:bg-white h-screen fixed z-50 p-2 right-0 ease-in duration-100 top-0"
+            class="flex flex-col lg:hidden w-full h-screen fixed z-50 p-2 right-0 top-0 ease-in duration-200 
+           bg-black/30 dark:bg-white/30 backdrop-blur-lg border border-white/20 shadow-lg"
             :class="{ 'translate-x-full': !setNav, '': setNav }">
             <div
                 class=" w-full flex flex-col justify-center items-center text-gray-200 dark:text-black dark:font-bold h-full text-center text-3xl font-medium ">
@@ -112,30 +113,6 @@
 
                 </div>
             </div>
-
-            {{-- <ul class="mt-3">
-
-                <x-responsif-link :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate icon="heroicon-o-home">
-                    Home
-                </x-responsif-link>
-
-                <x-responsif-link :href="route('products')" :active="request()->routeIs('products')" wire:navigate icon="heroicon-o-archive-box">
-                    Product
-                </x-responsif-link>
-
-                <x-responsif-link href="/" icon="heroicon-o-currency-dollar">
-                    Price
-                </x-responsif-link>
-
-                <x-responsif-link :href="route('faqs')" :active="request()->routeIs('faqs')" wire:navigate
-                    icon="heroicon-o-question-mark-circle">
-                    FAQ
-                </x-responsif-link>
-
-                <x-responsif-link :href="route('contacts')" :active="request()->routeIs('contacts')" wire:navigate icon="heroicon-o-envelope">
-                    Contact
-                </x-responsif-link>
-            </ul> --}}
             <button class="absolute top-4 right-4" @click="setNav = false">
                 <div class="flex space-x-3 items-center">
                     <h3 class="text-gray-200 text-xl font-medium dark:text-black">close</h3>
