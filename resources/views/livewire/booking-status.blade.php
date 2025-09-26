@@ -241,14 +241,15 @@
                             class="w-full h-full object-contain">
                     </div>
                     <div x-show="!expired">
-                        <x-mary-file wire:model="payment_proof" label="Bukti pembayaran" hint="Upload bukti pembayaran"
-                            accept="image/jpeg, image/png, image/webp" />
+                        <x-mary-file wire:model="payment_proof" label="Bukti pembayaran"
+                            hint="Upload bukti pembayaran" accept="image/jpeg, image/png, image/webp" />
                     </div>
                     <!-- Footer -->
                     <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
                         <button :disabled="expired" wire:click="confirmPayment({{ $booking->id }})"
                             class="flex-1 mr-2 px-5 py-3 bg-blue-600 text-white font-semibold 
-                   hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-blue-300" wire:loading.attr="disabled">
+                   hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-blue-300"
+                            wire:loading.attr="disabled">
                             Konfirmasi
                         </button>
                         <button class="flex-1 ml-2 px-5 py-3 text-gray-600 font-medium hover:text-red-600"

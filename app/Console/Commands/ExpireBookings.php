@@ -20,7 +20,7 @@ class ExpireBookings extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Expire pending bookings that have not been paid within 30 minutes';
 
     /**
      * Execute the console command.
@@ -40,7 +40,10 @@ class ExpireBookings extends Command
                 [$compareTime]
             )
             ->get();
-
+        dd([
+            'compareTime' => $compareTime,
+            'expiredBookings' => $expiredBookings,
+        ]);
         foreach ($expiredBookings as $booking) {
             $this->info("Expiring booking ID: " . $booking->id);
 

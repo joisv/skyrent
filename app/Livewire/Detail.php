@@ -44,6 +44,75 @@ class Detail extends Component
 
     public string $bookind_code;
 
+    public ?int $jumlah = null;
+    public $unit = '';
+    public $totalHarga = 0;
+    public int $basePricePerHour = 5000;
+
+    public function setCustom($unit)
+    {
+        $this->unit = $unit;
+        $this->updateDurationAndPrice();
+    }
+
+    // public function updatedJumlah()
+    // {
+    //     $this->updateDurationAndPrice();
+    // }
+
+    private function updateDurationAndPrice()
+    {
+        // dd($this->jumlah);
+        if ($this->unit === 'Jam' && $this->jumlah < 24) {
+            $this->jumlah = 24;
+        }
+
+        if ($this->jumlah < 1) {
+            $this->selectedDuration = 0;
+            $this->selectedPrice = 0;
+            return;
+        }
+
+        
+        if ($this->basePricePerHour === 5000) {
+            # code...
+            switch ($this->unit) {
+              
+                case 'Hari':
+                    $this->selectedDuration = $this->jumlah * 24;
+                    break;
+                case 'Minggu':
+                    $this->selectedDuration = $this->jumlah * 24 * 7;
+                    break;
+                case 'Bulan':
+                    $this->selectedDuration = $this->jumlah * 24 * 30; // asumsi 30 hari
+                    break;
+                default:
+                    $this->selectedDuration = $this->jumlah;
+                    break;
+            }
+        }else{
+            switch ($this->unit) {
+              
+                case 'Hari':
+                    $this->selectedDuration = $this->jumlah;
+                    break;
+                case 'Minggu':
+                    $this->selectedDuration = $this->jumlah * 7;
+                    break;
+                case 'Bulan':
+                    $this->selectedDuration = $this->jumlah * 30; // asumsi 30 hari
+                    break;
+                default:
+                    $this->selectedDuration = $this->jumlah;
+                    break;
+            }
+        }
+
+        // hitung harga (contoh sederhana per jam)
+        $this->selectedPrice = $this->selectedDuration * $this->basePricePerHour;
+    }
+
     #[On('updated:selectedIphoneId')]
     #[On('updated:selectedDate')]
     #[On('updated:selectedHour')]
@@ -125,7 +194,9 @@ class Detail extends Component
 
     public function booking()
     {
-        // dd($this->customer_phone);
+        if ($this->jumlah > 1) {
+            $this->selectedDuration = $this->selectedDuration * 24;
+        }
         if (!$this->is_available) {
             LivewireAlert::title('Waktu Tidak Tersedia')
                 ->text('iPhone sedang dibooking pada waktu tersebut. Silakan pilih waktu lain.')
@@ -271,6 +342,7 @@ class Detail extends Component
         $this->selectedPrice = $iphone->durations->first()->pivot->price ?? 0; // Default to first duration price or 0
         $this->name = $this->generateAnonymousName();
         $this->getReviews();
+        $this->basePricePerHour = $iphone->durations()->where('hours', 24)->first()->pivot->price ?? 5000;
     }
 
     #[On('get-reviews')]

@@ -72,7 +72,8 @@
 
     nextMonth() {
         this.month++;
-        if (this.month > 11) {
+        if (this.month >
+            11) {
             this.month = 0;
             this.year++;
         }
@@ -112,8 +113,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
     <div class="md:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
         <div class="w-full xl:w-[70%] lg:flex md:space-x-3 xl:sticky top-10 h-fit ">
             <div class="lg:w-[45%] h-[40vh] relative">
-                <img src="" data-src="{{ asset('storage/' . $iphone->gallery->image) }}" alt=""
-                    srcset="" class="w-full lazy h-full object-contain absolute">
+                <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
+                    class="w-full h-full object-contain absolute">
             </div>
             <div class="lg:w-1/2 lg:my-0 p-2 mt-6">
                 <div class="flex justify-end space-x-1 items-center">
@@ -142,10 +143,10 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
         <div
             class="md:full xl:w-[30%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
-            <div class="space-y-4">
+            <div>
                 {{-- BOOKING --}}
-                <div class="flex flex-col-reverse">
-                    <div class="space-y-3 mt-3">
+                <div class="flex flex-col sm:space-y-3 space-y-2">
+                    <div class="space-y-3">
                         <h1 class="text-lg md:text-2xl font-semibold ">Tanggal</h1>
                         <div class="relative" x-data="{ open: false }" @click.outside="open = false"
                             @close.stop="open = false">
@@ -250,15 +251,22 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                     </div>
                     <div class="space-y-3">
-                        <h1 class="text-lg md:text-2xl font-semibold ">Durasi</h1>
+                        <div class="flex justify-between items-center">
+                            <h1 class="text-lg md:text-2xl font-semibold ">Durasi</h1>
+                            <button type="button" class="text-sm font-semibold text-blue-500"
+                                @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'customDuration' } }))">durasi
+                                custom</button>
+                        </div>
                         <div class="flex space-x-2 w-full" x-data="{
                             activeTab: @entangle('selectedDuration').live,
                             price: @entangle('selectedPrice').live,
+                            {{-- jumlah: @entangle('jumlah').defer, --}}
                         
                             setActiveTab(tab, priceValue) {
-                                console.log(tab, priceValue);
                                 this.activeTab = tab;
                                 this.price = priceValue;
+                                {{-- this.jumlah = 0; --}}
+                                $wire.jumlah = 0;
                             }
                         }">
                             @foreach ($iphone->durations as $item)
@@ -494,7 +502,31 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             </div>
                             <div class="flex justify-between items-center font-medium">
                                 <p>Durasi</p>
-                                <p>{{ $selectedDuration }} jam</p>
+                                <p>
+                                    @if ($jumlah > 1)
+                                        @switch($unit)
+                                            @case('Jam')
+                                                {{ $jumlah }} jam
+                                            @break
+
+                                            @case('Hari')
+                                                {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
+                                            @break
+
+                                            @case('Minggu')
+                                                {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
+                                            @break
+
+                                            @case('Bulan')
+                                                {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
+                                            @break
+
+                                            @default
+                                        @endswitch
+                                    @else
+                                        {{ $selectedDuration }} jam
+                                    @endif
+                                </p>
                             </div>
                             <div class="flex justify-between items-center font-medium">
                                 <p>Tanggal booking</p>
@@ -666,5 +698,88 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
 
+    </x-bottom-sheet>
+    <x-bottom-sheet id="customDuration" title="Pilih durasi" glass="">
+        <div
+            class="max-w-md mx-auto space-y-6 
+    bg-gradient-to-br from-white/15 to-white/5 dark:from-gray-800/40 dark:to-gray-900/20
+    backdrop-blur-xl 
+    border border-white/20 dark:border-gray-700/50 
+    rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]
+    p-6 relative overflow-hidden
+    transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.35)]">
+
+            <!-- Gradient overlay untuk efek kaca -->
+            <div
+                class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none rounded-3xl">
+            </div>
+            <div class="relative z-10">
+                <label for="customDuration" class="block text-sm font-medium text-white/90 mb-2">
+                    Masukkan Durasi Sendiri
+                </label>
+
+                <div class="flex items-center gap-3 w-full" x-data="{ unit: $wire.entangle('unit') }">
+                    <!-- Input jumlah -->
+                    <input id="customDuration" type="number" wire:model.live.debounce.250ms="jumlah" min="24"
+                        class="w-24 px-3 py-2 border border-white/30 
+             rounded-xl bg-white/10 backdrop-blur-sm text-center 
+             text-white placeholder-white/50 
+             focus:ring-2 focus:ring-blue-400/70 focus:border-blue-300 
+             outline-none transition-all duration-200
+             hover:bg-white/20"
+                        placeholder="Jumlah">
+
+                    <!-- Pilihan unit waktu -->
+                    <div
+                        class="flex bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl overflow-hidden w-full justify-between">
+                        <template x-for="opt in ['Hari','Minggu','Bulan']" :key="opt">
+                            <button type="button" @click="$wire.setCustom(opt); unit = opt"
+                                :class="{
+                                    'bg-white/20 text-white backdrop-blur-sm border-white/40': unit === opt,
+                                    'hover:border-white/40 hover:bg-white/10': unit !== opt
+                                }"
+                                class="px-3 py-2 text-sm border-r border-white/20 transition-all duration-200 w-full">
+                                <span x-text="opt"></span>
+                            </button>
+                        </template>
+
+                    </div>
+                </div>
+
+                <p class="text-xs text-white/70 mt-1">Contoh: 3 Hari, 2 Minggu, 1 Bulan</p>
+            </div>
+
+
+            <!-- Preview Total -->
+            <div
+                class="p-4 rounded-2xl border border-white/30 
+        bg-white/10 backdrop-blur-md relative z-10
+        transition-all duration-200 hover:bg-white/20">
+                <p class="text-sm text-white/90">
+                    Durasi sewa:
+                    @switch($unit)
+                        @case('Jam')
+                            {{ $jumlah }} jam
+                        @break
+
+                        @case('Hari')
+                            {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
+                        @break
+
+                        @case('Minggu')
+                            {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
+                        @break
+
+                        @case('Bulan')
+                            {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
+                        @break
+
+                        @default
+                    @endswitch
+                    <br>
+                    Total Harga: Rp <span x-text="new Intl.NumberFormat('id-ID').format(price)"></span>
+                </p>
+            </div>
+        </div>
     </x-bottom-sheet>
 </div>

@@ -20,7 +20,7 @@
 >
     <!-- Overlay -->
     <div 
-        class="absolute inset-0 bg-black/35 "
+        class="absolute inset-0 bg-black/30 "
         @click="open = false"
     ></div>
 
