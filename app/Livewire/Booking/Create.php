@@ -112,7 +112,7 @@ class Create extends Component
             'customer_name' => $this->customer_name,
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
             'customer_email' => $this->customer_email,
-            'requested_booking_date' => $this->requested_booking_date->toDateString(),
+            'requested_booking_date' => carbon()->now()->toDateString(),
             'requested_time' => $this->requested_time,
             // 'end_booking_date' => $end->toDateString(),
             // 'end_time' => $end->format('H:i'),
@@ -237,7 +237,7 @@ class Create extends Component
     public function mount()
     {
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
-        $this->payments = Payment::where('is_active', true)->orderBy('created_at', 'desc')->get();
+        $this->payments = Payment::orderBy('created_at', 'desc')->get();
         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
 
         if (!$this->selectedPayment) {

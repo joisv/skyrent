@@ -55,10 +55,10 @@ class Detail extends Component
         $this->updateDurationAndPrice();
     }
 
-    // public function updatedJumlah()
-    // {
-    //     $this->updateDurationAndPrice();
-    // }
+    public function updatedJumlah()
+    {
+        $this->updateDurationAndPrice();
+    }
 
     private function updateDurationAndPrice()
     {
@@ -227,7 +227,7 @@ class Detail extends Component
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
             'customer_email' => $this->customer_email,
 
-            'requested_booking_date' => Carbon::parse($this->selectedDate)->timezone('Asia/Jakarta')->toDateString(),
+            'requested_booking_date' => carbon()->now()->toDateString(),
             'requested_time' => sprintf('%02d:%02d', $this->selectedHour, $this->selectedMinute),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,

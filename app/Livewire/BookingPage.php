@@ -15,7 +15,7 @@ class BookingPage extends Component
 {
     public $search = '';
     public $sortField = 'status';       // default sort pakai status
-    public $sortDirection = 'asc';      // bisa diatur 'asc' / 'desc'
+    public $sortDirection = 'desc';      // bisa diatur 'asc' / 'desc'
     public $filterStatus = '';
     public $paginate = 50;
     public $selectedAll = false;
