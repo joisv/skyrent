@@ -228,7 +228,7 @@ class Detail extends Component
             'customer_email' => $this->customer_email,
 
             'requested_booking_date' => carbon()->now()->toDateString(),
-            'requested_time' => sprintf('%02d:%02d', $this->selectedHour, $this->selectedMinute),
+            'requested_time' => Carbon::now()->format('H:i'),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
             'status' => 'pending',

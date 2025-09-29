@@ -113,7 +113,7 @@ class Create extends Component
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
             'customer_email' => $this->customer_email,
             'requested_booking_date' => carbon()->now()->toDateString(),
-            'requested_time' => $this->requested_time,
+            'requested_time' => Carbon::now()->format('H:i'),
             // 'end_booking_date' => $end->toDateString(),
             // 'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
