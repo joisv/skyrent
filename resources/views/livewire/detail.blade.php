@@ -253,27 +253,20 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     <div class="space-y-3 relative" x-data="{ openDuration: false }" @click.outside="openDuration = false">
                         <div class="flex justify-between items-center">
                             <h1 class="text-lg md:text-2xl font-semibold ">Durasi</h1>
-                            <button type="button" class="text-sm font-semibold text-blue-500"
-                                @click="() => {
-                                    openDuration = !openDuration;
-                                    window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'customDuration' } }))
-                                }">durasi
-                                custom</button>
                         </div>
                         <div x-show="openDuration" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 scale-95"
                             x-transition:enter-end="opacity-100 scale-100"
                             x-transition:leave="transition ease-in duration-75"
                             x-transition:leave-start="opacity-100 scale-100"
-                            x-transition:leave-end="opacity-0 scale-95" class="absolute top-5 z-50 right-0 mt-2 hidden sm:flex"
-                            style="display: none;">
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute top-5 z-50 right-0 mt-2 hidden sm:flex" style="display: none;">
                             <div class="rounded-md ring-1 ring-black ring-opacity-5">
 
                                 <div
                                     class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[20vw] border-2 border-slate-900 shadow-xl">
                                     <div class="relative z-10">
-                                        <label for="customDuration"
-                                            class="block text-sm font-medium text-white/90 ">
+                                        <label for="customDuration" class="block text-sm font-medium text-white/90 ">
                                             Masukkan Durasi Sendiri
                                         </label>
 
@@ -284,7 +277,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                                 class="w-24 px-2 py-1.5 border-2 border-black " placeholder="Jumlah">
 
                                             <!-- Pilihan unit waktu -->
-                                            <div class="flex overflow-hidden w-full justify-between border-2 border-black">
+                                            <div
+                                                class="flex overflow-hidden w-full justify-between border-2 border-black">
                                                 <template x-for="opt in ['Hari','Minggu','Bulan']"
                                                     :key="opt">
                                                     <button type="button" @click="$wire.setCustom(opt); unit = opt"
@@ -301,10 +295,10 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                             </div>
                                         </div>
 
-                                        <p class="text-xs mt-1 font-semibold italic text-gray-400">Contoh: 3 Hari, 2 Minggu, 1 Bulan</p>
+                                        <p class="text-xs mt-1 font-semibold italic text-gray-400">Contoh: 3 Hari, 2
+                                            Minggu, 1 Bulan</p>
                                     </div>
-                                    <div
-                                        class="mt-4 text-base font-medium">
+                                    <div class="mt-4 text-base font-medium">
                                         <p class="text-sm ">
                                             Durasi sewa:
                                             @switch($unit)
@@ -327,8 +321,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                                 @default
                                             @endswitch
                                             <br>
-                                            Total Harga: Rp <span
-                                                x-text="new Intl.NumberFormat('id-ID').format(price)" class="text-red-500"></span>
+                                            Total Harga: Rp <span x-text="new Intl.NumberFormat('id-ID').format(price)"
+                                                class="text-red-500"></span>
                                         </p>
                                     </div>
                                 </div>
@@ -355,6 +349,13 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             @endforeach
 
                         </div>
+                        <button
+                            @click="() => {
+                                    openDuration = !openDuration;
+                                    window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'customDuration' } }))
+                                }"
+                            class="p-2.5 cursor-pointer text-black w-full font-semibold text-center border-2 border-slate-900">Durasi
+                            Custom</button>
                     </div>
 
                 </div>
@@ -514,9 +515,9 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
             @endif
             <div class="p-4 border" x-on:close-modal.window="show = false">
-                <div class="space-y-4">
+                <div class="space-y-3">
                     <div>
-                        <h1 class="text-xl font-medium ">Nama</h1>
+                        <h1 class="text-lg font-medium ">Nama</h1>
                         <input type="text" wire:model.live.debounce.250ms="customer_name"
                             class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
                         @error('customer_name')
@@ -524,7 +525,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         @enderror
                     </div>
                     <div>
-                        <h1 class="text-xl font-medium ">Nomor Whatsapp</h1>
+                        <h1 class="text-lg font-medium ">Nomor Whatsapp</h1>
                         <div x-data="{
                             countryCode: @entangle('countryCode'),
                             customerPhone: @entangle('customer_phone').live,
@@ -561,16 +562,71 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         @enderror
                     </div>
                     <div>
-                        <h1 class="text-xl font-medium ">Email</h1>
+                        <h1 class="text-lg font-medium ">Email</h1>
                         <input type="email" wire:model.live.debounce.250ms="customer_email"
                             class="w-full p-2 border-2 border-slate-900 " placeholder="youreemail@example.site">
                     </div>
                 </div>
-
                 {{-- Invoice --}}
                 <div class="mt-7 space-y-5">
                     <div>
-                        <h1 class="text-2xl font-semibold mb-4">Deskripsi</h1>
+                        <div>
+
+                            <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
+                            <div class="space-y-2">
+                                @if (!empty($payments))
+                                    <div class="w-full max-w-md mx-auto">
+                                        <div class="space-y-2">
+                                            @foreach ($payments as $payment)
+                                                <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
+                                                    class="flex items-center justify-between border p-3 bg-white shadow-sm cursor-pointer transition
+                           hover:border-black {{ $selectedPaymentId == $payment['id'] ? 'border-black ring-1 ring-indigo-200' : 'border-gray-200' }}">
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="text-gray-800 font-semibold">
+                                                            {{ $payment['name'] }}
+                                                        </span>
+                                                    </div>
+
+                                                    <div
+                                                        class="w-5 h-5 rounded-full border flex items-center justify-center
+                        {{ $selectedPaymentId == $payment['id'] ? 'border-indigo-600' : 'border-gray-300' }}">
+                                                        @if ($selectedPaymentId == $payment['id'])
+                                                            <div class="w-2.5 h-2.5 bg-indigo-600 rounded-full">
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{-- Details booking --}}
+                <div x-data="{ detailss: true }">
+                    <div class="border-b-2 border-gray-200 py-4 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
+                        @click="detailss = ! detailss">
+                        <h1 class="text-xl font-semibold">Detail booking</h1>
+                        <div>
+                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
+                                class="ease-in duration-200" :class="detailss ? 'rotate-180' : ''"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                </g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <path
+                                        d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                                        stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="space-y-5" x-show="detailss" x-collapse x-cloak class="">
                         <div class="border-y-2 border-gray-400 py-6 my-py-6 space-y-1">
 
                             <div class="flex justify-between items-center font-medium">
@@ -616,32 +672,10 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="sm:flex justify-between">
-
-                            <h1 class="text-2xl font-semibold mb-4">Metode Pembayaran</h1>
-                            <div class="space-y-2">
-                                @if (!empty($payments))
-                                    <div class="w-48">
-                                        <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
-                                            placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
-                                            option-label="name" />
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                        <img src="{{ asset('storage/' . $selectedPayment?->icon) }}" alt=""
-                            class="w-48 h-w-48 object-cover rounded-md">
-
-                        <div class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
-                            <span>{{ $selectedPayment?->description }}</span>
-                        </div>
-
-                    </div>
                 </div>
             </div>
             <button type="submit" class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400"
-                wire:loading.attr="disabled">Buat Boooking</button>
+                wire:loading.attr="disabled">Lanjutkan Pembayaran</button>
         </form>
     </x-modal>
     <x-bottom-sheet id="sheetTanggalB" title="Form Booking" glass="">

@@ -14,7 +14,7 @@ use Livewire\Component;
 class BookingPage extends Component
 {
     public $search = '';
-    public $sortField = 'status';       // default sort pakai status
+    public $sortField = 'created_at';       // default sort pakai status
     public $sortDirection = 'desc';      // bisa diatur 'asc' / 'desc'
     public $filterStatus = '';
     public $paginate = 50;
