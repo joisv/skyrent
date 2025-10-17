@@ -40,10 +40,6 @@ class ExpireBookings extends Command
                 [$compareTime]
             )
             ->get();
-        dd([
-            'compareTime' => $compareTime,
-            'expiredBookings' => $expiredBookings,
-        ]);
         foreach ($expiredBookings as $booking) {
             $this->info("Expiring booking ID: " . $booking->id);
 
