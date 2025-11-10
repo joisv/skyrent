@@ -28,7 +28,9 @@ class Booking extends Model
         'created',
         'booking_code',
         'payment_id',
-        'reminder_sent'
+        'reminder_sent',
+        'address',
+        'pickup_type',
     ];
 
     public static function generateBookingCode()

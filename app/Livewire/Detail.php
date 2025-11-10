@@ -30,6 +30,8 @@ class Detail extends Component
     public $customer_phone;
     public $customer_email;
     public $countryCode = '+62';
+    public $address;
+    public $pickup_type = 'pickup';
 
     public $payments;
     public $selectedPaymentId = 1;
@@ -73,11 +75,11 @@ class Detail extends Component
             return;
         }
 
-        
+
         if ($this->basePricePerHour === 5000) {
             # code...
             switch ($this->unit) {
-              
+
                 case 'Hari':
                     $this->selectedDuration = $this->jumlah * 24;
                     break;
@@ -91,9 +93,9 @@ class Detail extends Component
                     $this->selectedDuration = $this->jumlah;
                     break;
             }
-        }else{
+        } else {
             switch ($this->unit) {
-              
+
                 case 'Hari':
                     $this->selectedDuration = $this->jumlah;
                     break;
@@ -216,6 +218,10 @@ class Detail extends Component
             'customer_email'     => 'nullable|email|max:255',
             'selectedDuration'   => 'required|integer|min:1',
             'selectedPrice'      => 'required|numeric|min:0',
+            'pickup_type' => 'required|in:pickup,delivery',
+            'address' => $this->pickup_type === 'delivery'
+                ? 'required|string|min:10|max:255'
+                : 'nullable|string|max:255',
         ], [
             'customer_phone.regex' => 'Format nomor tidak boleh diawali 0 atau 62.',
         ]);
@@ -234,6 +240,8 @@ class Detail extends Component
             'status' => 'pending',
             'created' => Carbon::now('Asia/Jakarta'),
             'booking_code' => $bookind_code,
+            'address' => $this->address,
+            'pickup_type' => $this->pickup_type,
             'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
         ]);
 

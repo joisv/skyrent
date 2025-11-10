@@ -3,7 +3,8 @@
     'show' => false,
     'maxWidth' => '2xl',
     'rounded' => 'rounded-lg',
-    'border' => ''
+    'border' => '',
+    'bgColor' => 'bg-white',
 ])
 
 @php
@@ -67,7 +68,7 @@ $maxWidth = [
 
     <div
         x-show="show"
-        class="{{ $border }} mb-6 bg-white dark:bg-gray-800 {{ $rounded }} overflow-hidden shadow-xl transform transition-all sm:w-full {{ $maxWidth }} sm:mx-auto"
+        class="{{ $border }} mb-6 {{ $bgColor }} dark:bg-gray-800 {{ $rounded }} overflow-hidden shadow-xl transform transition-all sm:w-full {{ $maxWidth }} sm:mx-auto"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"

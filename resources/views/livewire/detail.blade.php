@@ -472,7 +472,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </div>
     <livewire:cards lazy="on-load" :title="'Mungkin anda tertarik'" />
-    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900">
+    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900"
+        bgColor="bg-gray-200">
         <form wire:submit="booking">
             @if ($errors->any())
                 <div x-data="{ show: true }" x-show="show" {{-- auto hilang setelah 5 detik --}}
@@ -515,98 +516,121 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
             @endif
             <div class="p-4 border" x-on:close-modal.window="show = false">
-                <div class="space-y-3">
-                    <div>
-                        <h1 class="text-lg font-medium ">Nama</h1>
-                        <input type="text" wire:model.live.debounce.250ms="customer_name"
-                            class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
-                        @error('customer_name')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-medium ">Nomor Whatsapp</h1>
-                        <div x-data="{
-                            countryCode: @entangle('countryCode'),
-                            customerPhone: @entangle('customer_phone').live,
-                            countries: [
-                                { code: '+62', name: 'Indonesia', flag: 'ID' },
-                                { code: '+60', name: 'Malaysia', flag: 'MY' },
-                                { code: '+65', name: 'Singapore', flag: 'SG' },
-                                { code: '+66', name: 'Thailand', flag: 'TH' },
-                                { code: '+63', name: 'Philippines', flag: 'PH' },
-                                { code: '+95', name: 'Myanmar', flag: 'MM' },
-                                { code: '+855', name: 'Cambodia', flag: 'KH' },
-                                { code: '+856', name: 'Laos', flag: 'LA' },
-                                { code: '+84', name: 'Vietnam', flag: 'VN' },
-                                { code: '+673', name: 'Brunei', flag: 'BN' }
-                            ]
-                        }" class="flex gap-2">
-
-                            <!-- Dropdown Kode Negara -->
-                            <select x-model="countryCode" class="w-[40%] p-2 border-2 border-slate-900">
-                                <template x-for="country in countries" :key="country.code">
-                                    <option :value="country.code" x-text="country.flag + ' ' + country.code"></option>
-                                </template>
-                            </select>
-
-                            <!-- Input Nomor -->
-                            <input type="tel" id="customer_phone" x-model="customerPhone"
-                                @input=" let raw = $event.target.value.replace(/[^0-9]/g, '');
-                                            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';"
-                                class="w-full p-2 border-2 border-slate-900" placeholder="8123-4567-8901" />
-
+                <div >
+                    <div class="bg-white p-3">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-1">
+                               <svg width="32px" height="32px" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path stroke="#000000" stroke-width="12" d="M96 22a51.88 51.88 0 0 0-36.77 15.303A52.368 52.368 0 0 0 44 74.246c0 16.596 4.296 28.669 20.811 48.898a163.733 163.733 0 0 1 20.053 28.38C90.852 163.721 90.146 172 96 172c5.854 0 5.148-8.279 11.136-20.476a163.723 163.723 0 0 1 20.053-28.38C143.704 102.915 148 90.841 148 74.246a52.37 52.37 0 0 0-15.23-36.943A51.88 51.88 0 0 0 96 22Z"></path><circle cx="96" cy="74" r="20" stroke="#000000" stroke-width="12"></circle></g></svg>
+                                <div>
+                                    <h3 class="text-lg font-bold">Pickup</h3>
+                                </div>
+                            </div>
+                            <button class="px-3 py-1 text-base font-semibold border border-black hover:bg-black hover:text-white ease-in duration-150 disabled:hover:bg-gray-200 cursor-not-allowed" type="button" disabled>ganti</button>
                         </div>
-                        @error('customer_phone')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
                     </div>
-                    <div>
-                        <h1 class="text-lg font-medium ">Email</h1>
-                        <input type="email" wire:model.live.debounce.250ms="customer_email"
-                            class="w-full p-2 border-2 border-slate-900 " placeholder="youreemail@example.site">
-                    </div>
-                </div>
-                {{-- Invoice --}}
-                <div class="mt-7 space-y-5">
-                    <div>
+                    <div class="space-y-2 md:space-y-3 bg-white mt-3 sm:mt-7 p-4">
+                         <h1 class="text-xl font-semibold mb-4">Data diri</h1>
                         <div>
+                            <h1 class="sm:text-lg text-base font-medium ">Nama</h1>
+                            <input type="text" wire:model.live.debounce.250ms="customer_name"
+                                class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
+                            @error('customer_name')
+                                <span class="error">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <h1 class="sm:text-lg text-base font-medium ">Nomor Whatsapp</h1>
+                            <div x-data="{
+                                countryCode: @entangle('countryCode'),
+                                customerPhone: @entangle('customer_phone').live,
+                                countries: [
+                                    { code: '+62', name: 'Indonesia', flag: 'ID' },
+                                    { code: '+60', name: 'Malaysia', flag: 'MY' },
+                                    { code: '+65', name: 'Singapore', flag: 'SG' },
+                                    { code: '+66', name: 'Thailand', flag: 'TH' },
+                                    { code: '+63', name: 'Philippines', flag: 'PH' },
+                                    { code: '+95', name: 'Myanmar', flag: 'MM' },
+                                    { code: '+855', name: 'Cambodia', flag: 'KH' },
+                                    { code: '+856', name: 'Laos', flag: 'LA' },
+                                    { code: '+84', name: 'Vietnam', flag: 'VN' },
+                                    { code: '+673', name: 'Brunei', flag: 'BN' }
+                                ]
+                            }" class="flex gap-2">
 
-                            <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
-                            <div class="space-y-2">
-                                @if (!empty($payments))
-                                    <div class="w-full max-w-md mx-auto">
-                                        <div class="space-y-2">
-                                            @foreach ($payments as $payment)
-                                                <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
-                                                    class="flex items-center justify-between border p-3 bg-white shadow-sm cursor-pointer transition
-                           hover:border-black {{ $selectedPaymentId == $payment['id'] ? 'border-black ring-1 ring-indigo-200' : 'border-gray-200' }}">
-                                                    <div class="flex items-center gap-3">
-                                                        <span class="text-gray-800 font-semibold">
-                                                            {{ $payment['name'] }}
-                                                        </span>
-                                                    </div>
+                                <!-- Dropdown Kode Negara -->
+                                <select x-model="countryCode" class="w-[40%] p-2 border-2 border-slate-900">
+                                    <template x-for="country in countries" :key="country.code">
+                                        <option :value="country.code" x-text="country.flag + ' ' + country.code">
+                                        </option>
+                                    </template>
+                                </select>
 
-                                                    <div
-                                                        class="w-5 h-5 rounded-full border flex items-center justify-center
-                        {{ $selectedPaymentId == $payment['id'] ? 'border-indigo-600' : 'border-gray-300' }}">
-                                                        @if ($selectedPaymentId == $payment['id'])
-                                                            <div class="w-2.5 h-2.5 bg-indigo-600 rounded-full">
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
+                                <!-- Input Nomor -->
+                                <input type="tel" id="customer_phone" x-model="customerPhone"
+                                    @input=" let raw = $event.target.value.replace(/[^0-9]/g, '');
+                                            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';"
+                                    class="w-full p-2 border-2 border-slate-900" placeholder="8123-4567-8901" />
 
                             </div>
+                            @error('customer_phone')
+                                <span class="error">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        {{-- <div>
+                        <h1 class="sm:text-lg text-base font-medium ">Email</h1>
+                        <input type="email" wire:model.live.debounce.250ms="customer_email"
+                            class="w-full p-2 border-2 border-slate-900 " placeholder="youreemail@example.site">
+                    </div> --}}
+                        <div>
+                            <h1 class="sm:text-lg text-base font-medium ">Alamat</h1>
+                            <input type="text" wire:model.live.debounce.250ms="address"
+                                class="w-full p-2 border-2 border-slate-900 "
+                                placeholder="e.g. Jl. Merdeka No.123, Jakarta">
+                        </div>
+                        @error('address')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                </div>
+                {{-- Invoice --}}
+                <div class="sm:mt-7 mt-3 space-y-5 bg-white p-4">
+                    <div>
+
+                        <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
+                        <div class="space-y-2">
+                            @if (!empty($payments))
+                                <div class="w-full">
+                                    <div class="space-y-2">
+                                        @foreach ($payments as $payment)
+                                            <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
+                                                class="flex items-center justify-between border p-3 bg-white shadow-sm cursor-pointer transition
+                       hover:border-black {{ $selectedPaymentId == $payment['id'] ? 'border-black ring-1 ring-indigo-200' : 'border-gray-200' }}">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="text-gray-800 font-semibold">
+                                                        {{ $payment['name'] }}
+                                                    </span>
+                                                </div>
+
+                                                <div
+                                                    class="w-5 h-5 rounded-full border flex items-center justify-center
+                    {{ $selectedPaymentId == $payment['id'] ? 'border-indigo-600' : 'border-gray-300' }}">
+                                                    @if ($selectedPaymentId == $payment['id'])
+                                                        <div class="w-2.5 h-2.5 bg-indigo-600 rounded-full">
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
                         </div>
                     </div>
                 </div>
                 {{-- Details booking --}}
-                <div x-data="{ detailss: true }">
+                <div x-data="{ detailss: true }" class="bg-white p-4 mt-3 sm:mt-7">
                     <div class="border-b-2 border-gray-200 py-4 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
                         @click="detailss = ! detailss">
                         <h1 class="text-xl font-semibold">Detail booking</h1>
