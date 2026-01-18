@@ -53,6 +53,41 @@
     }
 }
 
+/* RIGHT → LEFT */
+@keyframes marquee-left {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* LEFT → RIGHT */
+@keyframes marquee-right {
+    0% {
+        transform: translateX(-50%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.animate-marquee-left {
+    animation: marquee-left 18s linear infinite;
+}
+
+.animate-marquee-right {
+    animation: marquee-right 18s linear infinite;
+}
+
+/* Outline text */
+.stroke-text {
+    -webkit-text-stroke: 2px #9ca3af;
+    /* gray-400 */
+}
 
 /**
     The lines above are intact.
