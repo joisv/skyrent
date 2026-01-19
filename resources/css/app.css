@@ -51,6 +51,11 @@
         overflow-y: visible;
         height: 100%;
     }
+
+    .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+    }
 }
 
 /* RIGHT → LEFT */

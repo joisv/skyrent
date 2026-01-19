@@ -1,6 +1,6 @@
 <div class="max-w-screen-2xl mx-auto p-3 sm:mt-0 space-y-3 ">
     <section>
-        <div class=" mx-auto px-6">
+        <div class=" mx-auto px-3">
 
             <!-- Header -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-8 items-center">
@@ -11,7 +11,7 @@
 
                 <div class="flex lg:justify-end">
                     <button
-                        class="flex items-center gap-3 bg-orange-500 text-white px-3 py-4 font-medium hover:bg-orange-600 transition">
+                        class="flex items-center gap-3 rounded-xl bg-orange-500 text-white px-3 py-4 font-medium hover:bg-orange-600 transition">
                         Lihat semua review
                         <span class="text-lg">→</span>
                     </button>
@@ -22,7 +22,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
                 <!-- Card 1 -->
-                <div class="bg-white p-6 flex flex-col justify-between border-2 border-black min-h-[220px]">
+                <div class="bg-white rounded-[32px] p-6 flex flex-col justify-between border-2 border-black min-h-[220px]">
                     <span class="text-sm text-gray-400">01</span>
                     <p class="text-gray-800 mt-4">
                         iPhone sangat mulus dan baterai awet. Cocok buat kebutuhan kerja dan konten.
@@ -33,7 +33,7 @@
                 </div>
 
                 <!-- Card 2 -->
-                <div class="bg-white p-6 flex flex-col justify-between border-2 border-black min-h-[220px]">
+                <div class="bg-white rounded-[32px] p-6 flex flex-col justify-between border-2 border-black min-h-[220px]">
                     <span class="text-sm text-gray-400">02</span>
                     <p class="text-gray-800 mt-4">
                         Pelayanan cepat dan admin responsif. Unit bersih seperti baru.
@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Card 3 -->
-                <div class="bg-white p-6 flex flex-col justify-between border-2 border-black min-h-[220px]">
+                <div class="bg-white rounded-[32px] p-6 flex flex-col justify-between border-2 border-black min-h-[220px]">
                     <span class="text-sm text-gray-400">03</span>
                     <p class="text-gray-800 mt-4">
                         Sangat membantu untuk event sehari. Tinggal pakai, tanpa ribet.
@@ -55,7 +55,7 @@
                 </div>
 
                 <!-- Card 4 (Highlight) -->
-                <div class="bg-gray-900 text-white p-6 flex flex-col justify-between min-h-[220px]">
+                <div class="bg-gray-900 rounded-[32px] text-white p-6 flex flex-col justify-between min-h-[220px]">
                     <span class="text-sm text-gray-400">04</span>
                     <p class="mt-4">
                         Skyrental benar-benar solusi sewa iPhone terbaik di Banyuwangi.
