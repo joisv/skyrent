@@ -119,7 +119,6 @@
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));">
     <div class="items-center w-full relative" x-cloak>
         <div class="space-y-2 w-[83%] lg:w-[92%]">
-            <h1 class="text-lg font-semibold hidden sm:flex">cek ketersediaan iPhone</h1>
             <div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
                 <div @click="open = ! open">
                     <div class="relative">
@@ -139,7 +138,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
                             @click="$refs.dropdownButton.click()" /> --}}
                         <input
-                            class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
+                            class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 rounded-lg focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
                             placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
                             @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalA' } }))" />
                     </div>
@@ -148,13 +147,13 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 <div x-show="open" x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                     x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95" class="absolute z-50 mt-2 hidden sm:flex"
+                    x-transition:leave-end="opacity-0 scale-95" class="absolute z-50 mt-2 hidden sm:flex "
                     style="display: none;">
                     <div class="rounded-md ring-1 ring-black ring-opacity-5">
 
                         <!-- Kalender -->
                         <div
-                            class="p-2 lg:p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full xl:w-[25vw] border-2 border-slate-900 shadow-xl">
+                            class="p-2 lg:p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full xl:w-[25vw] border-2 border-slate-900 shadow-xl rounded-xl">
                             <div class="border-b-2 border-gray-300 pb-4">
                                 <div class="flex items-center  text-lg">
                                     <!-- Hour Picker -->
@@ -220,7 +219,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
         <button @click="searchIphones()" wire:loading.attr="disabled"
-            class="ml-2 bg-slate-900 text-white p-3 font-semibold hover:bg-white hover:text-black border-2 border-transparent hover:border-black transition-all duration-100 ease-in-out absolute end-0 bottom-0">
+            class="ml-2 bg-slate-900 text-white p-3 font-semibold hover:bg-white rounded-xl hover:text-black border-2 border-transparent hover:border-black transition-all duration-100 ease-in-out absolute end-0 bottom-0">
             <x-icons.search default="30px" />
         </button>
     </div>
@@ -402,65 +401,6 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
     </x-modal>
     <x-bottom-sheet id="sheetTanggalA" title="Form Booking" glass="">
         <!-- Kalender -->
-        {{-- <div class=" dark:bg-gray-800 text-lg z-10 w-full">
-            <div class="border-b-2 border-gray-300 pb-4">
-                <div class="flex items-center  text-lg">
-                    <!-- Hour Picker -->
-                    <div>
-                        <input type="number" x-model="selectedHour" min="0" max="23"
-                            class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
-                            placeholder="HH">
-                    </div>
-
-                    <div class="font-bold">:</div>
-
-                    <!-- Input Menit -->
-                    <div>
-                        <input type="number" x-model="selectedMinute" min="0" max="59" step="1"
-                            class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
-                            placeholder="MM">
-                    </div>
-                </div>
-                <div class="text-lg font-medium text-gray-700 dark:text-gray-200"
-                    x-text="monthNames[month] + ' ' + year"></div>
-            </div>
-            <!-- Header navigasi bulan -->
-            <div class="flex mb-2">
-                <button type="button" @click="prevMonth()"
-                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
-
-                <button type="button" @click="nextMonth()"
-                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
-            </div>
-
-            <!-- Hari -->
-            <div class="grid grid-cols-7 text-gray-500 mb-1">
-                <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
-                    <div x-text="day" class="text-center"></div>
-                </template>
-            </div>
-
-            <!-- Tanggal -->
-            <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
-                <!-- Sisipkan hari kosong -->
-                <template x-for="blank in blankdays">
-                    <div></div>
-                </template>
-
-                <!-- Tanggal -->
-                <template x-for="(date, index) in daysInMonth" :key="index">
-                    <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()" x-text="date"
-                        class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
-                        :class="{
-                            'bg-slate-900 text-white': isSelectedDate(date),
-                            'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
-                            'hover:border-slate-900': !isPastDate(date)
-                        }">
-                    </div>
-                </template>
-
-            </div>
-        </div> --}}
         {{-- glass --}}
         <div
             class="relative text-lg z-10 w-full 
