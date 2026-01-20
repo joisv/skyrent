@@ -126,7 +126,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     <span class="text-sm font-semibold">( {{ $avgRating }} )</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <h1 class="text-3xl font-semibold">{{ $iphone->name }}</h1>
+                    <h1 class="text-3xl font-medium font-neulis">{{ $iphone->name }}</h1>
                     <div>
                         <div class="flex space-x-1 md:hidden">
                             <h1 class="text-base font-medium">Rp</h1>
@@ -142,12 +142,12 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
         <div
-            class="md:full xl:w-[30%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 ">
+            class="md:full xl:w-[30%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 rounded-xl">
             <div>
                 {{-- BOOKING --}}
                 <div class="flex flex-col sm:space-y-3 space-y-2">
                     <div class="space-y-3">
-                        <h1 class="text-lg md:text-2xl font-semibold ">Tanggal</h1>
+                        <h1 class="text-lg md:text-2xl font-medium font-neulis">Tanggal</h1>
                         <div class="relative" x-data="{ open: false }" @click.outside="open = false"
                             @close.stop="open = false">
                             <div @click="open = ! open">
@@ -167,7 +167,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         </svg>
                                     </div>
                                     <input
-                                        class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
+                                        class="rounded-xl block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
                                         placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
                                         @click="window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'sheetTanggalB' } }))" />
                                 </div>
@@ -184,7 +184,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                                     <!-- Kalender -->
                                     <div
-                                        class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 border-slate-900 shadow-xl">
+                                        class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 rounded-xl border-slate-900 shadow-xl">
                                         <div class="border-b-2 border-gray-300 pb-4">
                                             <div class="flex items-center  text-lg">
                                                 <!-- Hour Picker -->
@@ -252,7 +252,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                     </div>
                     <div class="space-y-3 relative" x-data="{ openDuration: false }" @click.outside="openDuration = false">
                         <div class="flex justify-between items-center">
-                            <h1 class="text-lg md:text-2xl font-semibold ">Durasi</h1>
+                            <h1 class="text-lg md:text-2xl font-medium font-neulis ">Durasi</h1>
                         </div>
                         <div x-show="openDuration" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 scale-95"
@@ -264,7 +264,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             <div class="rounded-md ring-1 ring-black ring-opacity-5">
 
                                 <div
-                                    class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[20vw] border-2 border-slate-900 shadow-xl">
+                                    class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[20vw] border-2 border-slate-900 shadow-xl rounded-xl">
                                     <div class="relative z-10">
                                         <label for="customDuration" class="block text-sm font-medium text-white/90 ">
                                             Masukkan Durasi Sendiri
@@ -274,11 +274,11 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                             <!-- Input jumlah -->
                                             <input id="customDuration" type="number"
                                                 wire:model.live.debounce.250ms="jumlah" min="24"
-                                                class="w-24 px-2 py-1.5 border-2 border-black " placeholder="Jumlah">
+                                                class="w-24 px-2 py-1.5 border-2 border-black rounded-xl" placeholder="Jumlah">
 
                                             <!-- Pilihan unit waktu -->
                                             <div
-                                                class="flex overflow-hidden w-full justify-between border-2 border-black">
+                                                class="flex overflow-hidden w-full justify-between border-2 border-black rounded-xl">
                                                 <template x-for="opt in ['Hari','Minggu','Bulan']"
                                                     :key="opt">
                                                     <button type="button" @click="$wire.setCustom(opt); unit = opt"
@@ -343,7 +343,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             @foreach ($iphone->durations as $item)
                                 <div @click="setActiveTab({{ $item['hours'] }}, {{ $item->pivot->price }})"
                                     :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
-                                    class="p-2.5 cursor-pointer text-black w-full font-semibold text-center border-2 border-slate-900">
+                                    class="p-2.5 cursor-pointer text-black w-full font-medium rounded-xl text-center border-2 border-slate-900">
                                     {{ $item['hours'] }} jam
                                 </div>
                             @endforeach
@@ -354,19 +354,19 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                     openDuration = !openDuration;
                                     window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'customDuration' } }))
                                 }"
-                            class="p-2.5 cursor-pointer text-black w-full font-semibold text-center border-2 border-slate-900">Durasi
+                            class="p-2.5 cursor-pointer text-black w-full font-semibold text-center border-2 rounded-2xl border-slate-900">Durasi
                             Custom</button>
                     </div>
 
                 </div>
             </div>
             <div class="mt-5 space-y-2 hidden sm:flex flex-col" x-data="{ price: @entangle('selectedPrice').live }">
-                <span class="text-xl sm:text-2xl font-bold hidden md:flex"
+                <span class="text-xl sm:text-2xl font-medium font-neulis hidden md:flex"
                     x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                 <button type="button" wire:click="bookingNow"
-                    class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl font-semibold group overflow-hidden cursor-pointer p-4 hover:bg-gray-300 border-2 hover:border-black hover:text-black transition duration-700 ease-in-out w-full hidden sm:flex">
+                    class="flex justify-between {{ $is_available ? '' : 'bg-gray-300' }} items-center space-x-4 bg-black text-white text-xl rounded-xl font-semibold group overflow-hidden cursor-pointer p-4 hover:bg-orange-500 border-2 transition duration-300 ease-in-out w-full hidden sm:flex">
                     <div class="text-start">
-                        <h1 class="text-xl font-bold">
+                        <h1 class="text-xl font-medium font-neulis">
                             {{ $is_available ? 'Booking Sekarang' : 'Tidak tersedia' }}
                         </h1>
                     </div>

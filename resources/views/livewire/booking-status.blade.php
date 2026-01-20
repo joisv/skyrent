@@ -22,24 +22,24 @@
 }">
     <div class="w-full ">
         <div class="flex items-center justify-center">
-            <span class="text-5xl font-semibold">SKYRENTAL</span>
+            <span class="text-5xl font-medium font-neulis">Skyrental</span>
         </div>
         <div>
 
         </div>
     </div>
-    <form wire:submit.prevent="checkBooking" class="space-y-6 shadow-2xl p-6">
+    <form wire:submit.prevent="checkBooking" class="space-y-6 border-2 border-black p-6 rounded-2xl">
         {{-- Judul --}}
-        <h2 class="text-xl font-bold text-blue-800 border-b border-gray-300 pb-2">
-            Cek Status Booking
+        <h2 class="text-2xl font-bold border-b border-gray-300 pb-2">
+            Cek Status Booking<span class="text-orange-500 text-2xl">.</span>
         </h2>
 
         {{-- Input Kode Booking --}}
         <div>
-            <label for="bookingCode" class="block text-sm font-semibold text-blue-800">Kode Booking</label>
+            <label for="bookingCode" class="block text-sm font-semibold">Kode Booking </label>
             <input type="text" id="bookingCode" wire:model="bookingCode"
                 placeholder="Masukkan kode booking Anda (contoh: SKY123456)"
-                class="w-full border border-gray-400 px-4 py-2 mt-1 
+                class="w-full rounded-xl border border-gray-400 px-4 py-2 mt-1 
                    focus:outline-none focus:ring-2 focus:ring-blue-300 
                    placeholder:text-gray-400 bg-white"
                 autocomplete="off">
@@ -50,7 +50,7 @@
 
         {{-- Tombol --}}
         <button type="submit"
-            class="w-full py-2 bg-blue-800 hover:bg-blue-900 text-white 
+            class="w-full py-3 rounded-xl bg-orange-500 text-white 
                font-semibold shadow transition sm:text-lg">
             Cek Status
         </button>
@@ -63,16 +63,47 @@
     @if ($booking)
         <div class="px-4 py-2 flex flex-col justify-between">
             {{-- Header --}}
-            <div class="flex justify-between items-start mb-8">
-                <div></div>
-                <div class="text-right text-sm text-blue-800">
+            <div class="flex-col-reverse flex md:flex-row md:justify-between items-start mb-8">
+                <div class="w-full ">
+                    {{-- Tombol Konfirmasi Pembayaran --}}
+                    @if ($booking->status != 'confirmed')
+                        <div class="mt-3">
+                            <button @click="() => $dispatch('open-modal', 'payment')" :disabled="expired"
+                                class="w-full md:w-auto px-6 py-3 
+           bg-gray-900 hover:bg-white hover:text-black 
+           text-white font-semibold shadow-xl 
+           transition duration-200 ease-in-out 
+           flex items-center justify-center gap-2
+           disabled:opacity-50 disabled:cursor-not-allowed">
+
+                                <template x-if="expired">
+                                    <span>Expired</span>
+                                </template>
+
+                                <template x-if="!expired">
+                                    <div class="flex space-x-1">
+                                        <p>Klik untuk pembayaran</p>
+
+                                    </div>
+                                </template>
+                            </button>
+                            <p class="text-xs text-gray-500 mt-2 italic">
+                                *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
+                            </p>
+                        </div>
+                    @endif
+                </div>
+                <div class="text-right text-sm text-blue-800 space-y-3 w-full flex flex-col items-end">
                     <p>{{ $booking->booking_code ?? '-' }}</p>
                     <p>{{ \Carbon\Carbon::parse($booking->created)->format('d M Y') }}</p>
                     <div class="flex items-center justify-center gap-2 mt-1">
                         @if ($booking->status == 'pending')
                             <span
-                                class="px-3 py-1 rounded bg-yellow-500 text-white font-medium flex items-center gap-1">
+                                class="px-3 py-1 rounded bg-yellow-500 text-white font-medium flex md:items-end items-center gap-1 text-lg">
                                 <x-heroicon-o-clock class="w-4 h-4" /> Menunggu Pembayaran
+                                <span class="text-red-500">
+                                    <span x-text="minutes"></span>m <span x-text="seconds"></span>s
+                                </span>
                             </span>
                         @elseif($booking->status == 'confirmed')
                             <span class="px-3 py-1 rounded bg-green-500 text-white font-medium flex items-center gap-1">
@@ -88,6 +119,16 @@
                             </span>
                         @endif
                     </div>
+                    {{-- QR Code --}}
+                    {{-- @if ($booking->payment)
+                        <div class="w-full flex flex-col items-end">
+
+                            <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
+                                class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md justify-end">
+                        </div>
+                    @else
+                        <p><em>Belum ada data pembayaran</em></p>
+                    @endif --}}
 
                 </div>
             </div>
@@ -152,44 +193,8 @@
                         <span class="text-orange-600">gwennrepair@gmail.com</span>
                     </p>
                 </div>
-
-                {{-- QR Code --}}
-                @if ($booking->payment)
-                    <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
-                        class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md">
-                @else
-                    <p><em>Belum ada data pembayaran</em></p>
-                @endif
             </div>
-            {{-- Tombol Konfirmasi Pembayaran --}}
-            @if ($booking->status != 'confirmed')
-                <div class="mt-3">
-                    <button @click="() => $dispatch('open-modal', 'payment')" :disabled="expired"
-                        class="w-full sm:w-auto px-6 py-3 
-           bg-gray-900 hover:bg-white hover:text-black 
-           text-white font-semibold shadow-xl 
-           transition duration-200 ease-in-out 
-           flex items-center justify-center gap-2
-           disabled:opacity-50 disabled:cursor-not-allowed">
 
-                        <template x-if="expired">
-                            <span>Expired</span>
-                        </template>
-
-                        <template x-if="!expired">
-                            <div class="flex space-x-1">
-                                <p>Klik untuk pembayaran</p>
-                                <span class="text-red-500">
-                                    <span x-text="minutes"></span>m <span x-text="seconds"></span>s
-                                </span>
-                            </div>
-                        </template>
-                    </button>
-                    <p class="text-xs text-gray-500 mt-2 italic">
-                        *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
-                    </p>
-                </div>
-            @endif
         </div>
         @if ($booking->payment)
             <x-modal name="payment" :show="$errors->isNotEmpty()">

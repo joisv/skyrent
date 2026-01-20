@@ -58,22 +58,30 @@
 
                 <!-- Social Icons -->
                 <div class="flex gap-4 mb-8">
-                    <a href="#"
-                        class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
-                        <i class="ri-instagram-line text-xl"></i>
-                    </a>
-                    <a href="#"
-                        class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
-                        <i class="ri-tiktok-line text-xl"></i>
-                    </a>
-                    <a href="#"
-                        class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
-                        <i class="ri-twitter-x-line text-xl"></i>
-                    </a>
-                    <a href="#"
-                        class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
-                        <i class="ri-threads-line text-xl"></i>
-                    </a>
+                    @if (!empty($setting->whatsapp))
+                        <a href="{{ $setting->whatsapp }}" target="_blank" rel="noopener noreferrer"
+                            class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
+                            <i class="ri-whatsapp-line text-xl"></i>
+                        </a>
+                    @endif
+                    @if (!empty($setting->instagram))
+                        <a href="{{ $setting->instagram }}" target="_blank" rel="noopener noreferrer"
+                            class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
+                            <i class="ri-instagram-line text-xl"></i>
+                        </a>
+                    @endif
+                    @if (!empty($setting->tiktok))
+                        <a href="{{ $setting->tiktok }}" target="_blank" rel="noopener noreferrer"
+                            class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
+                            <i class="ri-tiktok-line text-xl"></i>
+                        </a>
+                    @endif
+                    @if (empty($setting->twitter))
+                        <a href="{{ $setting->twitter }}" target="_blank" rel="noopener noreferrer"
+                            class="w-14 h-14 flex items-center justify-center rounded-2xl bg-gray-100 hover:bg-black hover:text-white transition">
+                            <i class="ri-twitter-x-line text-xl"></i>
+                        </a>
+                    @endif
                 </div>
 
                 <!-- CTA -->

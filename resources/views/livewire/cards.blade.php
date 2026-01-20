@@ -21,7 +21,7 @@
 
                         {{-- Content --}}
                         <div class="text-center flex flex-col flex-1">
-                            <h3 class="text-base lg:text-lg font-semibold text-gray-900 mb-1">
+                            <h3 class="text-base lg:text-lg font-medium font-neulis text-gray-900 mb-1">
                                 {{ $iphone->name }}
                             </h3>
 
@@ -33,7 +33,7 @@
                             {{-- CTA --}}
                             <a href="{{ route('detail', $iphone->slug) }}" wire:navigate
                                 class="mt-auto inline-flex items-center justify-center w-full py-3 rounded-xl
-                                   bg-slate-900 text-white text-sm font-medium
+                                   bg-slate-900 text-white text-sm font-medium font-neulis
                                    hover:bg-orange-500 transition">
                                 Sewa Sekarang →
                             </a>
