@@ -7,6 +7,11 @@
     The lines below were added by maryUI installer.
 */
 
+@font-face {
+    font-family: Neulis;
+    src: url('../../public/fonts/fonnts.com-Neulis_Cursive_Medium.otf');
+}
+
 [x-cloak] {
     display: none !important;
 }

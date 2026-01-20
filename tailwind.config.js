@@ -13,9 +13,10 @@ export default {
 
     theme: {
         extend: {
-            // fontFamily: {
-            //     sans: ['Figtree', ...defaultTheme.fontFamily.sans],
-            // },
+            fontFamily: {
+                // sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                neulis: ['Neulis', 'cursive']
+            },
             // typography: (theme) => ({
             //     DEFAULT: {
             //         css: {
