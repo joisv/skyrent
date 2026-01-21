@@ -28,7 +28,7 @@
         <livewire:layout.navigation />
         <livewire:layout.mobile-navigation />
 
-        <div class="w-full">
+        <div class="w-full lg:w-[72%] xl:w-full">
             <!-- Page Heading -->
             <header>
                 <div x-data class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
@@ -42,9 +42,6 @@
                     {{ $header }}
                 </div>
             </header>
-            {{-- @if (isset($header))
-            @endif --}}
-
             <!-- Page Content -->
             <main>
                 {{ $slot }}

@@ -3,6 +3,9 @@
         {{-- $dispatch('booking-create') --}}
         $dispatch('open-modal', 'booking-create')
     },
+    iPhoneWizardtest(){
+        $dispatch('open-modal', 'iphone-wizard')
+    }
 }">
     {{-- @dump($returnToday) --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -27,6 +30,7 @@
 
         <x-mary-stat title="Pendapatan Hari ini" :value="'Rp ' . number_format($revenueToday, 0, ',', '.')" icon="o-banknotes" color="text-success" />
     </div>
+    <button class="p-2 bg-sky-500 text-white" @click="iPhoneWizardtest()">iPhoneWizardtest</button>
     <x-tables.table name="Booking">
         <x-slot name="secondBtn">
             <button
@@ -161,6 +165,9 @@
     <div class="w-full mt-5">
         {{-- {{ $iphones->links() }} --}}
     </div>
+    <x-modal name="iphone-wizard" :show="true" maxWidth="4xl">
+        <livewire:rent-iphone-wizard />
+    </x-modal>
     <x-modal name="booking-create" :show="$errors->isNotEmpty()">
         <livewire:booking.create />
     </x-modal>

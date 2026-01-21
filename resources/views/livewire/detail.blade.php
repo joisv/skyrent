@@ -110,13 +110,13 @@
 
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));" class="max-w-screen-2xl mx-auto">
-    <div class="md:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
-        <div class="w-full xl:w-[70%] lg:flex md:space-x-3 xl:sticky top-10 h-fit ">
-            <div class="lg:w-[45%] h-[40vh] relative">
+    <div class="lg:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
+        <div class="w-full lg:w-[60%] xl:w-[70%] xl:flex md:space-x-3 xl:sticky top-10 h-fit">
+            <div class="w-full h-[40vh] relative">
                 <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
                     class="w-full h-full object-contain absolute">
             </div>
-            <div class="lg:w-1/2 lg:my-0 p-2 mt-6">
+            <div class="lg:w-full lg:my-0 p-2 mt-6">
                 <div class="flex justify-end space-x-1 items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
                         class="w-5 h-5 text-yellow-400">
@@ -142,7 +142,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
         <div
-            class="md:full xl:w-[30%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 xl:sticky top-10 right-20 rounded-xl">
+            class="md:full lg:w-[40%] xl:w-[28%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 rounded-xl mx-3">
             <div>
                 {{-- BOOKING --}}
                 <div class="flex flex-col sm:space-y-3 space-y-2">
