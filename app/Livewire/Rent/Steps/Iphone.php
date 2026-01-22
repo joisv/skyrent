@@ -5,12 +5,20 @@ namespace App\Livewire\Rent\Steps;
 use App\Models\Iphones;
 use Livewire\Component;
 use Carbon\Carbon;
+use Livewire\Attributes\Modelable;
 
 class Iphone extends Component
 {
 
     public $iphones;
     public ?int $selectedIphoneId = null;
+    #[Modelable]
+    public $requested_booking_date = null;
+    #[Modelable]
+    public $requested_time;
+    public $end_booking_date;
+    public $end_time;
+
 
     public function selectIphone(int $iphoneId)
     {
@@ -18,6 +26,11 @@ class Iphone extends Component
         $this->dispatch('iphone-selected', iphoneId: $iphoneId);
     }
 
+    public function mount()
+    {
+        $this->requested_booking_date = Carbon::now('Asia/Jakarta');
+    }
+    
     public function loadIphones()
     {
         $now = Carbon::now('Asia/Jakarta');

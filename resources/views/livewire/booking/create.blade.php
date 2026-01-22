@@ -142,7 +142,7 @@
             <div>
                 <label for="requested_booking_date"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal booking</label>
-                <livewire:booking.set-date wire:model="requested_booking_date" />
+                {{-- <livewire:booking.set-date wire:model="requested_booking_date" /> --}}
             </div>
             @error('requested_booking_date')
                 <span class="error">Pilih tanggal sewa</span>
@@ -165,7 +165,6 @@
                             defaultDate: @js($requested_time ? \Carbon\Carbon::parse($requested_time)->format('H:i') : null),
                             onChange: (selectedDates, dateStr, instance) => {
                                 $wire.requested_time = dateStr; // Update Livewire property
-                                {{-- $wire.setTime(dateStr); // Call Livewire method to set time --}}
                             }
                         })
                     },

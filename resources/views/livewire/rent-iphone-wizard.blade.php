@@ -10,13 +10,8 @@
     @endif
     {{-- STEP INDICATOR --}}
     <div class="flex items-center justify-between mb-8">
-
         {{-- LEFT --}}
         <div>
-            <h1 class="text-xl font-semibold mb-3">
-                Pilih Tipe iPhone
-            </h1>
-
             {{-- STEP INDICATOR --}}
             <div class="flex items-center gap-4 text-sm">
 
@@ -73,7 +68,7 @@
 
     {{-- CONTENT --}}
     @if ($step === 1)
-        <livewire:rent.steps.iphone />
+        <livewire:rent.steps.iphone wire:model="requested_booking_date" wire:model="requested_time" />
     @elseif ($step === 2)
         <livewire:rent.steps.duration />
     @elseif ($step === 3)

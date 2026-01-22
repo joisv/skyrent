@@ -1,14 +1,3 @@
-{{-- @php
-    if ($isEdit) {
-        $finalValue = \Carbon\Carbon::createFromFormat('Y-m-d', $value);
-        if ($finalValue !== false) {
-            $inicialDate = $finalValue->format('F j, Y');
-        }
-    } else {
-        $inicialDate = $value->format('F j, Y');
-    }
-@endphp --}}
-
 <div wire:ignore x-data="{
     date: true,
     currentDate: '',
@@ -25,7 +14,8 @@
             defaultDate: @js($value),
             onChange: (selectedDates, dateStr, instance) => {
             console.log('Selected date:', dateStr);
-                $wire.date = dateStr;
+                $wire.value = dateStr;
+                console.log(selectedDates)
                 let result = this.convertToCustomFormat(selectedDates);
                 this.dateInit = result.date; // Update tanggal yang ditampilkan
             }

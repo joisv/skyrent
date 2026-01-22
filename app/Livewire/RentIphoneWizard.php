@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Livewire\Attributes\Modelable;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -12,19 +13,21 @@ class RentIphoneWizard extends Component
     // STEP 1
     public ?int $selectedIphoneId = null;
 
+    public $requested_booking_date;
+
     // STEP 2
     public ?int $rentHours = null;
 
     // STEP 3
     public string $customerName = '';
     public string $customerPhone = '';
-
+    
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
     {
         $this->selectedIphoneId = $iphoneId;
     }
-    
+
     protected function rules(): array
     {
         return match ($this->step) {
@@ -44,7 +47,7 @@ class RentIphoneWizard extends Component
 
     public function next(): void
     {
-        $this->validate();
+        // $this->validate();
 
         if ($this->step < 4) {
             $this->step++;
