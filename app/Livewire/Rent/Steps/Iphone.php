@@ -29,6 +29,7 @@ class Iphone extends Component
     public function mount()
     {
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
+        $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
     }
     
     public function loadIphones()

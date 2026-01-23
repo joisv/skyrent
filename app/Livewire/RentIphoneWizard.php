@@ -12,8 +12,8 @@ class RentIphoneWizard extends Component
 
     // STEP 1
     public ?int $selectedIphoneId = null;
-
     public $requested_booking_date;
+    public $requested_time;
 
     // STEP 2
     public ?int $rentHours = null;
