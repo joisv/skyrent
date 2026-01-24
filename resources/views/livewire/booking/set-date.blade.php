@@ -13,9 +13,9 @@
             dateFormat: 'Y-m-d',
             defaultDate: @js($value),
             onChange: (selectedDates, dateStr, instance) => {
-            console.log('Selected date:', dateStr);
+            {{-- console.log('Selected date:', dateStr); --}}
                 $wire.value = dateStr;
-                console.log(selectedDates)
+                {{-- console.log(selectedDates) --}}
                 let result = this.convertToCustomFormat(selectedDates);
                 this.dateInit = result.date; // Update tanggal yang ditampilkan
             }

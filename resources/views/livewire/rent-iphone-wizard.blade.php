@@ -1,13 +1,5 @@
-<div class="max-w-7xl mx-auto p-6">
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+<div class="max-w-7xl mx-auto p-6"
+    x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')">
     {{-- STEP INDICATOR --}}
     <div class="flex items-center justify-between mb-8">
         {{-- LEFT --}}
@@ -95,4 +87,31 @@
             </button>
         @endif
     </div>
+    <x-modal name="duration-options-modal" :show-close="true" max-width="md">
+        {{-- Duration --}}
+        <div class="m-3">
+            <label for="duration" class="block mb-3 text-xl font-medium text-gray-900 dark:text-white">Pilih Durasi</label>
+            <div class="grid md:grid-cols-3 grid-cols-2 gap-1" x-data="{
+                activeTab: @entangle('selectedDuration').live,
+                price: @entangle('selectedPrice').live,
+            
+                setActiveTab(tab, priceValue) {
+                    this.activeTab = tab;
+                    this.price = priceValue;
+                }
+            }">
+                @foreach ($durations as $item)
+                    <div @click="setActiveTab({{ $item['hours'] }}, {{ $item['price'] }})"
+                        :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
+                        class="p-3 font-semibold text-base text-center border-2 border-slate-300 cursor-pointer w-full hover:shadow-xl hover:scale-105 transition">
+                        {{ $item['hours'] }} jam
+                    </div>
+                @endforeach
+            </div>
+
+            @error('selectedDuration')
+                <span class="error">Pilih durasi sewa😊</span>
+            @enderror
+        </div>
+    </x-modal>
 </div>

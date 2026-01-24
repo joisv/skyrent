@@ -19,6 +19,11 @@ class Iphone extends Component
     public $end_booking_date;
     public $end_time;
 
+    public function updating($value)
+    {
+        $this->requested_booking_date = $value;
+        dd('requested_booking_date updated to: ' . $value);
+    }
 
     public function selectIphone(int $iphoneId)
     {
@@ -28,10 +33,18 @@ class Iphone extends Component
 
     public function mount()
     {
-        $this->requested_booking_date = Carbon::now('Asia/Jakarta');
-        $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
+        $now = Carbon::now('Asia/Jakarta');
+
+        $this->requested_booking_date = $now->toDateString(); // Y-m-d
+        $this->requested_time = $now->format('H:i');
+
+        // $this->dispatch(
+        //     'booking-time-set',
+        //     date: $this->requested_booking_date,
+        //     time: $this->requested_time
+        // );
     }
-    
+
     public function loadIphones()
     {
         $now = Carbon::now('Asia/Jakarta');

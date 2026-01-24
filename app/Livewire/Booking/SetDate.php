@@ -11,11 +11,6 @@ class SetDate extends Component
     public $value;
     public $isEdit = false;
 
-    public function updating($props, $val)
-    {
-        dd($props);
-    }
-    
     public function render()
     {
         return view('livewire.booking.set-date');
