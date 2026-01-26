@@ -274,7 +274,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                             <!-- Input jumlah -->
                                             <input id="customDuration" type="number"
                                                 wire:model.live.debounce.250ms="jumlah" min="24"
-                                                class="w-24 px-2 py-1.5 border-2 border-black rounded-xl" placeholder="Jumlah">
+                                                class="w-24 px-2 py-1.5 border-2 border-black rounded-xl"
+                                                placeholder="Jumlah">
 
                                             <!-- Pilihan unit waktu -->
                                             <div
@@ -472,8 +473,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </div>
     <livewire:cards lazy="on-load" :title="'Mungkin anda tertarik'" />
-    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-900"
-        bgColor="bg-gray-200">
+    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-orange-500">
         <form wire:submit="booking">
             @if ($errors->any())
                 <div x-data="{ show: true }" x-show="show" {{-- auto hilang setelah 5 detik --}}
@@ -516,253 +516,264 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </div>
             @endif
             <div class="p-4 border" x-on:close-modal.window="show = false">
-                <div >
-                    <div class="bg-white p-3">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-1">
-                               <svg width="32px" height="32px" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path stroke="#000000" stroke-width="12" d="M96 22a51.88 51.88 0 0 0-36.77 15.303A52.368 52.368 0 0 0 44 74.246c0 16.596 4.296 28.669 20.811 48.898a163.733 163.733 0 0 1 20.053 28.38C90.852 163.721 90.146 172 96 172c5.854 0 5.148-8.279 11.136-20.476a163.723 163.723 0 0 1 20.053-28.38C143.704 102.915 148 90.841 148 74.246a52.37 52.37 0 0 0-15.23-36.943A51.88 51.88 0 0 0 96 22Z"></path><circle cx="96" cy="74" r="20" stroke="#000000" stroke-width="12"></circle></g></svg>
-                                <div>
-                                    <h3 class="text-lg font-bold">Pickup</h3>
-                                </div>
-                            </div>
-                            <button class="px-3 py-1 text-base font-semibold border border-black hover:bg-black hover:text-white ease-in duration-150 disabled:hover:bg-gray-200 cursor-not-allowed" type="button" disabled>ganti</button>
-                        </div>
-                    </div>
-                    <div class="space-y-2 md:space-y-3 bg-white mt-3 sm:mt-7 p-4">
-                         <h1 class="text-xl font-semibold mb-4">Data diri</h1>
-                        <div>
-                            <h1 class="sm:text-lg text-base font-medium ">Nama</h1>
-                            <input type="text" wire:model.live.debounce.250ms="customer_name"
-                                class="w-full p-2 border-2 border-slate-900 " placeholder="e.g. John Doe">
-                            @error('customer_name')
-                                <span class="error">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        <div>
-                            <h1 class="sm:text-lg text-base font-medium ">Nomor Whatsapp</h1>
-                            <div x-data="{
-                                countryCode: @entangle('countryCode'),
-                                customerPhone: @entangle('customer_phone').live,
-                                countries: [
-                                    { code: '+62', name: 'Indonesia', flag: 'ID' },
-                                    { code: '+60', name: 'Malaysia', flag: 'MY' },
-                                    { code: '+65', name: 'Singapore', flag: 'SG' },
-                                    { code: '+66', name: 'Thailand', flag: 'TH' },
-                                    { code: '+63', name: 'Philippines', flag: 'PH' },
-                                    { code: '+95', name: 'Myanmar', flag: 'MM' },
-                                    { code: '+855', name: 'Cambodia', flag: 'KH' },
-                                    { code: '+856', name: 'Laos', flag: 'LA' },
-                                    { code: '+84', name: 'Vietnam', flag: 'VN' },
-                                    { code: '+673', name: 'Brunei', flag: 'BN' }
-                                ]
-                            }" class="flex gap-2">
+                @if ($step === 1)
 
-                                <!-- Dropdown Kode Negara -->
-                                <select x-model="countryCode" class="w-[40%] p-2 border-2 border-slate-900">
-                                    <template x-for="country in countries" :key="country.code">
-                                        <option :value="country.code" x-text="country.flag + ' ' + country.code">
-                                        </option>
-                                    </template>
-                                </select>
-
-                                <!-- Input Nomor -->
-                                <input type="tel" id="customer_phone" x-model="customerPhone"
-                                    @input=" let raw = $event.target.value.replace(/[^0-9]/g, '');
-                                            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';"
-                                    class="w-full p-2 border-2 border-slate-900" placeholder="8123-4567-8901" />
-
-                            </div>
-                            @error('customer_phone')
-                                <span class="error">{{ $message }}</span>
-                            @enderror
-                        </div>
-                        {{-- <div>
-                        <h1 class="sm:text-lg text-base font-medium ">Email</h1>
-                        <input type="email" wire:model.live.debounce.250ms="customer_email"
-                            class="w-full p-2 border-2 border-slate-900 " placeholder="youreemail@example.site">
-                    </div> --}}
-                        <div>
-                            <h1 class="sm:text-lg text-base font-medium ">Alamat</h1>
-                            <input type="text" wire:model.live.debounce.250ms="address"
-                                class="w-full p-2 border-2 border-slate-900 "
-                                placeholder="e.g. Jl. Merdeka No.123, Jakarta">
-                        </div>
-                        @error('address')
-                            <span class="error">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                </div>
-                {{-- Invoice --}}
-                <div class="sm:mt-7 mt-3 space-y-5 bg-white p-4">
                     <div>
-
-                        <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
-                        <div class="space-y-2">
-                            @if (!empty($payments))
-                                <div class="w-full">
-                                    <div class="space-y-2">
-                                        @foreach ($payments as $payment)
-                                            <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
-                                                class="flex items-center justify-between border p-3 bg-white shadow-sm cursor-pointer transition
-                       hover:border-black {{ $selectedPaymentId == $payment['id'] ? 'border-black ring-1 ring-indigo-200' : 'border-gray-200' }}">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="text-gray-800 font-semibold">
-                                                        {{ $payment['name'] }}
-                                                    </span>
-                                                </div>
-
-                                                <div
-                                                    class="w-5 h-5 rounded-full border flex items-center justify-center
-                    {{ $selectedPaymentId == $payment['id'] ? 'border-indigo-600' : 'border-gray-300' }}">
-                                                    @if ($selectedPaymentId == $payment['id'])
-                                                        <div class="w-2.5 h-2.5 bg-indigo-600 rounded-full">
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </label>
-                                        @endforeach
+                        <div class="bg-white p-2">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center space-x-1">
+                                    <svg width="28px" height="28px" viewBox="0 0 192 192"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none">
+                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                        </g>
+                                        <g id="SVGRepo_iconCarrier">
+                                            <path stroke="#000000" stroke-width="12"
+                                                d="M96 22a51.88 51.88 0 0 0-36.77 15.303A52.368 52.368 0 0 0 44 74.246c0 16.596 4.296 28.669 20.811 48.898a163.733 163.733 0 0 1 20.053 28.38C90.852 163.721 90.146 172 96 172c5.854 0 5.148-8.279 11.136-20.476a163.723 163.723 0 0 1 20.053-28.38C143.704 102.915 148 90.841 148 74.246a52.37 52.37 0 0 0-15.23-36.943A51.88 51.88 0 0 0 96 22Z">
+                                            </path>
+                                            <circle cx="96" cy="74" r="20" stroke="#000000"
+                                                stroke-width="12"></circle>
+                                        </g>
+                                    </svg>
+                                    <div>
+                                        <h3 class="text-lg font-semibold">Pickup</h3>
                                     </div>
                                 </div>
-                            @endif
-
+                                <button
+                                    class="px-3 py-1 text-base font-semibold rounded-lg border border-black hover:bg-orange-500 hover:text-white ease-in duration-150 disabled:hover:bg-gray-200 cursor-not-allowed"
+                                    type="button" disabled>ganti</button>
+                            </div>
                         </div>
+                        <div class="space-y-2 md:space-y-3 bg-white mt-1 sm:mt-7 p-4">
+                            <div>
+                                <h1 class="sm:text-lg text-base font-medium font-neulis">Nama</h1>
+                                <input type="text" wire:model.live.debounce.250ms="customer_name"
+                                    class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500"
+                                    placeholder="e.g. John Doe">
+                                @error('customer_name')
+                                    <span class="error">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div>
+                                <h1 class="sm:text-lg text-base font-medium font-neulis ">Nomor Whatsapp</h1>
+                                <div x-data="{
+                                    countryCode: @entangle('countryCode'),
+                                    customerPhone: @entangle('customer_phone').live,
+                                    countries: [
+                                        { code: '+62', name: 'Indonesia', flag: 'ID' },
+                                        { code: '+60', name: 'Malaysia', flag: 'MY' },
+                                        { code: '+65', name: 'Singapore', flag: 'SG' },
+                                        { code: '+66', name: 'Thailand', flag: 'TH' },
+                                        { code: '+63', name: 'Philippines', flag: 'PH' },
+                                        { code: '+95', name: 'Myanmar', flag: 'MM' },
+                                        { code: '+855', name: 'Cambodia', flag: 'KH' },
+                                        { code: '+856', name: 'Laos', flag: 'LA' },
+                                        { code: '+84', name: 'Vietnam', flag: 'VN' },
+                                        { code: '+673', name: 'Brunei', flag: 'BN' }
+                                    ]
+                                }" class="flex gap-2">
+
+                                    <!-- Dropdown Kode Negara -->
+                                    <select x-model="countryCode"
+                                        class="w-[40%] p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500">
+                                        <template x-for="country in countries" :key="country.code">
+                                            <option :value="country.code" x-text="country.flag + ' ' + country.code">
+                                            </option>
+                                        </template>
+                                    </select>
+
+                                    <!-- Input Nomor -->
+                                    <input type="tel" id="customer_phone" x-model="customerPhone"
+                                        @input=" let raw = $event.target.value.replace(/[^0-9]/g, '');
+                                            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';"
+                                        class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500"
+                                        placeholder="8123-4567-8901" />
+
+                                </div>
+                                @error('customer_phone')
+                                    <span class="error">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div>
+                                <h1 class="sm:text-lg text-base font-medium font-neulis">Alamat</h1>
+                                <input type="text" wire:model.live.debounce.250ms="address"
+                                    class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500 "
+                                    placeholder="e.g. Jl. Merdeka No.123, Jakarta">
+                            </div>
+                            @error('address')
+                                <span class="error">{{ $message }}</span>
+                            @enderror
+                            <div>
+                                <h1 class="sm:text-lg text-base font-medium font-neulis">Tipe Jaminan</h1>
+                                <select type="text" wire:model="jaminan_type"
+                                    class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500"
+                                    placeholder="e.g. John Doe">
+                                    <option value="KTP">KTP</option>
+                                    <option value="KK">KK</option>
+                                    <option value="SIM">SIM</option>
+                                    <option value="Kartu Identitas Mahasiswa">Kartu Mahasiswa</option>
+                                    <option value="Kartu Pelajar">Kartu Pelajar</option>
+                                </select>
+                                @error('jaminan_type')
+                                    <span class="error">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
                     </div>
-                </div>
-                {{-- Details booking --}}
-                <div x-data="{ detailss: true }" class="bg-white p-4 mt-3 sm:mt-7">
-                    <div class="border-b-2 border-gray-200 py-4 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
-                        @click="detailss = ! detailss">
-                        <h1 class="text-xl font-semibold">Detail booking</h1>
+                    {{-- Invoice --}}
+                    <div class="sm:mt-7 mt-3 space-y-5 bg-white p-4">
                         <div>
-                            <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
-                                class="ease-in duration-200" :class="detailss ? 'rotate-180' : ''"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
-                                </g>
-                                <g id="SVGRepo_iconCarrier">
-                                    <path
-                                        d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
-                                        stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
-                                    </path>
-                                </g>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="space-y-5" x-show="detailss" x-collapse x-cloak class="">
-                        <div class="border-y-2 border-gray-400 py-6 my-py-6 space-y-1">
 
-                            <div class="flex justify-between items-center font-medium">
-                                <p>Tipe iPhone</p>
-                                <p>{{ $iphone->name }}</p>
-                            </div>
-                            <div class="flex justify-between items-center font-medium">
-                                <p>Durasi</p>
-                                <p>
-                                    @if ($jumlah > 1)
-                                        @switch($unit)
-                                            @case('Jam')
-                                                {{ $jumlah }} jam
-                                            @break
+                            <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
+                            <div class="space-y-2">
+                                @if (!empty($payments))
+                                    <div class="w-full">
+                                        <div class="space-y-2">
+                                            @foreach ($payments as $payment)
+                                                <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
+                                                    class="flex items-center rounded-xl justify-between border p-3 bg-white shadow-sm cursor-pointer transition
+                       hover:border-black {{ $selectedPaymentId == $payment['id'] ? 'border-orange-500 ring-1 ring-indigo-200' : 'border-gray-200' }}">
+                                                    <div class="flex items-center gap-3">
+                                                        <span class="text-gray-800 font-semibold">
+                                                            {{ $payment['name'] }}
+                                                        </span>
+                                                    </div>
 
-                                            @case('Hari')
-                                                {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
-                                            @break
+                                                    <div
+                                                        class="w-5 h-5 rounded-full border flex items-center justify-center
+                    {{ $selectedPaymentId == $payment['id'] ? 'border-orange-500' : 'border-gray-300' }}">
+                                                        @if ($selectedPaymentId == $payment['id'])
+                                                            <div class="w-2.5 h-2.5 bg-orange-500 rounded-full">
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
 
-                                            @case('Minggu')
-                                                {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
-                                            @break
-
-                                            @case('Bulan')
-                                                {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
-                                            @break
-
-                                            @default
-                                        @endswitch
-                                    @else
-                                        {{ $selectedDuration }} jam
-                                    @endif
-                                </p>
-                            </div>
-                            <div class="flex justify-between items-center font-medium">
-                                <p>Tanggal booking</p>
-                                <p>{{ $selectedDateFormatted }}</p>
-                            </div>
-                            <div class="flex justify-between items-center font-medium" x-data="{ price: @entangle('selectedPrice').live }">
-                                <p>Harga</p>
-                                <span class=" font-bold"
-                                    x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
                             </div>
                         </div>
                     </div>
-                </div>
+                    {{-- Details booking --}}
+                @elseif($step === 2)
+                    <div x-data="{ detailss: true }" class="bg-white p-4">
+                        <div class="border-b-2 border-gray-200 py-4 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
+                            @click="detailss = ! detailss">
+                            <h1 class="text-xl font-medium font-neulis">Detail booking</h1>
+                            <div>
+                                <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
+                                    class="ease-in duration-200" :class="detailss ? 'rotate-180' : ''"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                    </g>
+                                    <g id="SVGRepo_iconCarrier">
+                                        <path
+                                            d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                                            stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                                        </path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="space-y-5" x-show="detailss" x-collapse x-cloak class="">
+                            <div class="border-y-2 border-gray-400 py-6 my-py-6 space-y-1">
+
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Nama</p>
+                                    <p class="font-normal">{{ $customer_name ?? '-' }}</p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Nomor Telepon</p>
+                                    <p class="font-normal">
+                                        {{ $customer_phone ? $countryCode . ' ' . $customer_phone : '-' }}</p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Alamat Sesuai Jaminan</p>
+                                    <p class="font-normal">{{ $address ?? '-' }}</p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Jaminan</p>
+                                    <p class="font-normal">{{ $jaminan_type ?? '-' }}</p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Tipe iPhone</p>
+                                    <p class="font-normal">{{ $iphone->name }}</p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Durasi</p>
+                                    <p class="font-normal">
+                                        @if ($jumlah > 1)
+                                            @switch($unit)
+                                                @case('Jam')
+                                                    {{ $jumlah }} jam
+                                                @break
+
+                                                @case('Hari')
+                                                    {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
+                                                @break
+
+                                                @case('Minggu')
+                                                    {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
+                                                @break
+
+                                                @case('Bulan')
+                                                    {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
+                                                @break
+
+                                                @default
+                                            @endswitch
+                                        @else
+                                            {{ $selectedDuration }} jam
+                                        @endif
+                                    </p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium">
+                                    <p class="font-neulis">Tanggal booking</p>
+                                    <p class="font-normail">{{ $selectedDateFormatted }}</p>
+                                </div>
+                                <div class="flex justify-between items-center font-medium font-neulis"
+                                    x-data="{ price: @entangle('selectedPrice').live }">
+                                    <p>Harga</p>
+                                    <span class=" font-medium"
+                                        x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(price)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-2">
+                        <x-mary-checkbox wire:model="terms_condition"
+                            hint="Persetujuan ini wajib untuk melanjutkan proses penyewaan">
+                            <x-slot name="label">
+                                Saya setuju dengan 
+                                <a href="{{ route('terms') }}" target="_blank"
+                                    class="text-blue-600 underline hover:text-blue-800" wire:navigate>
+                                   syarat & ketentuan sewa iPhone
+                                </a>
+                            </x-slot>
+                        </x-mary-checkbox>
+                    </div>
+                @endif
             </div>
-            <button type="submit" class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400"
-                wire:loading.attr="disabled">Lanjutkan Pembayaran</button>
+            @if ($step === 1)
+                <button type="button" wire:click="next"
+                    class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400 hover:bg-orange-500 ease-in duration-100"
+                    wire:loading.attr="disabled">
+                    Lanjut
+                </button>
+            @else
+                <button type="submit"
+                    class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400 hover:bg-orange-500 ease-in duration-100"
+                    wire:loading.attr="disabled">
+                    Lanjutkan Pembayaran
+                </button>
+            @endif
         </form>
     </x-modal>
     <x-bottom-sheet id="sheetTanggalB" title="Form Booking" glass="">
-        <!-- Kalender -->
-        {{-- <div class=" bg-white dark:bg-gray-800 text-lg z-10 w-full ">
-            <div class="border-b-2 border-gray-300 pb-4">
-                <div class="flex items-center  text-lg">
-                    <!-- Hour Picker -->
-                    <div>
-                        <input type="number" x-model="selectedHour" min="0" max="23"
-                            class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
-                            placeholder="HH">
-                    </div>
-
-                    <div class="font-bold">:</div>
-
-                    <!-- Input Menit -->
-                    <div>
-                        <input type="number" x-model="selectedMinute" min="0" max="59" step="1"
-                            class="w-16 text-center bg-transparent border border-transparent focus:border-gray-400 focus:outline-none px-2 py-1 rounded text-2xl font-bold"
-                            placeholder="MM">
-                    </div>
-                </div>
-                <div class="text-lg font-medium text-gray-700 dark:text-gray-200"
-                    x-text="monthNames[month] + ' ' + year"></div>
-            </div>
-            <!-- Header navigasi bulan -->
-            <div class="flex mb-2">
-                <button type="button" @click="prevMonth()"
-                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&lt;</button>
-
-                <button type="button" @click="nextMonth()"
-                    class="px-2 py-1 text-gray-600 hover:bg-gray-200 rounded">&gt;</button>
-            </div>
-
-            <!-- Hari -->
-            <div class="grid grid-cols-7 text-gray-500 mb-1">
-                <template x-for="day in ['Min','Sen','Sel','Rab','Kam','Jum','Sab']">
-                    <div x-text="day" class="text-center"></div>
-                </template>
-            </div>
-
-            <!-- Tanggal -->
-            <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
-                <!-- Sisipkan hari kosong -->
-                <template x-for="blank in blankdays">
-                    <div></div>
-                </template>
-
-                <!-- Tanggal -->
-                <template x-for="(date, index) in daysInMonth" :key="index">
-                    <div @click="!isPastDate(date) && pickDate(date); $refs.dropdownButton?.click()" x-text="date"
-                        class="text-center cursor-pointer p-4 flex justify-center transition-colors duration-200 ease-in-out border-2 border-transparent"
-                        :class="{
-                            'bg-slate-900 text-white': isSelectedDate(date),
-                            'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
-                            'hover:border-slate-900': !isPastDate(date)
-                        }">
-                    </div>
-                </template>
-
-            </div>
-        </div> --}}
         {{-- glass effect --}}
         <div
             class="relative bg-white/20 dark:bg-gray-800/30 

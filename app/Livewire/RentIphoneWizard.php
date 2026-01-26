@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
 
 class RentIphoneWizard extends Component
 {
-    public int $step = 3;
+    public int $step = 1;
     public $countryCode = '+62';
     public $selectedIphone = null;
     public $price = 0;
@@ -69,7 +69,7 @@ class RentIphoneWizard extends Component
                 'customer_phone' => 'required|string|max:15',
                 'customer_email' => 'nullable|email|max:255',
                 'address' => 'required|string|max:255',
-                // 'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa',
+                'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa',
 
             ],
             3 => [

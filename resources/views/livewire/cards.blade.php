@@ -1,7 +1,7 @@
 <div class="mt-10 p-3" wire:init="getIphones">
     <div>
         {{-- Title --}}
-        <h2 class="text-2xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
+        <h2 class="text-2xl lg:text-5xl font-extrabold font-neulis dark:text-white text-gray-900 leading-tight">
             {{ $title }}<span class="text-orange-500">.</span>
         </h2>
 

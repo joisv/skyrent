@@ -18,6 +18,7 @@ class Iphones extends Model
         'slug',
         'created',
         'booked',
+        'serial_number'
     ];
 
     public function bookings()

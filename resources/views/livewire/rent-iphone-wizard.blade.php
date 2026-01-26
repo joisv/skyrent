@@ -19,10 +19,10 @@
                     <div class="flex items-center gap-1">
                         <input type="radio" name="step" value="{{ $number }}" @checked($step === $number)
                             disabled
-                            class="appearance-none w-4 h-4 rounded-full border hover:scale-125
+                            class="appearance-none h-4 w-4 rounded-full border hover:scale-125
                         {{ $step >= $number ? 'bg-black border-black' : 'border-gray-300' }}" />
 
-                        <label class="text-lg font-normal {{ $step >= $number ? 'text-black' : 'text-gray-400' }}">
+                        <label class="md:text-lg hidden sm:flex font-normal {{ $step >= $number ? 'text-black' : 'text-gray-400' }}">
                             {{ $label }}
                         </label>
                     </div>
@@ -60,17 +60,19 @@
     {{-- CONTENT --}}
     @if ($step === 1)
         <div class="space-y-3 ">
-            <div>
+            <div class="flex space-x-2 items-center ">
                 {{-- Date picker --}}
-                <div>
-                    <label for="requested_booking_date"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal
-                        booking</label>
-                    <livewire:booking.set-date wire:model="requested_booking_date" />
+                <div class="w-[75%]">
+                    <div>
+                        <label for="requested_booking_date"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal
+                            booking</label>
+                        <livewire:booking.set-date wire:model="requested_booking_date" />
+                    </div>
+                    @error('requested_booking_date')
+                        <span class="error">Pilih tanggal sewa</span>
+                    @enderror
                 </div>
-                @error('requested_booking_date')
-                    <span class="error">Pilih tanggal sewa</span>
-                @enderror
                 {{-- Time picker --}}
                 <div wire:ignore>
                     <label for="timepicker" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Waktu
@@ -114,7 +116,7 @@
                 ">
                         {{-- IMAGE --}}
                         <div class="flex justify-center mb-4">
-                            <img src="{{ $iphone->image }}" alt="{{ $iphone->name }}" class="h-40 object-contain">
+                            <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="{{ $iphone->name }}" class="h-40 object-contain">
                         </div>
 
                         {{-- NAME --}}
@@ -124,7 +126,7 @@
 
                         {{-- CODE / SERIAL --}}
                         <p class="text-xs text-gray-500 mt-1">
-                            {{ $iphone->code ?? '—' }}
+                            {{ $iphone->serial_number ?? '—' }}
                         </p>
 
                         {{-- STATUS --}}
@@ -256,22 +258,22 @@
             </div>
         </div>
     @elseif ($step === 3)
-        <div class="bg-white rounded-xl shadow p-6 space-y-6 w-full">
+        <div class="bg-white rounded-xl shadow p-6 space-y-6 max-w-lg mx-auto">
 
             {{-- Header --}}
             <h2 class="text-lg font-semibold text-center">
-                Keempat, review lagi ya jangan sampai ada yang salah
+                Review detail booking
             </h2>
 
             {{-- STEP 1 : Device --}}
             <div class="border-t pt-4">
                 <div class="flex justify-between items-start">
-                    <div class="space-y-3 text-sm text-gray-700">
+                    <div class="space-y-3 text-sm text-gray-700 w-full">
                         <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Pilih yang mau disewa</span>
-                            <span class="font-medium text-end">
-                                {{ $selectedIphone?->name ?? 'halo dunia' }}
-                            </span>
+                            <h1 class="text-gray-500">Tipe iPhone</h1>
+                            <h1 class="font-medium text-end">
+                                {{ $selectedIphone?->name ?? '-' }}
+                            </h1>
                         </div>
 
                         <div class="flex justify-between gap-6">
@@ -281,10 +283,6 @@
                             </span>
                         </div>
                     </div>
-
-                    <button wire:click="goToStep(1)" class="text-sm text-blue-600 hover:underline">
-                        Edit
-                    </button>
                 </div>
             </div>
 

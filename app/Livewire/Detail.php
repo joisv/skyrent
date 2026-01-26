@@ -15,6 +15,9 @@ use Illuminate\Support\Facades\Http;
 
 class Detail extends Component
 {
+    public $step = 1;
+    public $terms_condition = false;
+
     public $iphone;
     public $selectedPrice;
     public $selectedDateFormatted; // 25 Juli 2025, 20:51
@@ -32,6 +35,7 @@ class Detail extends Component
     public $countryCode = '+62';
     public $address;
     public $pickup_type = 'pickup';
+    public $jaminan_type = 'KTP';
 
     public $payments;
     public $selectedPaymentId = 1;
@@ -50,6 +54,33 @@ class Detail extends Component
     public $unit = '';
     public $totalHarga = 0;
     public int $basePricePerHour = 5000;
+
+
+    public function next()
+    {
+        $this->validate([
+            'selectedIphoneId'   => 'required|exists:iphones,id',
+            'customer_name'      => 'required|string|max:255',
+            'customer_phone'     => [
+                'required',
+                'regex:/^[0-9]{4}-[0-9]{4}-[0-9]{3}$/', // format: 8314-6838-432
+            ],
+            'customer_email'     => 'nullable|email|max:255',
+            'selectedDuration'   => 'required|integer|min:1',
+            'selectedPrice'      => 'required|numeric|min:0',
+            'pickup_type' => 'required|in:pickup,delivery',
+            'address' => $this->pickup_type === 'delivery'
+                ? 'required|string|min:10|max:255'
+                : 'required|string|min:10|max:255',
+            'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa'
+        ], [
+            'customer_phone.regex' => 'Format nomor tidak boleh diawali 0 atau 62.',
+        ]);
+
+        if ($this->step < 2) {
+            $this->step++;
+        }
+    }
 
     public function setCustom($unit)
     {
@@ -222,6 +253,8 @@ class Detail extends Component
             'address' => $this->pickup_type === 'delivery'
                 ? 'required|string|min:10|max:255'
                 : 'nullable|string|max:255',
+            'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa',
+            'terms_condition' => 'accepted'
         ], [
             'customer_phone.regex' => 'Format nomor tidak boleh diawali 0 atau 62.',
         ]);
@@ -243,6 +276,7 @@ class Detail extends Component
             'address' => $this->address,
             'pickup_type' => $this->pickup_type,
             'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
+            'jaminan_type' => $this->jaminan_type,
         ]);
 
         $message = "Halo {$booking->customer_name}, 👋\n\n"
@@ -301,6 +335,7 @@ class Detail extends Component
             'selectedHour',
             'selectedMinute',
             'selectedPrice',
+            'jaminan_type'
 
         ]);
 

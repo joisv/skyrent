@@ -107,7 +107,7 @@
                     </div>
 
                 </div>
-                <div class="mt-8 text-2xl font-semibold text-gray-800 text-center border-t border-gray-600 mx-5 pt-5 dark:text-gray-200">
+                <div class="mt-8 text-2xl font-medium font-neulis text-gray-800 text-center border-t border-gray-600 mx-5 pt-5 dark:text-gray-200">
                     <h1>Capture the Moment, Live the Experience</h1>
                     <x-mary-theme-toggle />
 

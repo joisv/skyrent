@@ -17,7 +17,8 @@ class Create extends Component
         $urlPoster,
         $date,
         $slug,
-        $gallery_id;
+        $gallery_id,
+        $serial_number;
 
 
     public $durations = [
@@ -40,6 +41,7 @@ class Create extends Component
             'description' => 'nullable|string|max:1000',
             'gallery_id' => 'required|exists:galleries,id',
             'slug' => 'required|string|max:255|unique:iphones,slug',
+            'serial_number' => 'required|string|max:255'
         ]);
 
         // 1. Simpan iPhone
@@ -50,6 +52,7 @@ class Create extends Component
             'user_id' => auth()->id(),
             'slug' => $this->slug,
             'created' => $this->date->format('Y-m-d'),
+            'serial_number' => $this->serial_number,
         ]);
 
         // dd($this->durations);
@@ -74,7 +77,7 @@ class Create extends Component
         $iphone->durations()->attach($syncData);
 
         // 4. Reset input dan beri feedback
-        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id', 'durations']);
+        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id', 'durations', 'serial_number']);
 
         session()->flash('saved', [
             'title' => 'Changes Saved!',

@@ -18,7 +18,8 @@ class Edit extends Component
         $urlPoster,
         $date,
         $slug,
-        $gallery_id;
+        $gallery_id,
+        $serial_number;
 
     public $durations = [];
 
@@ -29,6 +30,7 @@ class Edit extends Component
             'description' => 'nullable|string|max:1000',
             'gallery_id' => 'required|exists:galleries,id',
             'slug' => 'required|string|max:255|unique:iphones,slug,' . $this->iphone->id,
+            'serial_number' => 'required|string|max:255'
         ]);
 
         $this->iphone->update([
@@ -38,6 +40,7 @@ class Edit extends Component
             'user_id' => auth()->id(),
             'slug' => $this->slug, // tidak perlu panggil setSlugAttribute
             'created' => Carbon::parse($this->date)->format('Y-m-d'),
+            "serial_number" => $this->serial_number
         ]);
 
         // Sinkronisasi ulang durasi dan harga (pivot)
@@ -57,7 +60,7 @@ class Edit extends Component
         $this->iphone->durations()->sync($syncData);
 
 
-        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id']);
+        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id', 'serial_number']);
         session()->flash('saved', [
             'title' => 'Changes Saved!',
             'text' => 'You can safely close the tab!',
@@ -115,6 +118,7 @@ class Edit extends Component
         $this->slug = $iphone->slug;
         $this->urlPoster = Gallery::where('id', $this->iphone->gallery_id)->select('image')->first()?->image;
         $this->gallery_id = $iphone->gallery_id;
+        $this->serial_number = $iphone->serial_number;
     }
 
     public function render()

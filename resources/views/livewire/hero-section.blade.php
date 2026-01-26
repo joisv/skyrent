@@ -37,7 +37,7 @@
             </div>
 
             <!-- RIGHT IMAGE -->
-            <div class="flex justify-center lg:justify-end -z-50">
+            <div class="flex justify-center lg:justify-end -z-50 dark:z-50">
                 <img src="{{ url('ip17.png') }}" alt="iPhone" class="max-w-48 md:max-w-md drop-shadow-2xl" />
             </div>
 
