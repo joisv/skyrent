@@ -31,6 +31,7 @@ class Booking extends Model
         'reminder_sent',
         'address',
         'pickup_type',
+        'jaminan_type',
     ];
 
     public static function generateBookingCode()
