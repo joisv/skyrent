@@ -1,15 +1,20 @@
 <x-home>
     <livewire:hero-section />
     <livewire:review-page />
-    <section class="overflow-hidden py-5 lg:py-2 bg-white space-y-2 ">
+    <section class="overflow-hidden py-5 lg:py-4 space-y-2
+           bg-white dark:bg-gray-900">
 
         <!-- TOP : Right to Left -->
         <div class="relative overflow-hidden">
             <div class="flex w-max animate-marquee-left gap-16">
-                <span class="text-[10vw] font-extrabold text-gray-900 whitespace-nowrap">
+                <span
+                    class="text-[10vw] font-extrabold whitespace-nowrap
+                       text-gray-900 dark:text-gray-100">
                     Sewa iPhone no.1 😎
                 </span>
-                <span class="text-[10vw] font-extrabold text-gray-900 whitespace-nowrap">
+                <span
+                    class="text-[10vw] font-extrabold whitespace-nowrap
+                       text-gray-900 dark:text-gray-100">
                     Sewa iPhone no.1
                 </span>
             </div>
@@ -18,16 +23,23 @@
         <!-- BOTTOM : Left to Right -->
         <div class="relative overflow-hidden">
             <div class="flex w-max animate-marquee-right gap-16">
-                <span class="text-[10vw] font-extrabold text-transparent stroke-text whitespace-nowrap">
+                <span
+                    class="text-[10vw] font-extrabold whitespace-nowrap
+                       text-transparent stroke-text
+                       dark:stroke-text-dark">
                     Raya Di Banyuwangi<span class="text-orange-500">.</span>
                 </span>
-                <span class="text-[10vw] font-extrabold text-transparent stroke-text whitespace-nowrap">
+                <span
+                    class="text-[10vw] font-extrabold whitespace-nowrap
+                       text-transparent stroke-text
+                       dark:stroke-text-dark">
                     Raya Di Banyuwangi<span class="text-orange-500">.</span>
                 </span>
             </div>
         </div>
 
     </section>
+
     <section class="max-w-6xl mx-auto px-6 py-20">
         <!-- Header -->
         <div class="text-center mb-14">

@@ -133,10 +133,6 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                 <rect x="15" y="12" width="3" height="3" rx="0.5" fill="#000000" />
                             </svg>
                         </div>
-                        {{-- <input
-                            class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
-                            placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
-                            @click="$refs.dropdownButton.click()" /> --}}
                         <input
                             class="block w-full pl-12 p-4 ps-10 text-gray-900 border border-gray-300 bg-gray-50 rounded-lg focus:ring-slate-900 focus:border-slate-900 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-900 dark:focus:border-slate-900"
                             placeholder="Pilih tanggal" x-model="selectedDateFormatted" readonly
@@ -153,7 +149,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                         <!-- Kalender -->
                         <div
-                            class="p-2 lg:p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full xl:w-[25vw] border-2 border-slate-900 shadow-xl rounded-xl">
+                            class="p-2 lg:p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full xl:w-[25vw] border-2 border-slate-900 shadow-xl rounded-xl font-neulis">
                             <div class="border-b-2 border-gray-300 pb-4">
                                 <div class="flex items-center  text-lg">
                                     <!-- Hour Picker -->
@@ -193,7 +189,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             </div>
 
                             <!-- Tanggal -->
-                            <div class="grid grid-cols-7 gap-2 font-semibold text-sm">
+                            <div class="grid grid-cols-7 gap-2 font-medium text-sm">
                                 <!-- Sisipkan hari kosong -->
                                 <template x-for="blank in blankdays">
                                     <div></div>
@@ -207,7 +203,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         :class="{
                                             'bg-slate-900 text-white': isSelectedDate(date),
                                             'text-gray-400 cursor-not-allowed opacity-50': isPastDate(date),
-                                            'hover:border-slate-900': !isPastDate(date)
+                                            'hover:border-orange-500': !isPastDate(date)
                                         }">
                                     </div>
                                 </template>
@@ -219,9 +215,22 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             </div>
         </div>
         <button @click="searchIphones()" wire:loading.attr="disabled"
-            class="ml-2 bg-slate-900 text-white p-3 font-semibold hover:bg-white rounded-xl hover:text-black border-2 border-transparent hover:border-black transition-all duration-100 ease-in-out absolute end-0 bottom-0">
+            class="ml-2 absolute end-0 bottom-0 p-3 rounded-xl font-semibold
+           bg-slate-900 text-white
+           border-2 border-transparent
+           transition-all duration-150 ease-in-out
+
+           hover:bg-white hover:text-black hover:border-black
+
+           dark:bg-gray-100 dark:text-gray-900
+           dark:hover:bg-gray-900 dark:hover:text-white
+           dark:hover:border-gray-100
+
+           disabled:opacity-60 disabled:cursor-not-allowed">
+
             <x-icons.search default="30px" />
         </button>
+
     </div>
     <x-modal name="ipip" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-slate-800">
         @if (isset($iphoneByDate) && $iphoneByDate->isNotEmpty())

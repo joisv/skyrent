@@ -111,36 +111,67 @@
 }" x-init="$watch('selectedHour', () => selectedDateFormatted = formatDate(selectedDate));
 $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate));" class="max-w-screen-2xl mx-auto">
     <div class="lg:flex xl:space-x-3 min-h-[70vh] w-full xl:mt-20 ">
-        <div class="w-full lg:w-[60%] xl:w-[70%] xl:flex md:space-x-3 xl:sticky top-10 h-fit">
+        <div class="w-full lg:w-[60%] xl:w-[70%] xl:flex md:space-x-3
+           xl:sticky top-10 h-fit">
+
+            {{-- Image --}}
             <div class="w-full h-[40vh] relative">
-                <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="" srcset=""
+                <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="{{ $iphone->name }}"
                     class="w-full h-full object-contain absolute">
             </div>
+
+            {{-- Content --}}
             <div class="lg:w-full lg:my-0 p-2 mt-6">
+
+                {{-- Rating --}}
                 <div class="flex justify-end space-x-1 items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
                         class="w-5 h-5 text-yellow-400">
                         <path
                             d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
                     </svg>
-                    <span class="text-sm font-semibold">( {{ $avgRating }} )</span>
+                    <span class="text-sm font-semibold
+                       text-gray-700 dark:text-gray-300">
+                        ( {{ $avgRating }} )
+                    </span>
                 </div>
+
+                {{-- Title + Price --}}
                 <div class="flex items-center justify-between">
-                    <h1 class="text-3xl font-medium font-neulis">{{ $iphone->name }}</h1>
+                    <h1
+                        class="text-3xl font-medium font-neulis
+                       text-gray-900 dark:text-gray-100">
+                        {{ $iphone->name }}
+                    </h1>
+
                     <div>
                         <div class="flex space-x-1 md:hidden">
-                            <h1 class="text-base font-medium">Rp</h1>
-                            <h1 class="text-xl font-bold " x-text="new Intl.NumberFormat('id-ID').format(price)">
+                            <h1
+                                class="text-base font-medium
+                               text-gray-700 dark:text-gray-300">
+                                Rp
+                            </h1>
+                            <h1 class="text-xl font-bold
+                               text-gray-900 dark:text-gray-100"
+                                x-text="new Intl.NumberFormat('id-ID').format(price)">
                             </h1>
                         </div>
                     </div>
-
                 </div>
+
+                {{-- Description --}}
                 <div
-                    class="prose prose-base lg:prose-lg prose-invert text-black prose-li:text-black prose-a:text-blue-600 max-w-none md:flex flex-col hidden">
-                    {!! $iphone->description !!}</div>
+                    class="prose prose-base lg:prose-lg max-w-none
+                   text-black dark:text-gray-200
+                   prose-li:text-black dark:prose-li:text-gray-200
+                   prose-a:text-blue-600 dark:prose-a:text-blue-400
+                   md:flex flex-col hidden">
+
+                    {!! $iphone->description !!}
+                </div>
             </div>
         </div>
+
         <div
             class="md:full lg:w-[40%] xl:w-[28%] h-fit md:border-2 border-y-gray-300 md:border-slate-900 p-3 md:p-5 rounded-xl mx-3">
             <div>
@@ -343,7 +374,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         }">
                             @foreach ($iphone->durations as $item)
                                 <div @click="setActiveTab({{ $item['hours'] }}, {{ $item->pivot->price }})"
-                                    :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
+                                    :class="{ 'bg-black dark:bg-orange-500 text-white': activeTab === {{ $item['hours'] }} }"
                                     class="p-2.5 cursor-pointer text-black w-full font-medium rounded-xl text-center border-2 border-slate-900">
                                     {{ $item['hours'] }} jam
                                 </div>
@@ -352,11 +383,24 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                         <button
                             @click="() => {
-                                    openDuration = !openDuration;
-                                    window.dispatchEvent(new CustomEvent('open-bottom-sheet', { detail: { id: 'customDuration' } }))
-                                }"
-                            class="p-2.5 cursor-pointer text-black w-full font-semibold text-center border-2 rounded-2xl border-slate-900">Durasi
-                            Custom</button>
+        openDuration = !openDuration;
+        window.dispatchEvent(
+            new CustomEvent('open-bottom-sheet', {
+                detail: { id: 'customDuration' }
+            })
+        )
+    }"
+                            class="w-full p-2.5 cursor-pointer text-center font-semibold rounded-2xl border-2
+           transition-colors duration-150
+
+           text-black border-slate-900
+           hover:bg-slate-900 hover:text-white
+
+           dark:text-gray-100 dark:border-gray-600
+           dark:hover:bg-gray-100 dark:hover:text-gray-900">
+                            Durasi Custom
+                        </button>
+
                     </div>
 
                 </div>
@@ -473,40 +517,39 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
         </div>
     </div>
     <livewire:cards lazy="on-load" :title="'Mungkin anda tertarik'" />
-    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none" border="border-2 border-orange-500">
+    <x-modal name="user-booking-create" :show="$errors->isNotEmpty()" rounded="rounded-none"
+        border="border-2 border-orange-500 dark:border-none">
         <form wire:submit="booking">
             @if ($errors->any())
-                <div x-data="{ show: true }" x-show="show" {{-- auto hilang setelah 5 detik --}}
-                    x-transition:enter="transition ease-out duration-300"
+                <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
                     x-transition:enter-start="opacity-0 translate-y-[-10px]"
                     x-transition:enter-end="opacity-100 translate-y-0"
                     x-transition:leave="transition ease-in duration-300"
                     x-transition:leave-start="opacity-100 translate-y-0"
                     x-transition:leave-end="opacity-0 translate-y-[-10px]"
-                    class=" fixed top-6 sm:right-20 sm:max-w-lg w-full bg-white border border-red-300 rounded-lg shadow-lg p-4 z-50">
-
+                    class="fixed top-6 sm:right-20 sm:max-w-lg w-full z-50 p-4 rounded-lg shadow-lg border bg-white border-red-300 dark:bg-gray-800 dark:border-red-500/40">
                     <div class="flex items-start gap-3">
                         <!-- Icon Error -->
                         <div class="flex-shrink-0">
-                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor"
+                            <svg class="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 9v2m0 4h.01M12 5a7 7 0 100 14a7 7 0 000-14z" />
                             </svg>
                         </div>
-
                         <!-- Text -->
                         <div class="flex-1">
-                            <p class="font-medium text-gray-900">Error</p>
-                            <ul class="mt-1 text-sm text-gray-700 list-disc list-inside">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">
+                                Error
+                            </p>
+                            <ul class="mt-1 text-sm list-disc list-inside text-gray-700 dark:text-gray-300">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
                             </ul>
                         </div>
-
                         <!-- Close button -->
-                        <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                        <button @click="show = false" class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
@@ -517,45 +560,56 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
             @endif
             <div class="p-4 border" x-on:close-modal.window="show = false">
                 @if ($step === 1)
-
                     <div>
-                        <div class="bg-white p-2">
+                        <div class="bg-white dark:bg-slate-900 p-2 rounded-lg">
                             <div class="flex justify-between items-center">
+
                                 <div class="flex items-center space-x-1">
+
                                     <svg width="28px" height="28px" viewBox="0 0 192 192"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none">
-                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
-                                        </g>
-                                        <g id="SVGRepo_iconCarrier">
-                                            <path stroke="#000000" stroke-width="12"
-                                                d="M96 22a51.88 51.88 0 0 0-36.77 15.303A52.368 52.368 0 0 0 44 74.246c0 16.596 4.296 28.669 20.811 48.898a163.733 163.733 0 0 1 20.053 28.38C90.852 163.721 90.146 172 96 172c5.854 0 5.148-8.279 11.136-20.476a163.723 163.723 0 0 1 20.053-28.38C143.704 102.915 148 90.841 148 74.246a52.37 52.37 0 0 0-15.23-36.943A51.88 51.88 0 0 0 96 22Z">
-                                            </path>
-                                            <circle cx="96" cy="74" r="20" stroke="#000000"
-                                                stroke-width="12"></circle>
-                                        </g>
+                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        class="text-black dark:text-gray-100">
+
+                                        <path stroke="currentColor" stroke-width="12"
+                                            d="M96 22a51.88 51.88 0 0 0-36.77 15.303A52.368 52.368 0 0 0 44 74.246c0 16.596 4.296 28.669 20.811 48.898a163.733 163.733 0 0 1 20.053 28.38C90.852 163.721 90.146 172 96 172c5.854 0 5.148-8.279 11.136-20.476a163.723 163.723 0 0 1 20.053-28.38C143.704 102.915 148 90.841 148 74.246a52.37 52.37 0 0 0-15.23-36.943A51.88 51.88 0 0 0 96 22Z" />
+
+                                        <circle cx="96" cy="74" r="20" stroke="currentColor"
+                                            stroke-width="12" />
                                     </svg>
+
                                     <div>
-                                        <h3 class="text-lg font-semibold">Pickup</h3>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                            Pickup
+                                        </h3>
                                     </div>
                                 </div>
-                                <button
-                                    class="px-3 py-1 text-base font-semibold rounded-lg border border-black hover:bg-orange-500 hover:text-white ease-in duration-150 disabled:hover:bg-gray-200 cursor-not-allowed"
-                                    type="button" disabled>ganti</button>
+
+                                <button type="button" disabled
+                                    class="px-3 py-1 text-base font-semibold rounded-lg border border-black dark:border-gray-600 text-black dark:text-gray-100 hover:bg-orange-500 hover:text-white transition ease-in duration-150disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-gray-700 dark:disabled:text-gray-500">
+                                    ganti
+                                </button>
+
                             </div>
                         </div>
-                        <div class="space-y-2 md:space-y-3 bg-white mt-1 sm:mt-7 p-4">
+
+                        <div class="space-y-2 md:space-y-3 bg-white dark:bg-slate-900 mt-1 sm:mt-7 p-4">
                             <div>
-                                <h1 class="sm:text-lg text-base font-medium font-neulis">Nama</h1>
+                                <h1 class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                    Nama
+                                </h1>
                                 <input type="text" wire:model.live.debounce.250ms="customer_name"
-                                    class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500"
-                                    placeholder="e.g. John Doe">
+                                    placeholder="e.g. John Doe"
+                                    class="w-full p-2 rounded-xl border-2 bg-white text-gray-900 border-gray-300 focus:border-orange-500 focus:ring-0 dark:bg-slate-900 dark:text-gray-100 dark:border-gray-600 dark:focus:border-orange-400" />
                                 @error('customer_name')
-                                    <span class="error">{{ $message }}</span>
+                                    <span class="mt-1 block text-sm text-red-500">
+                                        {{ $message }}
+                                    </span>
                                 @enderror
                             </div>
                             <div>
-                                <h1 class="sm:text-lg text-base font-medium font-neulis ">Nomor Whatsapp</h1>
+                                <h1 class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                    Nomor Whatsapp
+                                </h1>
                                 <div x-data="{
                                     countryCode: @entangle('countryCode'),
                                     customerPhone: @entangle('customer_phone').live,
@@ -572,94 +626,95 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         { code: '+673', name: 'Brunei', flag: 'BN' }
                                     ]
                                 }" class="flex gap-2">
-
                                     <!-- Dropdown Kode Negara -->
                                     <select x-model="countryCode"
-                                        class="w-[40%] p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500">
+                                        class="w-[40%] p-2 rounded-xl border-2 bg-white text-gray-900 border-gray-300 focus:border-orange-500 focus:ring-0 dark:bg-slate-900 dark:text-gray-100 dark:border-gray-600 dark:focus:border-orange-400">
                                         <template x-for="country in countries" :key="country.code">
                                             <option :value="country.code" x-text="country.flag + ' ' + country.code">
                                             </option>
                                         </template>
                                     </select>
-
                                     <!-- Input Nomor -->
                                     <input type="tel" id="customer_phone" x-model="customerPhone"
-                                        @input=" let raw = $event.target.value.replace(/[^0-9]/g, '');
-                                            customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';"
-                                        class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500"
-                                        placeholder="8123-4567-8901" />
-
+                                        @input=" let raw = $event.target.value.replace(/[^0-9]/g, ''); customerPhone = raw.match(/.{1,4}/g)?.join('-') || ''; "
+                                        placeholder="8123-4567-8901"
+                                        class="w-full p-2 rounded-xl border-2 bg-white text-gray-900 border-gray-300 focus:border-orange-500 focus:ring-0 dark:bg-slate-900 dark:text-gray-100 dark:border-gray-600 dark:focus:border-orange-400" />
                                 </div>
                                 @error('customer_phone')
-                                    <span class="error">{{ $message }}</span>
+                                    <span class="mt-1 block text-sm text-red-500">
+                                        {{ $message }}
+                                    </span>
                                 @enderror
                             </div>
                             <div>
-                                <h1 class="sm:text-lg text-base font-medium font-neulis">Alamat</h1>
+                                <h1
+                                    class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                    Alamat
+                                </h1>
                                 <input type="text" wire:model.live.debounce.250ms="address"
-                                    class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500 "
-                                    placeholder="e.g. Jl. Merdeka No.123, Jakarta">
+                                    class="w-full p-2 rounded-xl border-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500 active:border-orange-500 focus:border-orange-500 focus:outline-none"placeholder="e.g. Jl. Merdeka No.123, Jakarta">
                             </div>
                             @error('address')
-                                <span class="error">{{ $message }}</span>
+                                <span class="text-sm text-red-500">{{ $message }}</span>
                             @enderror
-                            <div>
-                                <h1 class="sm:text-lg text-base font-medium font-neulis">Tipe Jaminan</h1>
-                                <select type="text" wire:model="jaminan_type"
-                                    class="w-full p-2 rounded-xl border-2 active:border-orange-500 focus:border-orange-500"
-                                    placeholder="e.g. John Doe">
+                            <div class="mt-4">
+                                <h1
+                                    class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                    Tipe Jaminan
+                                </h1>
+                                <select wire:model="jaminan_type"
+                                    class="w-full p-2 rounded-xl border-2  bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 active:border-orange-500 focus:border-orange-500 focus:outline-none">
                                     <option value="KTP">KTP</option>
                                     <option value="KK">KK</option>
                                     <option value="SIM">SIM</option>
                                     <option value="Kartu Identitas Mahasiswa">Kartu Mahasiswa</option>
                                     <option value="Kartu Pelajar">Kartu Pelajar</option>
                                 </select>
+
                                 @error('jaminan_type')
-                                    <span class="error">{{ $message }}</span>
+                                    <span class="text-sm text-red-500">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
+                        {{-- Invoice --}}
+                        <div class="sm:mt-7 mt-3 space-y-5 bg-white dark:bg-slate-900 p-4">
+                            <div>
+                                <h1 class="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                                    Metode Pembayaran
+                                </h1>
 
-                    </div>
-                    {{-- Invoice --}}
-                    <div class="sm:mt-7 mt-3 space-y-5 bg-white p-4">
-                        <div>
-
-                            <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
-                            <div class="space-y-2">
-                                @if (!empty($payments))
-                                    <div class="w-full">
-                                        <div class="space-y-2">
-                                            @foreach ($payments as $payment)
-                                                <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
-                                                    class="flex items-center rounded-xl justify-between border p-3 bg-white shadow-sm cursor-pointer transition
-                       hover:border-black {{ $selectedPaymentId == $payment['id'] ? 'border-orange-500 ring-1 ring-indigo-200' : 'border-gray-200' }}">
-                                                    <div class="flex items-center gap-3">
-                                                        <span class="text-gray-800 font-semibold">
-                                                            {{ $payment['name'] }}
-                                                        </span>
-                                                    </div>
-
-                                                    <div
-                                                        class="w-5 h-5 rounded-full border flex items-center justify-center
-                    {{ $selectedPaymentId == $payment['id'] ? 'border-orange-500' : 'border-gray-300' }}">
-                                                        @if ($selectedPaymentId == $payment['id'])
-                                                            <div class="w-2.5 h-2.5 bg-orange-500 rounded-full">
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                </label>
-                                            @endforeach
+                                <div class="space-y-2">
+                                    @if (!empty($payments))
+                                        <div class="w-full">
+                                            <div class="space-y-2">
+                                                @foreach ($payments as $payment)
+                                                    <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})" class="flex items-center justify-between rounded-xl p-3 cursor-pointer transition bg-white dark:bg-gray-900 shadow-sm dark:shadow-none border{{ $selectedPaymentId == $payment['id'] ? 'border-orange-500 ring-1 ring-orange-500/30' : 'border-gray-200dark:border-gray-700' }} hover:border-black dark:hover:border-gray-500">
+                                                        <!-- Nama Payment -->
+                                                        <div class="flex items-center gap-3">
+                                                            <span
+                                                                class="font-semibold text-gray-800 dark:text-gray-100">
+                                                                {{ $payment['name'] }}
+                                                            </span>
+                                                        </div>
+                                                        <!-- Radio -->
+                                                        <div class="w-5 h-5 rounded-full border flex items-center justify-center{{ $selectedPaymentId == $payment['id'] ? 'border-orange-500' : 'border-gray-300 dark:border-gray-600' }}">
+                                                            @if ($selectedPaymentId == $payment['id'])
+                                                                <div class="w-2.5 h-2.5 bg-orange-500 rounded-full">
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </label>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                    </div>
-                                @endif
-
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
                     {{-- Details booking --}}
                 @elseif($step === 2)
-                    <div x-data="{ detailss: true }" class="bg-white p-4">
+                    <div x-data="{ detailss: true }" class="bg-white dark:bg-slate-900 p-4">
                         <div class="border-b-2 border-gray-200 py-4 text-lg md:text-2xl font-semibold flex justify-between items-center cursor-pointer"
                             @click="detailss = ! detailss">
                             <h1 class="text-xl font-medium font-neulis">Detail booking</h1>
@@ -745,28 +800,50 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                         </div>
                     </div>
                     <div class="p-2">
-                        <x-mary-checkbox wire:model="terms_condition"
-                            hint="Persetujuan ini wajib untuk melanjutkan proses penyewaan">
-                            <x-slot name="label">
-                                Saya setuju dengan 
-                                <a href="{{ route('terms') }}" target="_blank"
-                                    class="text-blue-600 underline hover:text-blue-800" wire:navigate>
-                                   syarat & ketentuan sewa iPhone
-                                </a>
-                            </x-slot>
-                        </x-mary-checkbox>
+                        <div class="space-y-2">
+                            <label class="flex gap-3 cursor-pointer items-center">
+                                <!-- Checkbox -->
+                                <input type="checkbox" wire:model="terms_condition"
+                                    class="mt-1 h-5 w-5 rounded border-gray-300
+                   text-orange-500 focus:ring-orange-500
+                   dark:border-gray-600 dark:bg-gray-900
+                   dark:checked:bg-orange-500" />
+
+                                <div>
+                                    <!-- Label -->
+                                    <span class="text-sm text-gray-800 dark:text-gray-200">
+                                        Saya setuju dengan
+                                        <a href="{{ route('terms') }}" target="_blank" wire:navigate
+                                            class="text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                            syarat & ketentuan sewa iPhone
+                                        </a>
+                                    </span>
+                                    <!-- Hint -->
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Persetujuan ini wajib untuk melanjutkan proses penyewaan
+                                    </p>
+                                </div>
+                            </label>
+
+
+                            <!-- Error -->
+                            @error('terms_condition')
+                                <p class="text-sm text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                     </div>
                 @endif
             </div>
             @if ($step === 1)
                 <button type="button" wire:click="next"
-                    class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400 hover:bg-orange-500 ease-in duration-100"
+                    class="p-3 font-semibold text-white bg-black w-full rounded-xl disabled:bg-gray-400 hover:bg-orange-500 ease-in duration-100"
                     wire:loading.attr="disabled">
                     Lanjut
                 </button>
             @else
                 <button type="submit"
-                    class="p-3 font-semibold text-white bg-black w-full disabled:bg-gray-400 hover:bg-orange-500 ease-in duration-100"
+                    class="p-3 font-semibold text-white bg-black w-full rounded-xl disabled:bg-gray-400  hover:bg-orange-500 ease-in duration-100"
                     wire:loading.attr="disabled">
                     Lanjutkan Pembayaran
                 </button>
