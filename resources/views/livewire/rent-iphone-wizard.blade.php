@@ -1,7 +1,7 @@
 <div class="max-w-7xl mx-auto p-6"
     x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')">
     {{-- STEP INDICATOR --}}
-    <div class="flex items-center justify-between mb-8">
+    <div class="space-y-2 md:space-y-0 md:flex items-center justify-between mb-8">
         {{-- LEFT --}}
         <div>
             {{-- STEP INDICATOR --}}
@@ -22,7 +22,8 @@
                             class="appearance-none h-4 w-4 rounded-full border hover:scale-125
                         {{ $step >= $number ? 'bg-black border-black' : 'border-gray-300' }}" />
 
-                        <label class="md:text-lg hidden sm:flex font-normal {{ $step >= $number ? 'text-black' : 'text-gray-400' }}">
+                        <label
+                            class="md:text-lg hidden sm:flex font-normal {{ $step >= $number ? 'text-black' : 'text-gray-400' }}">
                             {{ $label }}
                         </label>
                     </div>
@@ -36,363 +37,387 @@
         </div>
 
         {{-- RIGHT --}}
-        <div class="flex items-center gap-4">
+        @if ($step === 1)
+            <div class="flex items-center gap-4">
+                <input type="text" id="iphone_search"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Cari Tipe iPhone" wire:model.live.debounce.2500ms="iphone_search" />
 
-            {{-- SEARCH ICON --}}
-            <button class="p-2 rounded hover:bg-gray-100">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </button>
-
-            {{-- NEXT BUTTON --}}
-            {{-- <button wire:click="next" class="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded">
+                {{-- NEXT BUTTON --}}
+                {{-- <button wire:click="next" class="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded">
                 Lanjut
                 <span>→</span>
             </button> --}}
 
-        </div>
+            </div>
+        @endif
     </div>
 
 
     {{-- CONTENT --}}
-    @if ($step === 1)
-        <div class="space-y-3 ">
-            <div class="flex space-x-2 items-center ">
-                {{-- Date picker --}}
-                <div class="w-[75%]">
-                    <div>
-                        <label for="requested_booking_date"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal
-                            booking</label>
-                        <livewire:booking.set-date wire:model="requested_booking_date" />
+    <form wire:submit="submit">
+        @if ($step === 1)
+            <div class="space-y-3 ">
+                <div class="flex space-x-2 items-center ">
+                    {{-- Date picker --}}
+                    <div class="w-[75%]">
+                        <div>
+                            <label for="requested_booking_date"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal
+                                booking</label>
+                            <livewire:booking.set-date wire:model="requested_booking_date" />
+                        </div>
+                        @error('requested_booking_date')
+                            <span class="error">Pilih tanggal sewa</span>
+                        @enderror
                     </div>
-                    @error('requested_booking_date')
-                        <span class="error">Pilih tanggal sewa</span>
-                    @enderror
-                </div>
-                {{-- Time picker --}}
-                <div wire:ignore>
-                    <label for="timepicker" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Waktu
-                        mulai</label>
-                    {{-- Initialize flatpickr for time selection --}}
-                    <div class="border-gray-300" x-data="{
-                        timepickerinstance: null,
-                    
-                        init() {
-                            let timepick = document.querySelector('#timepicker')
-                            this.timepickerinstance = flatpickr(timepick, {
-                                enableTime: true,
-                                noCalendar: true,
-                                dateFormat: 'H:i',
-                                time_24hr: true,
-                                defaultDate: @js($requested_time ? \Carbon\Carbon::parse($requested_time)->format('H:i') : null),
-                                onChange: (selectedDates, dateStr, instance) => {
-                                    $wire.requested_time = dateStr; // Update Livewire property
-                                    {{-- console.log(selectedDates) --}}
-                                    {{-- $wire.setTime(dateStr); // Call Livewire method to set time --}}
-                                }
-                            })
-                        },
-                    }">
-                        <input id="timepicker" wire:ignore type="text" placeholder="YYYY-MM-DD"
-                            class="w-full border-gray-300 rounded-sm" />
+                    {{-- Time picker --}}
+                    <div wire:ignore>
+                        <label for="timepicker"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Waktu
+                            mulai</label>
+                        {{-- Initialize flatpickr for time selection --}}
+                        <div class="border-gray-300" x-data="{
+                            timepickerinstance: null,
+                        
+                            init() {
+                                let timepick = document.querySelector('#timepicker')
+                                this.timepickerinstance = flatpickr(timepick, {
+                                    enableTime: true,
+                                    noCalendar: true,
+                                    dateFormat: 'H:i',
+                                    time_24hr: true,
+                                    defaultDate: @js($requested_time ? \Carbon\Carbon::parse($requested_time)->format('H:i') : null),
+                                    onChange: (selectedDates, dateStr, instance) => {
+                                        $wire.requested_time = dateStr; // Update Livewire property
+                                        {{-- console.log(selectedDates) --}}
+                                        {{-- $wire.setTime(dateStr); // Call Livewire method to set time --}}
+                                    }
+                                })
+                            },
+                        }">
+                            <input id="timepicker" wire:ignore type="text" placeholder="YYYY-MM-DD"
+                                class="w-full border-gray-300 rounded-sm" />
+                        </div>
+                        @error('requested_time')
+                            <span class="error">Pilih jam sewa</span>
+                        @enderror
                     </div>
-                    @error('requested_time')
-                        <span class="error">Pilih jam sewa</span>
-                    @enderror
                 </div>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                @if ($iphones->isEmpty())
+                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                        <div class="mb-4 text-gray-400">
+                            {{-- icon --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                            </svg>
+                        </div>
 
-                @foreach ($iphones as $iphone)
-                    <button wire:click="selectIphone({{ $iphone->id }})" @disabled(!$iphone->is_available)
-                        class="
+                        <p class="text-sm font-medium text-gray-700">
+                            iPhone tidak ditemukan
+                        </p>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Coba gunakan nama atau serial number yang berbeda
+                        </p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                        @foreach ($iphones as $iphone)
+                            <button type="button"
+                                wire:click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}', '{{ $iphone->serial_number }}')"
+                                @disabled(!$iphone->is_available)
+                                class="
                     relative rounded-xl border p-4 text-left transition
                     {{ $selectedIphoneId === $iphone->id ? 'border-black ring-2 ring-black' : 'border-gray-200' }}
                     {{ !$iphone->is_available ? 'opacity-40 cursor-not-allowed' : 'hover:border-black' }}
                 ">
-                        {{-- IMAGE --}}
-                        <div class="flex justify-center mb-4">
-                            <img src="{{ asset('storage/' . $iphone->gallery->image) }}" alt="{{ $iphone->name }}" class="h-40 object-contain">
-                        </div>
+                                {{-- IMAGE --}}
+                                <div class="flex justify-center mb-4">
+                                    <img src="{{ asset('storage/' . $iphone->gallery->image) }}"
+                                        alt="{{ $iphone->name }}" class="h-40 object-contain">
+                                </div>
 
-                        {{-- NAME --}}
-                        <p class="text-sm font-medium text-gray-900">
-                            {{ $iphone->name }}
-                        </p>
+                                {{-- NAME --}}
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $iphone->name }}
+                                </p>
 
-                        {{-- CODE / SERIAL --}}
-                        <p class="text-xs text-gray-500 mt-1">
-                            {{ $iphone->serial_number ?? '—' }}
-                        </p>
+                                {{-- SERIAL --}}
+                                <p class="text-xs text-gray-500 mt-1">
+                                    {{ $iphone->serial_number ?? '—' }}
+                                </p>
 
-                        {{-- STATUS --}}
-                        @if (!$iphone->is_available)
-                            <span class="absolute top-3 right-3 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
-                                Sedang disewa
-                            </span>
-                        @endif
-                    </button>
-                @endforeach
+                                {{-- STATUS --}}
+                                @if (!$iphone->is_available)
+                                    <span
+                                        class="absolute top-3 right-3 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                        Sedang disewa
+                                    </span>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                @endif
 
             </div>
-        </div>
-        {{-- <livewire:rent.steps.iphone wire:model="requested_booking_date" wire:model="requested_time" /> --}}
-    @elseif ($step === 2)
-        <div class="space-y-2">
-            <div>
-                <label for="customer_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
-                    customer</label>
-                <input type="text" id="customer_name"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="John" wire:model="customer_name" />
-                @error('customer_name')
-                    <span class="error">Nama tida bole kosong 😒</span>
-                @enderror
-            </div>
-            <div>
-                <label for="customer_phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    Nomor Customer
-                </label>
+            {{-- <livewire:rent.steps.iphone wire:model="requested_booking_date" wire:model="requested_time" /> --}}
+        @elseif ($step === 2)
+            <div class="space-y-2">
+                <div>
+                    <label for="customer_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
+                        customer</label>
+                    <input type="text" id="customer_name"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="John" wire:model="customer_name" />
+                    @error('customer_name')
+                        <span class="error">Nama tida bole kosong 😒</span>
+                    @enderror
+                </div>
+                <div>
+                    <label for="customer_phone" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                        Nomor Customer
+                    </label>
 
-                <div x-data="{
-                    countryCode: @entangle('countryCode'),
-                    customerPhone: @entangle('customer_phone'),
-                    countries: [
-                        { code: '+62', name: 'Indonesia', flag: 'ID' },
-                        { code: '+60', name: 'Malaysia', flag: 'MY' },
-                        { code: '+65', name: 'Singapore', flag: 'SG' },
-                        { code: '+66', name: 'Thailand', flag: 'TH' },
-                        { code: '+63', name: 'Philippines', flag: 'PH' },
-                        { code: '+95', name: 'Myanmar', flag: 'MM' },
-                        { code: '+855', name: 'Cambodia', flag: 'KH' },
-                        { code: '+856', name: 'Laos', flag: 'LA' },
-                        { code: '+84', name: 'Vietnam', flag: 'VN' },
-                        { code: '+673', name: 'Brunei', flag: 'BN' }
-                    ]
-                }" class="flex gap-2">
+                    <div x-data="{
+                        countryCode: @entangle('countryCode'),
+                        customerPhone: @entangle('customer_phone'),
+                        countries: [
+                            { code: '+62', name: 'Indonesia', flag: 'ID' },
+                            { code: '+60', name: 'Malaysia', flag: 'MY' },
+                            { code: '+65', name: 'Singapore', flag: 'SG' },
+                            { code: '+66', name: 'Thailand', flag: 'TH' },
+                            { code: '+63', name: 'Philippines', flag: 'PH' },
+                            { code: '+95', name: 'Myanmar', flag: 'MM' },
+                            { code: '+855', name: 'Cambodia', flag: 'KH' },
+                            { code: '+856', name: 'Laos', flag: 'LA' },
+                            { code: '+84', name: 'Vietnam', flag: 'VN' },
+                            { code: '+673', name: 'Brunei', flag: 'BN' }
+                        ]
+                    }" class="flex gap-2">
 
-                    <!-- Dropdown Kode Negara -->
-                    <select x-model="countryCode"
-                        class="w-[40%] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-2.5">
-                        <template x-for="country in countries" :key="country.code">
-                            <option :value="country.code" x-text="country.flag + ' ' + country.code"></option>
-                        </template>
-                    </select>
+                        <!-- Dropdown Kode Negara -->
+                        <select x-model="countryCode"
+                            class="w-[40%] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-2.5">
+                            <template x-for="country in countries" :key="country.code">
+                                <option :value="country.code" x-text="country.flag + ' ' + country.code"></option>
+                            </template>
+                        </select>
 
-                    <!-- Input Nomor -->
-                    <input type="tel" id="customer_phone" x-model="customerPhone"
-                        @input="
+                        <!-- Input Nomor -->
+                        <input type="tel" id="customer_phone" x-model="customerPhone"
+                            @input="
         let raw = $event.target.value.replace(/[^0-9]/g, '');
         customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';
     "
-                        class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
            focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
            dark:text-white p-2.5"
-                        placeholder="8123-4567-8901" />
+                            placeholder="8123-4567-8901" />
 
+                    </div>
+
+                    @error('customer_phone')
+                        <span class="error">Nomor tida bole kosong 😒</span>
+                    @enderror
                 </div>
-
-                @error('customer_phone')
-                    <span class="error">Nomor tida bole kosong 😒</span>
-                @enderror
-            </div>
-            <div>
-                <label for="customer_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email
-                    customer optional</label>
-                <input type="email" id="customer_email"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="jhondoe@gmail.com" wire:model="customer_email" />
-                @error('customer_email')
-                    <span class="error">{{ $message }}</span>
-                @enderror
-            </div>
-            <div>
-                <label for="customer_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat
-                    Customer</label>
-                <input type="email" id="customer_email"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Jl. Diponegoro rt 001/rw 004" wire:model="address" />
-                @error('address')
-                    <span class="error">{{ $message }}</span>
-                @enderror
-            </div>
-            <div>
-                <label for="customer_email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tipe
-                    Jaminan</label>
-                <select wire:model.live="jaminan_type"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                    <option value="KTP">KTP</option>
-                    <option value="KK">KK</option>
-                    <option value="Kartu Pelajar">Kartu Pelajar</option>
-                    <option value="SIM">SIM</option>
-                    <option value="Kartu Identitas Mahasiswa">Kartu Identitas Mahasiswa</option>
-                </select>
-
-                @error('jaminan_type')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-
-            </div>
-            {{-- Payment --}}
-            <div>
                 <div>
-                    <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
-                    <div class="space-y-2">
-                        @if (!empty($payments))
-                            <div class="w-48">
-                                <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
-                                    placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
-                                    option-label="name" />
+                    <label for="customer_email"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email
+                        customer optional</label>
+                    <input type="email" id="customer_email"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="jhondoe@gmail.com" wire:model="customer_email" />
+                    @error('customer_email')
+                        <span class="error">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <label for="customer_email"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat
+                        Customer</label>
+                    <input type="email" id="customer_email"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Jl. Diponegoro rt 001/rw 004" wire:model="address" />
+                    @error('address')
+                        <span class="error">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div>
+                    <label for="customer_email"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tipe
+                        Jaminan</label>
+                    <select wire:model.live="jaminan_type"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                        <option value="KTP">KTP</option>
+                        <option value="KK">KK</option>
+                        <option value="Kartu Pelajar">Kartu Pelajar</option>
+                        <option value="SIM">SIM</option>
+                        <option value="Kartu Identitas Mahasiswa">Kartu Identitas Mahasiswa</option>
+                    </select>
+
+                    @error('jaminan_type')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+
+                </div>
+                {{-- Payment --}}
+                <div>
+                    <div>
+                        <h1 class="text-xl font-semibold mb-4">Metode Pembayaran</h1>
+                        <div class="space-y-2">
+                            @if (!empty($payments))
+                                <div class="w-48">
+                                    <x-mary-select wire:model.live="selectedPaymentId" :options="$payments"
+                                        placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
+                                        option-label="name" />
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
+                        <span>{{ $selectedPayment->description }}</span>
+                    </div>
+
+                </div>
+            </div>
+        @elseif ($step === 3)
+            <div class="bg-white rounded-xl shadow p-6 space-y-6 max-w-lg mx-auto">
+
+                {{-- Header --}}
+                <h2 class="text-lg font-semibold text-center">
+                    Review detail booking
+                </h2>
+
+                {{-- STEP 1 : Device --}}
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-3 text-sm text-gray-700 w-full">
+                            <div class="flex justify-between gap-6">
+                                <h1 class="text-gray-500">Tipe iPhone</h1>
+                                <h1 class="font-medium text-end">
+                                    {{ $iphone_name ?? '-' }}
+                                </h1>
                             </div>
-                        @endif
-                    </div>
-                </div>
-                <div class="mt-1 text-sm text-gray-600 dark:text-gray-300 italic leading-relaxed">
-                    <span>{{ $selectedPayment->description }}</span>
-                </div>
+                            <div class="flex justify-between gap-6">
+                                <h1 class="text-gray-500">Serial Number</h1>
+                                <h1 class="font-medium text-end">
+                                    {{ $serial_number ?? '-' }}
+                                </h1>
+                            </div>
 
-            </div>
-        </div>
-    @elseif ($step === 3)
-        <div class="bg-white rounded-xl shadow p-6 space-y-6 max-w-lg mx-auto">
-
-            {{-- Header --}}
-            <h2 class="text-lg font-semibold text-center">
-                Review detail booking
-            </h2>
-
-            {{-- STEP 1 : Device --}}
-            <div class="border-t pt-4">
-                <div class="flex justify-between items-start">
-                    <div class="space-y-3 text-sm text-gray-700 w-full">
-                        <div class="flex justify-between gap-6">
-                            <h1 class="text-gray-500">Tipe iPhone</h1>
-                            <h1 class="font-medium text-end">
-                                {{ $selectedIphone?->name ?? '-' }}
-                            </h1>
-                        </div>
-
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Mau diambil di cabang mana?</span>
-                            <span class="font-medium">
-                                {{ $address ?? '-' }}
-                            </span>
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">Alamat</span>
+                                <span class="font-medium">
+                                    {{ $address ?? '-' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- STEP 2 : Waktu --}}
-            <div class="border-t pt-4">
-                <div class="flex justify-between items-start">
-                    <div class="space-y-3 text-sm text-gray-700">
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">
-                                Waktu Pengambilan (Tanggal & Jam)
-                            </span>
-                            <span class="font-medium">
-                                {{ $requested_booking_date }} {{ $requested_time }}
-                            </span>
-                        </div>
+                {{-- STEP 2 : Waktu --}}
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-start ">
+                        <div class="space-y-3 text-sm text-gray-700 w-full">
+                            <div class="flex justify-between gap-6  w-full">
+                                <span class="text-gray-500">
+                                    Waktu Pengambilan (Tanggal & Jam)
+                                </span>
+                                <span class="font-medium text-end">
+                                    {{ $requested_booking_date }} {{ $requested_time }}
+                                </span>
+                            </div>
 
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">
-                                Estimasi Waktu Pengembalian
-                            </span>
-                            <span class="font-medium">
-                                {{ $end_booking_date }} {{ $end_time }}
-                            </span>
-                        </div>
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">
+                                    Estimasi Waktu Pengembalian
+                                </span>
+                                <span class="font-medium text-end">
+                                    {{ $end_booking_date }} {{ $end_time }}
+                                </span>
+                            </div>
 
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Durasi</span>
-                            <span class="font-medium">
-                                {{ $selectedDuration }} hari
-                            </span>
-                        </div>
-                    </div>
-
-                    <button wire:click="goToStep(2)" class="text-sm text-blue-600 hover:underline">
-                        Edit
-                    </button>
-                </div>
-            </div>
-
-            {{-- STEP 3 : Data Customer --}}
-            <div class="border-t pt-4">
-                <div class="flex justify-between items-start">
-                    <div class="space-y-3 text-sm text-gray-700">
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Nama Lengkap</span>
-                            <span class="font-medium">
-                                {{ $customer_name ?? '-' }}
-                            </span>
-                        </div>
-
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Nomor WhatsApp</span>
-                            <span class="font-medium">
-                                {{ $countryCode }}{{ $customer_phone }}
-                            </span>
-                        </div>
-
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Email</span>
-                            <span class="font-medium">
-                                {{ $customer_email ?? '-' }}
-                            </span>
-                        </div>
-
-                        <div class="flex justify-between gap-6">
-                            <span class="text-gray-500">Jenis Jaminan</span>
-                            <span class="font-medium">
-                                {{ $jaminan_type }}
-                            </span>
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">Durasi</span>
+                                <span class="font-medium text-end">
+                                    {{ $selectedDuration }} jam
+                                </span>
+                            </div>
                         </div>
                     </div>
-
-                    <button wire:click="goToStep(3)" class="text-sm text-blue-600 hover:underline">
-                        Edit
-                    </button>
                 </div>
+
+                {{-- STEP 3 : Data Customer --}}
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-3 text-sm text-gray-700 w-full">
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">Nama Lengkap</span>
+                                <span class="font-medium text-end">
+                                    {{ $customer_name ?? '-' }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">Nomor WhatsApp</span>
+                                <span class="font-medium text-end">
+                                    {{ $countryCode }}{{ $customer_phone }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">Email</span>
+                                <span class="font-medium text-end">
+                                    {{ $customer_email ?? '-' }}
+                                </span>
+                            </div>
+
+                            <div class="flex justify-between gap-6">
+                                <span class="text-gray-500">Jenis Jaminan</span>
+                                <span class="font-medium text-end">
+                                    {{ $jaminan_type }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- TOTAL --}}
+                <div class="border-t pt-4">
+                    <div class="flex justify-between text-base font-semibold">
+                        <span>Total Harga</span>
+                        <span>
+                            Rp {{ number_format($selectedPrice, 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+
             </div>
 
-            {{-- TOTAL --}}
-            <div class="border-t pt-4">
-                <div class="flex justify-between text-base font-semibold">
-                    <span>Total Harga</span>
-                    <span>
-                        Rp {{ number_format($price, 0, ',', '.') }}
-                    </span>
-                </div>
-            </div>
-
-        </div>
-
-    @endif
-
-    {{-- NAV --}}
-    <div class="flex justify-between mt-8">
-        @if ($step > 1)
-            <button wire:click="back" class="px-4 py-2 border">
-                Kembali
-            </button>
         @endif
 
-        @if ($step < 4)
-            <button wire:click="next" class="px-6 py-2 bg-black text-white">
-                Lanjut →
-            </button>
-        @else
-            <button wire:click="submit" class="px-6 py-2 bg-green-600 text-white">
-                Konfirmasi
-            </button>
-        @endif
-    </div>
+        {{-- NAV --}}
+        <div class="flex justify-between mt-8">
+            @if ($step > 1)
+                <button wire:click="back" type="button" class="px-4 py-2 border">
+                    Kembali
+                </button>
+            @endif
+
+            @if ($step < 3)
+                <button wire:click="next" type="button" class="px-6 py-2 bg-black text-white">
+                    Lanjut →
+                </button>
+            @else
+                <button wire:click="submit" type="submit" class="px-6 py-2 bg-green-600 text-white">
+                    Konfirmasi
+                </button>
+            @endif
+        </div>
+    </form>
     <x-modal name="duration-options-modal" :show-close="true" max-width="md">
         {{-- Duration --}}
         <div class="m-3">

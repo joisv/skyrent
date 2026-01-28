@@ -17,6 +17,10 @@ class RentIphoneWizard extends Component
     public $countryCode = '+62';
     public $selectedIphone = null;
     public $price = 0;
+    public $iphone_search = '';
+
+    public $iphone_name;
+    public $serial_number;
 
     // STEP 1
     public $iphones;
@@ -284,10 +288,13 @@ class RentIphoneWizard extends Component
             ->show();
     }
 
-    public function selectIphone(int $iphoneId)
+    public function selectIphone(int $iphoneId, string $name, $serial_number)
     {
         $this->selectedIphoneId = $iphoneId;
-        $this->dispatch('iphone-selected', iphoneId: $iphoneId);
+        $this->iphone_name = $name;
+        $this->serial_number = $serial_number;
+        $this->getDurations();
+        $this->dispatch('display-duration-options');
     }
 
     public function updatedSelectedPaymentId()
@@ -338,9 +345,16 @@ class RentIphoneWizard extends Component
     {
         $now = Carbon::now('Asia/Jakarta');
 
-        $this->iphones = Iphones::with(['bookings' => function ($query) {
-            $query->whereIn('status', ['pending', 'confirmed']);
-        }])
+        $this->iphones = Iphones::query()
+            ->with(['bookings' => function ($query) {
+                $query->whereIn('status', ['pending', 'confirmed']);
+            }])
+            ->when($this->iphone_search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%' . $this->iphone_search . '%')
+                        ->orWhere('serial_number', 'like', '%' . $this->iphone_search . '%');
+                });
+            })
             ->get()
             ->map(function ($iphone) use ($now) {
 
@@ -356,7 +370,7 @@ class RentIphoneWizard extends Component
                     $bookingEnd = $bookingStart->copy()
                         ->addHours((int) $booking->duration);
 
-                    // ❌ booking sedang aktif SEKARANG
+                    // booking sedang aktif sekarang
                     if ($bookingStart->lte($now) && $bookingEnd->gt($now)) {
                         $iphone->is_available = false;
                         break;
