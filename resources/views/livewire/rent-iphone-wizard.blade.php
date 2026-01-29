@@ -1,5 +1,5 @@
 <div class="max-w-7xl mx-auto p-6"
-    x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')">
+    x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')" @close-modal="show = false">
     {{-- STEP INDICATOR --}}
     <div class="space-y-2 md:space-y-0 md:flex items-center justify-between mb-8">
         {{-- LEFT --}}
@@ -104,63 +104,72 @@
                         @enderror
                     </div>
                 </div>
-                @if ($iphones->isEmpty())
-                    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
-                        <div class="mb-4 text-gray-400">
-                            {{-- icon --}}
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
-                            </svg>
+                <div wire:loading.flex class="col-span-full flex items-center justify-center py-16 w-full absolute h-full top-0 left-0">
+                    <div class="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent">
+                    </div>
+                </div>
+                <div class="col-span-full" wire:loading.class="opacity-30 pointer-events-none">
+                    {{-- iPhone Grid --}}
+
+                    @if ($iphones->isEmpty())
+                        <div class="col-span-full flex flex-col items-center justify-center py-16 text-center "
+                            wire:loading.remove>
+                            <div class="mb-4 text-gray-400">
+                                {{-- icon --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
+                                </svg>
+                            </div>
+
+                            <p class="text-sm font-medium text-gray-700">
+                                iPhone tidak ditemukan
+                            </p>
+
+                            <p class="text-xs text-gray-500 mt-1">
+                                Coba gunakan nama atau serial number yang berbeda
+                            </p>
                         </div>
+                    @else
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                            @foreach ($iphones as $iphone)
+                                <button type="button"
+                                    wire:click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}', '{{ $iphone->serial_number }}')"
+                                    @disabled(!$iphone->is_available)
+                                    class="
+                        relative rounded-xl border p-4 text-left transition
+                        {{ $selectedIphoneId === $iphone->id ? 'border-black ring-2 ring-black' : 'border-gray-200' }}
+                        {{ !$iphone->is_available ? 'opacity-40 cursor-not-allowed' : 'hover:border-black' }}
+                    ">
+                                    {{-- IMAGE --}}
+                                    <div class="flex justify-center mb-4">
+                                        <img src="{{ asset('storage/' . $iphone->gallery->image) }}"
+                                            alt="{{ $iphone->name }}" class="h-40 object-contain">
+                                    </div>
 
-                        <p class="text-sm font-medium text-gray-700">
-                            iPhone tidak ditemukan
-                        </p>
+                                    {{-- NAME --}}
+                                    <p class="text-sm font-medium text-gray-900">
+                                        {{ $iphone->name }}
+                                    </p>
 
-                        <p class="text-xs text-gray-500 mt-1">
-                            Coba gunakan nama atau serial number yang berbeda
-                        </p>
-                    </div>
-                @else
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @foreach ($iphones as $iphone)
-                            <button type="button"
-                                wire:click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}', '{{ $iphone->serial_number }}')"
-                                @disabled(!$iphone->is_available)
-                                class="
-                    relative rounded-xl border p-4 text-left transition
-                    {{ $selectedIphoneId === $iphone->id ? 'border-black ring-2 ring-black' : 'border-gray-200' }}
-                    {{ !$iphone->is_available ? 'opacity-40 cursor-not-allowed' : 'hover:border-black' }}
-                ">
-                                {{-- IMAGE --}}
-                                <div class="flex justify-center mb-4">
-                                    <img src="{{ asset('storage/' . $iphone->gallery->image) }}"
-                                        alt="{{ $iphone->name }}" class="h-40 object-contain">
-                                </div>
+                                    {{-- SERIAL --}}
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ $iphone->serial_number ?? '—' }}
+                                    </p>
 
-                                {{-- NAME --}}
-                                <p class="text-sm font-medium text-gray-900">
-                                    {{ $iphone->name }}
-                                </p>
-
-                                {{-- SERIAL --}}
-                                <p class="text-xs text-gray-500 mt-1">
-                                    {{ $iphone->serial_number ?? '—' }}
-                                </p>
-
-                                {{-- STATUS --}}
-                                @if (!$iphone->is_available)
-                                    <span
-                                        class="absolute top-3 right-3 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
-                                        Sedang disewa
-                                    </span>
-                                @endif
-                            </button>
-                        @endforeach
-                    </div>
-                @endif
+                                    {{-- STATUS --}}
+                                    @if (!$iphone->is_available)
+                                        <span
+                                            class="absolute top-3 right-3 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                            Sedang disewa
+                                        </span>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
 
             </div>
             {{-- <livewire:rent.steps.iphone wire:model="requested_booking_date" wire:model="requested_time" /> --}}
@@ -412,13 +421,14 @@
                     Lanjut →
                 </button>
             @else
-                <button wire:click="submit" type="submit" class="px-6 py-2 bg-green-600 text-white">
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white disabled:bg-green-200"
+                    wire:loading.attr="disabled">
                     Konfirmasi
                 </button>
             @endif
         </div>
     </form>
-    <x-modal name="duration-options-modal" :show-close="true" max-width="md">
+    <x-modal name="duration-options-modal" max-width="md">
         {{-- Duration --}}
         <div class="m-3">
             <label for="duration" class="block mb-3 text-xl font-medium text-gray-900 dark:text-white">Pilih

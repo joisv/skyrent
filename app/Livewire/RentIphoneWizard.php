@@ -96,11 +96,11 @@ class RentIphoneWizard extends Component
             $this->step++;
         }
 
-        if ($this->step === 4) {
-            dd('Reached step 3');
-            // Isi data customer untuk review
-            $this->submit();
-        }
+        // if ($this->step === 4) {
+        //     dd('Reached step 3');
+        //     // Isi data customer untuk review
+        //     $this->submit();
+        // }
     }
 
     public function back(): void
@@ -195,6 +195,24 @@ class RentIphoneWizard extends Component
     public function submit(): void
     {
         // Simpan booking baru
+        // dd([
+        //     'iphone_id' => $this->selectedIphoneId,
+        //     'customer_name' => $this->customer_name,
+        //     'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
+        //     'customer_email' => $this->customer_email,
+        //     'requested_booking_date' => carbon()->now()->toDateString(),
+        //     'requested_time' => Carbon::now()->format('H:i'),
+        //     'duration' => $this->selectedDuration,
+        //     'price' => $this->selectedPrice,
+        //     'status' => 'pending',
+        //     'created' => Carbon::now('Asia/Jakarta'),
+        //     'booking_code' => Booking::generateBookingCode(),
+        //     'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
+        //     'address' => $this->address,
+        //     'pickup_type' => 'pickup',
+        //     'jaminan_type' => $this->jaminan_type,
+        // ]);
+
         $booking = Booking::create([
             'iphone_id' => $this->selectedIphoneId,
             'customer_name' => $this->customer_name,
@@ -278,6 +296,7 @@ class RentIphoneWizard extends Component
             'end_time',
             'price'
         ]);
+        $this->step = 1;
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
         $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
         LivewireAlert::title('Success!')

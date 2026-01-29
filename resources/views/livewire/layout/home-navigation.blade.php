@@ -17,7 +17,7 @@
            bg-black/30 dark:bg-white/30 backdrop-blur-lg border border-white/20 shadow-lg"
             :class="{ 'translate-x-full': !setNav, '': setNav }">
             <div
-                class=" w-full flex flex-col justify-center items-center text-gray-200 dark:text-black dark:font-bold h-full text-center text-3xl font-medium ">
+                class=" w-full flex flex-col justify-center items-center text-gray-200 font-neulis dark:text-black dark:font-bold h-full text-center text-3xl font-medium ">
                 <div class="space-y-10">
                     <ul class="space-y-2">
                         <x-responsif-link :href="route('welcome')" :active="request()->routeIs('welcome')" wire:navigate >

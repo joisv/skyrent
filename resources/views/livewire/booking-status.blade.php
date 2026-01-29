@@ -69,12 +69,15 @@
                     @if ($booking->status != 'confirmed')
                         <div class="mt-3">
                             <button @click="() => $dispatch('open-modal', 'payment')" :disabled="expired"
-                                class="w-full md:w-auto px-6 py-3 
-           bg-gray-900 hover:bg-white hover:text-black 
-           text-white font-semibold shadow-xl 
-           transition duration-200 ease-in-out 
-           flex items-center justify-center gap-2
-           disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="w-full md:w-auto px-6 py-3
+        bg-gray-900 dark:bg-gray-800
+        text-white dark:text-gray-100
+        hover:bg-white hover:text-black
+        dark:hover:bg-gray-700 dark:hover:text-white
+        font-semibold shadow-xl
+        transition duration-200 ease-in-out
+        flex items-center justify-center gap-2
+        disabled:opacity-50 disabled:cursor-not-allowed">
 
                                 <template x-if="expired">
                                     <span>Expired</span>
@@ -83,99 +86,108 @@
                                 <template x-if="!expired">
                                     <div class="flex space-x-1">
                                         <p>Klik untuk pembayaran</p>
-
                                     </div>
                                 </template>
                             </button>
-                            <p class="text-xs text-gray-500 mt-2 italic">
+
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
                                 *Dengan menekan tombol ini, Anda menyatakan sudah melakukan pembayaran.
                             </p>
                         </div>
                     @endif
                 </div>
-                <div class="text-right text-sm text-blue-800 space-y-3 w-full flex flex-col items-end">
+                <div class="text-right text-sm  text-blue-800 dark:text-gray-200 space-y-3 w-full flex flex-col items-end">
                     <p>{{ $booking->booking_code ?? '-' }}</p>
-                    <p>{{ \Carbon\Carbon::parse($booking->created)->format('d M Y') }}</p>
+                    <p class="text-blue-800 dark:text-gray-400">
+                        {{ \Carbon\Carbon::parse($booking->created)->format('d M Y') }}
+                    </p>
                     <div class="flex items-center justify-center gap-2 mt-1">
                         @if ($booking->status == 'pending')
-                            <span
-                                class="px-3 py-1 rounded bg-yellow-500 text-white font-medium flex md:items-end items-center gap-1 text-lg">
-                                <x-heroicon-o-clock class="w-4 h-4" /> Menunggu Pembayaran
-                                <span class="text-red-500">
-                                    <span x-text="minutes"></span>m <span x-text="seconds"></span>s
+                            <span class="px-3 py-1 rounded  bg-yellow-500 text-white font-medium flex md:items-end items-center gap-1 text-lg">
+                                <x-heroicon-o-clock class="w-4 h-4" />
+                                Menunggu Pembayaran
+                                <span class="text-red-200 dark:text-red-300">
+                                    <span x-text="minutes"></span>m
+                                    <span x-text="seconds"></span>s
                                 </span>
                             </span>
                         @elseif($booking->status == 'confirmed')
-                            <span class="px-3 py-1 rounded bg-green-500 text-white font-medium flex items-center gap-1">
-                                <x-heroicon-o-check-circle class="w-4 h-4" /> Dikonfirmasi
+                            <span class="px-3 py-1 rounded  bg-green-500 text-white font-medium flex items-center gap-1">
+                                <x-heroicon-o-check-circle class="w-4 h-4" />
+                                Dikonfirmasi
                             </span>
                         @elseif($booking->status == 'returned')
                             <span class="px-3 py-1 rounded bg-blue-500 text-white font-medium flex items-center gap-1">
-                                <x-heroicon-o-arrow-uturn-left class="w-4 h-4" /> Dikembalikan
+                                <x-heroicon-o-arrow-uturn-left class="w-4 h-4" />
+                                Dikembalikan
                             </span>
                         @elseif($booking->status == 'cancelled')
                             <span class="px-3 py-1 rounded bg-red-500 text-white font-medium flex items-center gap-1">
-                                <x-heroicon-o-x-circle class="w-4 h-4" /> Dibatalkan
+                                <x-heroicon-o-x-circle class="w-4 h-4" />
+                                Dibatalkan
                             </span>
                         @endif
                     </div>
-                    {{-- QR Code --}}
-                    {{-- @if ($booking->payment)
-                        <div class="w-full flex flex-col items-end">
-
-                            <img src="{{ asset('storage/' . $booking->payment->icon) }}" alt=""
-                                class="w-32 h-w-32 sm:w-44 sm:h-44 object-cover rounded-md justify-end">
-                        </div>
-                    @else
-                        <p><em>Belum ada data pembayaran</em></p>
-                    @endif --}}
-
                 </div>
             </div>
 
             {{-- Billed To --}}
             <div class="mb-6">
-                <h2 class="text-sm font-bold text-blue-800">BILLED TO</h2>
-                <p class="text-blue-800">{{ $booking->customer_name ?? '-' }}</p>
-                <p class="text-blue-800">{{ $booking->customer_email ?? '-' }}</p>
-                <p class="text-blue-800">{{ $booking->customer_phone ?? '-' }}</p>
+                <h2 class="text-sm font-bold text-blue-800 dark:text-blue-300">
+                    BILLED TO
+                </h2>
+                <p class="text-blue-800 dark:text-gray-200">
+                    {{ $booking->customer_name ?? '-' }}
+                </p>
+                <p class="text-blue-800 dark:text-gray-300">
+                    {{ $booking->customer_email ?? '-' }}
+                </p>
+                <p class="text-blue-800 dark:text-gray-300">
+                    {{ $booking->customer_phone ?? '-' }}
+                </p>
             </div>
 
             {{-- Tabel --}}
-            <table class="w-full border-t border-b border-gray-400 text-sm mb-8">
+            <table class="w-full border-t border-b border-gray-400 dark:border-gray-600 text-sm mb-8">
                 <thead>
-                    <tr class="text-blue-800 font-bold">
+                    <tr class="font-bold text-blue-800 dark:text-blue-300">
                         <th class="text-left py-2">DESKRIPSI</th>
                         <th class="text-right py-2">DETAIL</th>
                     </tr>
                 </thead>
                 <tbody>
-
-                    <tr class="text-blue-800">
+                    <tr class="text-blue-800 dark:text-gray-200">
                         <td class="py-2">Mulai Booking</td>
                         <td class="text-right">
                             {{ \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') }}
                             {{ $booking->start_time }}
                         </td>
                     </tr>
-                    <tr class="text-blue-800">
+
+                    <tr class="text-blue-800 dark:text-gray-200">
                         <td class="py-2">Selesai Booking</td>
                         <td class="text-right">
                             {{ \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') }}
                             {{ $booking->end_time }}
                         </td>
                     </tr>
-                    <tr class="text-blue-800">
+
+                    <tr class="text-blue-800 dark:text-gray-200">
                         <td class="py-2">Durasi</td>
                         <td class="text-right">{{ $booking->duration }} Jam</td>
                     </tr>
-                    <tr class="text-blue-800">
+
+                    <tr class="text-blue-800 dark:text-gray-200">
                         <td class="py-2">Pembayaran</td>
                         <td class="text-right">{{ $booking->payment?->name }}</td>
                     </tr>
-                    <tr class="font-bold text-blue-800 border-t border-gray-400">
+
+                    <tr
+                        class="font-bold text-blue-800 dark:text-blue-300 border-t border-gray-400 dark:border-gray-600">
                         <td class="py-2">TOTAL</td>
-                        <td class="text-right">Rp {{ number_format($booking->price, 0, ',', '.') }}</td>
+                        <td class="text-right">
+                            Rp {{ number_format($booking->price, 0, ',', '.') }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -183,14 +195,25 @@
             {{-- Payment --}}
             <div class="flex justify-between items-start text-sm">
                 <div class="space-y-2">
-                    <h2 class="font-bold text-blue-800">PAYMENTS</h2>
-                    <p class="text-blue-800">Scan QRIS pembayaran otomatis.</p>
+                    <h2 class="font-bold text-blue-800 dark:text-blue-300">
+                        PAYMENTS
+                    </h2>
+
+                    <p class="text-blue-800 dark:text-gray-300">
+                        Scan QRIS pembayaran otomatis.
+                    </p>
+
                     <a href="{{ route('contacts') }}" wire:navigate>
-                        <h2 class="font-bold text-orange-600 mt-4">PERTANYAAN?</h2>
+                        <h2 class="font-bold text-orange-600 dark:text-orange-400 mt-4">
+                            PERTANYAAN?
+                        </h2>
                     </a>
-                    <p class="text-blue-800">
+
+                    <p class="text-blue-800 dark:text-gray-300">
                         Hubungi kami di <br>
-                        <span class="text-orange-600">gwennrepair@gmail.com</span>
+                        <span class="text-orange-600 dark:text-orange-400">
+                            gwennrepair@gmail.com
+                        </span>
                     </p>
                 </div>
             </div>
