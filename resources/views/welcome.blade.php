@@ -46,7 +46,7 @@
             <span class="inline-flex items-center px-4 py-1 rounded-full bg-gray-100 text-sm font-medium text-gray-600">
                 Media Sosial
             </span>
-            <h2 class="mt-5 text-4xl font-bold text-gray-900 leading-tight">
+            <h2 class="mt-5 text-4xl font-bold text-gray-900 leading-tight dark:text-white">
                 Terhubung Dengan <br class="hidden md:block"> Skyrental™
             </h2>
             <p class="mt-4 text-gray-500 max-w-xl mx-auto">

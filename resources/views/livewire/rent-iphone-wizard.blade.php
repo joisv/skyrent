@@ -1,5 +1,42 @@
 <div class="max-w-7xl mx-auto p-6"
     x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')" @close-modal="show = false">
+    @if ($errors->any())
+        <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-[-10px]" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-[-10px]"
+            class="fixed top-6 sm:right-20 sm:max-w-lg w-full z-50 p-4 rounded-lg shadow-lg border bg-white border-red-300 dark:bg-gray-800 dark:border-red-500/40">
+            <div class="flex items-start gap-3">
+                <!-- Icon Error -->
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01M12 5a7 7 0 100 14a7 7 0 000-14z" />
+                    </svg>
+                </div>
+                <!-- Text -->
+                <div class="flex-1">
+                    <p class="font-medium text-gray-900 dark:text-gray-100">
+                        Error
+                    </p>
+                    <ul class="mt-1 text-sm list-disc list-inside text-gray-700 dark:text-gray-300">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                <!-- Close button -->
+                <button @click="show = false"
+                    class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
     {{-- STEP INDICATOR --}}
     <div class="space-y-2 md:space-y-0 md:flex items-center justify-between mb-8">
         {{-- LEFT --}}
@@ -104,7 +141,8 @@
                         @enderror
                     </div>
                 </div>
-                <div wire:loading.flex class="col-span-full flex items-center justify-center py-16 w-full absolute h-full top-0 left-0">
+                <div wire:loading.flex
+                    class="col-span-full flex items-center justify-center py-16 w-full absolute h-full top-0 left-0">
                     <div class="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent">
                     </div>
                 </div>
@@ -403,6 +441,8 @@
                         </span>
                     </div>
                 </div>
+                <x-mary-checkbox label="Kirim pesan WhatsApp ke customer" wire:model="sendWhatsapp"
+                    hint="Centang jika ingin mengirim pesan otomatis" />
 
             </div>
 

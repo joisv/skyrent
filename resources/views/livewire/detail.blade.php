@@ -549,7 +549,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             </ul>
                         </div>
                         <!-- Close button -->
-                        <button @click="show = false" class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
+                        <button @click="show = false"
+                            class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
@@ -594,7 +595,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                         <div class="space-y-2 md:space-y-3 bg-white dark:bg-slate-900 mt-1 sm:mt-7 p-4">
                             <div>
-                                <h1 class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                <h1
+                                    class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
                                     Nama
                                 </h1>
                                 <input type="text" wire:model.live.debounce.250ms="customer_name"
@@ -607,7 +609,8 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                 @enderror
                             </div>
                             <div>
-                                <h1 class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                <h1
+                                    class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
                                     Nomor Whatsapp
                                 </h1>
                                 <div x-data="{
@@ -651,10 +654,21 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                     class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
                                     Alamat
                                 </h1>
-                                <input type="text" wire:model.live.debounce.250ms="address"
+                                <input type="text" wire:model="address"
                                     class="w-full p-2 rounded-xl border-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500 active:border-orange-500 focus:border-orange-500 focus:outline-none"placeholder="e.g. Jl. Merdeka No.123, Jakarta">
                             </div>
                             @error('address')
+                                <span class="text-sm text-red-500">{{ $message }}</span>
+                            @enderror
+                            <div>
+                                <h1
+                                    class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
+                                    Email
+                                </h1>
+                                <input type="text" wire:model="customer_email"
+                                    class="w-full p-2 rounded-xl border-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500 active:border-orange-500 focus:border-orange-500 focus:outline-none"placeholder="jhondoe@mail.com">
+                            </div>
+                            @error('customer_email')
                                 <span class="text-sm text-red-500">{{ $message }}</span>
                             @enderror
                             <div class="mt-4">
@@ -688,7 +702,9 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         <div class="w-full">
                                             <div class="space-y-2">
                                                 @foreach ($payments as $payment)
-                                                    <label wire:click="$set('selectedPaymentId', {{ $payment['id'] }})" class="flex items-center justify-between rounded-xl p-3 cursor-pointer transition bg-white dark:bg-gray-900 shadow-sm dark:shadow-none border{{ $selectedPaymentId == $payment['id'] ? 'border-orange-500 ring-1 ring-orange-500/30' : 'border-gray-200dark:border-gray-700' }} hover:border-black dark:hover:border-gray-500">
+                                                    <label
+                                                        wire:click="$set('selectedPaymentId', {{ $payment['id'] }})"
+                                                        class="flex items-center justify-between rounded-xl p-3 cursor-pointer transition bg-white dark:bg-gray-900 shadow-sm dark:shadow-none border{{ $selectedPaymentId == $payment['id'] ? 'border-orange-500 ring-1 ring-orange-500/30' : 'border-gray-200dark:border-gray-700' }} hover:border-black dark:hover:border-gray-500">
                                                         <!-- Nama Payment -->
                                                         <div class="flex items-center gap-3">
                                                             <span
@@ -697,12 +713,14 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                                             </span>
                                                         </div>
                                                         <!-- Radio -->
-                                                        <div class="w-5 h-5 rounded-full border flex items-center justify-center{{ $selectedPaymentId == $payment['id'] ? 'border-orange-500' : 'border-gray-300 dark:border-gray-600' }}">
+                                                        <div class="relative w-5 h-5 rounded-full border{{ $selectedPaymentId == $payment['id'] ? 'border-orange-500' :'border-gray-300 dark:border-gray-600' }}">
                                                             @if ($selectedPaymentId == $payment['id'])
-                                                                <div class="w-2.5 h-2.5 bg-orange-500 rounded-full">
+                                                                <div
+                                                                    class="absolute inset-1 bg-orange-500 rounded-full">
                                                                 </div>
                                                             @endif
                                                         </div>
+
                                                     </label>
                                                 @endforeach
                                             </div>

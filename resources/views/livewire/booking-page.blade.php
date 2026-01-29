@@ -30,19 +30,19 @@
 
         <x-mary-stat title="Pendapatan Hari ini" :value="'Rp ' . number_format($revenueToday, 0, ',', '.')" icon="o-banknotes" color="text-success" />
     </div>
-    <button class="p-2 bg-sky-500 text-white" @click="iPhoneWizardtest()">iPhoneWizardtest</button>
     <x-tables.table name="Booking">
         <x-slot name="secondBtn">
             <button
-                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
-                wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
-                <span>Bulk delete</span>
-            </button>
-        </x-slot>
-        <x-slot name="addBtn">
-            <x-tables.addbtn type="button" x-data="" @click="createBooking()">
+            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
+            wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
+            <span>Bulk delete</span>
+        </button>
+    </x-slot>
+    <x-slot name="addBtn">
+            <x-tables.addbtn class="p-2 bg-orange-500 text-white" @click="iPhoneWizardtest()">Booking baru</x-tables.addbtn>
+            {{-- <x-tables.addbtn type="button" x-data="" @click="createBooking()">
                 Add Booking
-            </x-tables.addbtn>
+            </x-tables.addbtn> --}}
         </x-slot>
         <x-slot name="sort">
             <div class="flex items-center space-x-2 w-1/2 ">
@@ -165,7 +165,7 @@
     <div class="w-full mt-5">
         {{-- {{ $iphones->links() }} --}}
     </div>
-    <x-modal name="iphone-wizard" :show="true" maxWidth="4xl" minh="min-h-screen overflow-scroll">
+    <x-modal name="iphone-wizard" :show="$errors->isNotEmpty()" maxWidth="4xl" minh="min-h-screen overflow-scroll">
         <livewire:rent-iphone-wizard />
     </x-modal>
     {{-- <x-modal name="booking-create" :show="$errors->isNotEmpty()">

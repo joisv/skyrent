@@ -19,9 +19,6 @@ class RentIphoneWizard extends Component
     public $price = 0;
     public $iphone_search = '';
 
-    public $iphone_name;
-    public $serial_number;
-
     // STEP 1
     public $iphones;
     public ?int $selectedIphoneId = null;
@@ -45,10 +42,9 @@ class RentIphoneWizard extends Component
     public $selectedPayment;
 
     // STEP 3
-    public string $customerName = '';
-    public string $customerPhone = '';
-
     public $sendWhatsapp = true;
+    public $iphone_name;
+    public $serial_number;
 
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
@@ -194,24 +190,16 @@ class RentIphoneWizard extends Component
 
     public function submit(): void
     {
-        // Simpan booking baru
-        // dd([
-        //     'iphone_id' => $this->selectedIphoneId,
-        //     'customer_name' => $this->customer_name,
-        //     'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
-        //     'customer_email' => $this->customer_email,
-        //     'requested_booking_date' => carbon()->now()->toDateString(),
-        //     'requested_time' => Carbon::now()->format('H:i'),
-        //     'duration' => $this->selectedDuration,
-        //     'price' => $this->selectedPrice,
-        //     'status' => 'pending',
-        //     'created' => Carbon::now('Asia/Jakarta'),
-        //     'booking_code' => Booking::generateBookingCode(),
-        //     'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
-        //     'address' => $this->address,
-        //     'pickup_type' => 'pickup',
-        //     'jaminan_type' => $this->jaminan_type,
-        // ]);
+        $this->validate([
+            'selectedIphoneId' => 'required|exists:iphones,id',
+            'customer_name' => 'required|string|max:255',
+            'customer_phone' => 'required|string|max:15',
+            'customer_email' => 'nullable|email|max:255',
+            'requested_booking_date' => 'required|date',
+            'requested_time' => 'required|date_format:H:i',
+            'selectedDuration' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+        ]);
 
         $booking = Booking::create([
             'iphone_id' => $this->selectedIphoneId,
@@ -233,24 +221,28 @@ class RentIphoneWizard extends Component
             'jaminan_type' => $this->jaminan_type,
         ]);
 
-        $message = "Halo {$booking->customer_name}, 👋\n\n"
-            . "Terima kasih telah melakukan booking di *SkyRental* 📱✨\n\n"
+        $message = "Halo {$booking->customer_name},\n\n"
+            . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
             . "Berikut adalah detail booking Anda:\n"
-            . "──────────────────────\n"
-            . "📌 Kode Booking : *{$booking->booking_code}*\n"
-            . "Perangkat    : {$booking->iphone->name}\n"
+            . "--------------------------------------\n"
+            . "Kode Booking : *{$booking->booking_code}*\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
             . "Tanggal      : {$booking->requested_booking_date}\n"
             . "Waktu        : {$booking->requested_time}\n"
             . "Durasi       : {$booking->duration} jam\n"
             . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
-            . "──────────────────────\n\n"
-            . "Untuk memeriksa status booking Anda, silakan kunjungi link berikut:\n"
+            . "--------------------------------------\n\n"
+            . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
+            . "Apabila pembayaran belum kami terima hingga batas waktu tersebut, "
+            . "maka booking akan *dibatalkan secara otomatis*.\n\n"
+            . "Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini "
+            . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
+            . "Untuk memeriksa status booking, silakan kunjungi:\n"
             . url('/booking-status') . "\n\n"
-            . "Mohon pastikan nomor WhatsApp yang Anda gunakan benar agar dapat menerima informasi lebih lanjut.\n\n"
-            . "Terima kasih 🙏\n"
-            . "*SkyRental*";
+            . "Terima kasih atas kerja samanya.\n"
+            . "SkyRental";
 
-        $adminMessage = "📢 <b>Booking Baru Diterima</b>\n\n"
+        $adminMessage = "<b>Booking Baru Diterima</b>\n\n"
             . "<b>Nama</b> : {$booking->customer_name}\n"
             . "<b>HP</b>   : {$booking->customer_phone}\n"
             . "<b>Email</b>: {$booking->customer_email}\n\n"
@@ -262,8 +254,31 @@ class RentIphoneWizard extends Component
             . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
             . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
 
+        $groupMessage = "BOOKING BARU MASUK\n\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            . "Nama         : {$booking->customer_name}\n"
+            . "No. HP       : {$booking->customer_phone}\n"
+            . "Alamat       : {$booking->address}\n"
+            . "Jaminan       : {$booking->jaminan_type}\n"
+            . "Email        : {$booking->customer_email}\n\n"
+            . "Kode Booking : {$booking->booking_code}\n"
+            . "Tanggal      : {$booking->requested_booking_date}\n"
+            . "Waktu        : {$booking->requested_time}\n"
+            . "Durasi       : {$booking->duration} jam\n"
+            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
+            . "Status       : {$booking->status} \n"
+            . "Admin Panel:\n"
+            . url('/admin/bookings/');
+
         $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
         $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
+
+        Http::withHeaders([
+            'Authorization' => env('FONNTE_TOKEN'),
+        ])->post('https://api.fonnte.com/send', [
+            'target'  => env('FONNTE_GROUP_ID'),
+            'message' => $groupMessage,
+        ]);
 
         if ($this->sendWhatsapp) {
             Http::withHeaders([

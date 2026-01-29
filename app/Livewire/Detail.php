@@ -279,22 +279,26 @@ class Detail extends Component
             'jaminan_type' => $this->jaminan_type,
         ]);
 
-        $message = "Halo {$booking->customer_name}, 👋\n\n"
-            . "Terima kasih telah melakukan booking di *Skyrental* 📱✨\n\n"
+        $message = "Halo {$booking->customer_name},\n\n"
+            . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
             . "Berikut adalah detail booking Anda:\n"
-            . "──────────────────────\n"
-            . "📌 Kode Booking : *{$booking->booking_code}*\n"
-            . "Perangkat    : {$booking->iphone->name}\n"
+            . "--------------------------------------\n"
+            . "Kode Booking : *{$booking->booking_code}*\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
             . "Tanggal      : {$booking->requested_booking_date}\n"
             . "Waktu        : {$booking->requested_time}\n"
             . "Durasi       : {$booking->duration} jam\n"
             . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
-            . "──────────────────────\n\n"
-            . "Untuk memeriksa status booking Anda, silakan kunjungi link berikut:\n"
-            . url('/booking-status')  . "\n\n"
-            . "Mohon pastikan nomor WhatsApp yang Anda gunakan benar agar dapat menerima informasi lebih lanjut.\n\n"
-            . "Terima kasih 🙏\n"
-            . "*SkyRental*";
+            . "--------------------------------------\n\n"
+            . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
+            . "Apabila pembayaran belum kami terima hingga batas waktu tersebut, "
+            . "maka booking akan *dibatalkan secara otomatis*.\n\n"
+            . "Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini "
+            . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
+            . "Untuk memeriksa status booking, silakan kunjungi:\n"
+            . url('/booking-status') . "\n\n"
+            . "Terima kasih atas kerja samanya.\n"
+            . "SkyRental";
 
         $adminMessage = "📢 <b>Booking Baru Diterima</b>\n\n"
             . "<b>Nama</b> : {$booking->customer_name}\n"
@@ -308,9 +312,35 @@ class Detail extends Component
             . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
             . "🔗 <a href='" . url('/admin/bookings/') . "'>Lihat detail di Admin Panel</a>";
 
+
+        $groupMessage = "BOOKING BARU MASUK\n\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            . "Nama         : {$booking->customer_name}\n"
+            . "No. HP       : {$booking->customer_phone}\n"
+            . "Alamat       : {$booking->address}\n"
+            . "Jaminan       : {$booking->jaminan_type}\n"
+            . "Email        : {$booking->customer_email}\n\n"
+            . "Kode Booking : {$booking->booking_code}\n"
+            . "Tanggal      : {$booking->requested_booking_date}\n"
+            . "Waktu        : {$booking->requested_time}\n"
+            . "Durasi       : {$booking->duration} jam\n"
+            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
+            . "Status       : {$booking->status} \n"
+            . "Admin Panel:\n"
+            . url('/admin/bookings/');
+
         $telegramToken   = config('services.telegram.bot_token');
         $chatId  = config('services.telegram.chat_id');
         $whatsappToken = config('services.fonnte.token');
+        $group_chat_id = config('services.fonnte.groupid');
+
+
+        Http::withHeaders([
+            'Authorization' => $whatsappToken,
+        ])->post('https://api.fonnte.com/send', [
+            'target'  => $group_chat_id,
+            'message' => $groupMessage,
+        ]);
 
         Http::withHeaders([
             'Authorization' => $whatsappToken,

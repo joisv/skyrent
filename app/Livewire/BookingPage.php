@@ -4,12 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Booking;
 use App\Models\Iphones;
-use App\Models\Payment;
+use Illuminate\Support\Facades\Http;
 use App\Models\Revenue;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Illuminate\Support\Facades\Log;
 
 class BookingPage extends Component
 {
@@ -190,6 +191,38 @@ class BookingPage extends Component
     {
         $this->mySelected = [];
         $this->selectedAll = false;
+    }
+
+    public function sendGroupMessage()
+    {
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => env('FONNTE_TOKEN'),
+            ])->post('https://api.fonnte.com/send', [
+                'target'  => env('FONNTE_GROUP_ID'),
+                'message' => 'test from dashboard admin',
+            ]);
+
+            if ($response->failed()) {
+                Log::error('Fonnte group message failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+
+            Log::error('Fonnte exception', [
+                'message' => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile(),
+            ]);
+
+            return false;
+        }
     }
 
     #[On('close-modal')]

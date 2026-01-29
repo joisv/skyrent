@@ -37,7 +37,8 @@ return [
 
     'fonnte' => [
         'token' => env('FONNTE_TOKEN'),
-    ],
+        'groupid' =>  env('FONNTE_GROUP_ID')
+    ], 
 
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
