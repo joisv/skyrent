@@ -112,7 +112,7 @@ class IphonesManagements extends Component
         $query = Iphones::query();
 
         if ($this->search) {
-            $query->search(['name', 'description', 'updated_at'], $this->search);
+            $query->search(['name', 'description', 'updated_at', 'serial_number'], $this->search);
         }
 
         if (in_array($this->sortField, ['created_at', 'updated_at'])) {

@@ -37,81 +37,82 @@
             </div>
         </div>
     @endif
-    {{-- NAV --}}
-    <div class="flex justify-between my-4">
-        @if ($step > 1)
-            <button wire:click="back" type="button" class="px-4 py-2 border rounded-xl">
-                Kembali
-            </button>
-        @endif
+    <form wire:submit="submit">
+        {{-- NAV --}}
+        <div class="flex justify-between my-4">
+            @if ($step > 1)
+                <button wire:click="back" type="button" class="px-4 py-2 border rounded-xl">
+                    Kembali
+                </button>
+            @endif
 
-        @if ($step < 3)
-            <button wire:click="next" type="button" class="px-6 py-2 bg-black text-white rounded-xl">
-                Lanjut →
-            </button>
-        @else
-            <button type="submit" class="px-6 py-2 bg-green-600 text-white disabled:bg-green-200 rounded-xl"
-                wire:loading.attr="disabled">
-                Konfirmasi
-            </button>
-        @endif
-    </div>
-    {{-- STEP INDICATOR --}}
-    <div class="space-y-2 md:space-y-0 md:flex items-center justify-between mb-8">
-        {{-- LEFT --}}
-        <div>
-            {{-- STEP INDICATOR --}}
-            <div class="flex items-center gap-4 text-sm">
+            @if ($step < 3)
+                <button wire:click="next" type="button" class="px-6 py-2 bg-black text-white rounded-xl">
+                    Lanjut →
+                </button>
+            @else
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white disabled:bg-green-200 rounded-xl"
+                    wire:loading.attr="disabled">
+                    Konfirmasi
+                </button>
+            @endif
+        </div>
+        {{-- STEP INDICATOR --}}
+        <div class="space-y-2 md:space-y-0 md:flex items-center justify-between mb-8">
+            {{-- LEFT --}}
+            <div>
+                {{-- STEP INDICATOR --}}
+                <div class="flex items-center gap-4 text-sm">
 
-                @php
-                    $steps = [
-                        1 => 'iPhone',
-                        2 => 'Detail Customer',
-                        3 => 'Review',
-                    ];
-                @endphp
+                    @php
+                        $steps = [
+                            1 => 'iPhone',
+                            2 => 'Detail Customer',
+                            3 => 'Review',
+                        ];
+                    @endphp
 
-                @foreach ($steps as $number => $label)
-                    <div class="flex items-center gap-1">
-                        <input type="radio" name="step" value="{{ $number }}" @checked($step === $number)
-                            disabled
-                            class="appearance-none h-4 w-4 rounded-full border hover:scale-125
+                    @foreach ($steps as $number => $label)
+                        <div class="flex items-center gap-1">
+                            <input type="radio" name="step" value="{{ $number }}"
+                                @checked($step === $number) disabled
+                                class="appearance-none h-4 w-4 rounded-full border hover:scale-125
                         {{ $step >= $number ? 'bg-black border-black' : 'border-gray-300' }}" />
 
-                        <label
-                            class="md:text-lg hidden sm:flex font-normal {{ $step >= $number ? 'text-black' : 'text-gray-400' }}">
-                            {{ $label }}
-                        </label>
-                    </div>
+                            <label
+                                class="md:text-lg hidden sm:flex font-normal {{ $step >= $number ? 'text-black' : 'text-gray-400' }}">
+                                {{ $label }}
+                            </label>
+                        </div>
 
-                    @if (!$loop->last)
-                        <span class="w-6 h-px bg-gray-300"></span>
-                    @endif
-                @endforeach
+                        @if (!$loop->last)
+                            <span class="w-6 h-px bg-gray-300"></span>
+                        @endif
+                    @endforeach
 
+                </div>
             </div>
-        </div>
 
-        {{-- RIGHT --}}
-        @if ($step === 1)
-            <div class="flex items-center gap-4">
-                <input type="text" id="iphone_search"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    placeholder="Cari Tipe iPhone" wire:model.live.debounce.2500ms="iphone_search" />
+            {{-- RIGHT --}}
+            @if ($step === 1)
+                <div class="flex items-center gap-4">
+                    <input type="text" id="iphone_search"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Cari Tipe iPhone" wire:model.live.debounce.2500ms="iphone_search" />
 
-                {{-- NEXT BUTTON --}}
-                {{-- <button wire:click="next" class="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded">
+                    {{-- NEXT BUTTON --}}
+                    {{-- <button wire:click="next" class="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded">
                 Lanjut
                 <span>→</span>
             </button> --}}
 
-            </div>
-        @endif
-    </div>
+                </div>
+            @endif
+        </div>
 
 
-    {{-- CONTENT --}}
-    <form wire:submit="submit">
+        {{-- CONTENT --}}
+
         @if ($step === 1)
             <div class="space-y-3 ">
                 <div class="flex space-x-2 items-center ">
