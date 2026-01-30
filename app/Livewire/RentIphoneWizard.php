@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\Payment;
+use App\Models\Revenue;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -212,13 +213,20 @@ class RentIphoneWizard extends Component
             // 'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
-            'status' => 'pending',
+            'status' => 'confirmed',
             'created' => Carbon::now('Asia/Jakarta'),
             'booking_code' => Booking::generateBookingCode(),
             'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
             'address' => $this->address,
             'pickup_type' => 'pickup',
             'jaminan_type' => $this->jaminan_type,
+        ]);
+
+        Revenue::create([
+            'booking_id' => $booking->id,
+            'amount' => $booking->price,
+            'type' =>  'booking',
+            'created' => now('Asia/Jakarta'),
         ]);
 
         $message = "Halo {$booking->customer_name},\n\n"

@@ -208,7 +208,7 @@
                                 <div class="flex space-x-1">
                                     <input class="rounded-sm border-gray-400 w-[40%]" type="number"
                                         placeholder="24 (jam)" x-model="item.hours">
-                                    <input class="rounded-sm border-gray-400 w-[60%]" type="text"
+                                    <input class="rounded-sm border-gray-400 w-[60%]" type="number"
                                         placeholder="Rp. 100,000" x-model="item.price"
                                         x-mask:dynamic="'Rp. ' + $money($input)"
                                         @input="let cleaned = $event.target.value.replace(/[^\d]/g, '');

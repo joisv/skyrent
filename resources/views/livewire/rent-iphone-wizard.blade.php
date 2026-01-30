@@ -37,6 +37,25 @@
             </div>
         </div>
     @endif
+    {{-- NAV --}}
+    <div class="flex justify-between my-4">
+        @if ($step > 1)
+            <button wire:click="back" type="button" class="px-4 py-2 border rounded-xl">
+                Kembali
+            </button>
+        @endif
+
+        @if ($step < 3)
+            <button wire:click="next" type="button" class="px-6 py-2 bg-black text-white rounded-xl">
+                Lanjut →
+            </button>
+        @else
+            <button type="submit" class="px-6 py-2 bg-green-600 text-white disabled:bg-green-200 rounded-xl"
+                wire:loading.attr="disabled">
+                Konfirmasi
+            </button>
+        @endif
+    </div>
     {{-- STEP INDICATOR --}}
     <div class="space-y-2 md:space-y-0 md:flex items-center justify-between mb-8">
         {{-- LEFT --}}
@@ -214,7 +233,8 @@
         @elseif ($step === 2)
             <div class="space-y-2">
                 <div>
-                    <label for="customer_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
+                    <label for="customer_name"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
                         customer</label>
                     <input type="text" id="customer_name"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -285,7 +305,7 @@
                     <label for="customer_email"
                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat
                         Customer</label>
-                    <input type="email" id="customer_email"
+                    <input type="text" id="customer_email"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Jl. Diponegoro rt 001/rw 004" wire:model="address" />
                     @error('address')
@@ -448,25 +468,7 @@
 
         @endif
 
-        {{-- NAV --}}
-        <div class="flex justify-between mt-8">
-            @if ($step > 1)
-                <button wire:click="back" type="button" class="px-4 py-2 border">
-                    Kembali
-                </button>
-            @endif
 
-            @if ($step < 3)
-                <button wire:click="next" type="button" class="px-6 py-2 bg-black text-white">
-                    Lanjut →
-                </button>
-            @else
-                <button type="submit" class="px-6 py-2 bg-green-600 text-white disabled:bg-green-200"
-                    wire:loading.attr="disabled">
-                    Konfirmasi
-                </button>
-            @endif
-        </div>
     </form>
     <x-modal name="duration-options-modal" max-width="md">
         {{-- Duration --}}

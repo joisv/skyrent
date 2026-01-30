@@ -226,7 +226,9 @@ class BookingPage extends Component
     }
 
     #[On('close-modal')]
-    public function reRender() {}
+    public function reRender() {
+        $this->revenueToday = Revenue::whereDate('created_at', now()->toDateString())->sum('amount');
+    }
 
     public function render()
     {

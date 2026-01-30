@@ -43,8 +43,8 @@
                     wire:model.live="selectedAll">
                     {{-- <input type="hidden" wire:model.live="firstId" value="{{ $serieses[0]->id }}"> --}}
             </x-tables.th>
-            <x-tables.th>Title</x-tables.th>
             <x-tables.th>Name</x-tables.th>
+            <x-tables.th>Serial Number</x-tables.th>
             <x-tables.th>Created</x-tables.th>
             <x-tables.th>Updated</x-tables.th>
             <x-tables.th>Action</x-tables.th>
@@ -59,6 +59,9 @@
                     </x-tables.td>
                     <x-tables.td>
                         {{ $iphone->name }}
+                    </x-tables.td>
+                    <x-tables.td>
+                        {{ $iphone->serial_number ?? '-' }}
                     </x-tables.td>
                     <x-tables.td>
                         {{ $iphone->user->name }}

@@ -638,7 +638,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         </template>
                                     </select>
                                     <!-- Input Nomor -->
-                                    <input type="tel" id="customer_phone" x-model="customerPhone"
+                                    <input type="number" id="customer_phone" x-model="customerPhone"
                                         @input=" let raw = $event.target.value.replace(/[^0-9]/g, ''); customerPhone = raw.match(/.{1,4}/g)?.join('-') || ''; "
                                         placeholder="8123-4567-8901"
                                         class="w-full p-2 rounded-xl border-2 bg-white text-gray-900 border-gray-300 focus:border-orange-500 focus:ring-0 dark:bg-slate-900 dark:text-gray-100 dark:border-gray-600 dark:focus:border-orange-400" />
@@ -665,7 +665,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                     class="sm:text-lg text-base font-medium font-neulis text-gray-900 dark:text-gray-100">
                                     Email
                                 </h1>
-                                <input type="text" wire:model="customer_email"
+                                <input type="email" wire:model="customer_email"
                                     class="w-full p-2 rounded-xl border-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500 active:border-orange-500 focus:border-orange-500 focus:outline-none"placeholder="jhondoe@mail.com">
                             </div>
                             @error('customer_email')
