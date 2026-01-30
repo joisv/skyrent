@@ -638,7 +638,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         </template>
                                     </select>
                                     <!-- Input Nomor -->
-                                    <input type="number" id="customer_phone" x-model="customerPhone"
+                                    <input type="text" id="customer_phone" x-model="customerPhone"
                                         @input=" let raw = $event.target.value.replace(/[^0-9]/g, ''); customerPhone = raw.match(/.{1,4}/g)?.join('-') || ''; "
                                         placeholder="8123-4567-8901"
                                         class="w-full p-2 rounded-xl border-2 bg-white text-gray-900 border-gray-300 focus:border-orange-500 focus:ring-0 dark:bg-slate-900 dark:text-gray-100 dark:border-gray-600 dark:focus:border-orange-400" />
