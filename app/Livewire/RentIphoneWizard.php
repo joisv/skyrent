@@ -213,7 +213,7 @@ class RentIphoneWizard extends Component
             // 'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
-            'status' => 'confirmed',
+            'status' => 'pending',
             'created' => Carbon::now('Asia/Jakarta'),
             'booking_code' => Booking::generateBookingCode(),
             'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,

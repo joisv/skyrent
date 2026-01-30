@@ -38,8 +38,9 @@
         </div>
     @endif
     <form wire:submit="submit">
+
         {{-- NAV --}}
-        <div class="flex justify-between my-4">
+        <div class="flex justify-between mb-4 mt-0">
             @if ($step > 1)
                 <button wire:click="back" type="button" class="px-4 py-2 border rounded-xl">
                     Kembali
@@ -112,7 +113,6 @@
 
 
         {{-- CONTENT --}}
-
         @if ($step === 1)
             <div class="space-y-3 ">
                 <div class="flex space-x-2 items-center ">
