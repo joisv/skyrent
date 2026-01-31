@@ -430,6 +430,7 @@ class RentIphoneWizard extends Component
 
     public function setCustom($unit)
     {
+        // dd($unit);
         $this->unit = $unit;
         $this->basePricePerHour = Iphones::find($this->selectedIphoneId)
             ?->durations()
