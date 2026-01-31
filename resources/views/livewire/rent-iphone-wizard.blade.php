@@ -1,5 +1,12 @@
 <div class="max-w-7xl mx-auto p-6"
-    x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')" @close-modal="show = false">
+    x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')" @close-modal="show = false"
+    x-data="{
+        price: @entangle('selectedPrice').live,
+
+        init(){
+            console.log(this.price)
+        }
+    }">
     @if ($errors->any())
         <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-[-10px]" x-transition:enter-end="opacity-100 translate-y-0"
@@ -487,8 +494,8 @@
             }">
                 @foreach ($durations as $item)
                     <div @click="setActiveTab({{ $item['hours'] }}, {{ $item['price'] }})"
-                        :class="{ 'bg-black text-white': activeTab === {{ $item['hours'] }} }"
-                        class="p-3 font-semibold text-base text-center border-2 border-slate-300 cursor-pointer w-full hover:shadow-xl hover:scale-105 transition">
+                        :class="{ 'bg-black text-white ': activeTab === {{ $item['hours'] }} }"
+                        class="p-3 font-semibold text-base text-center rounded-xl border-2 border-slate-300 cursor-pointer w-full hover:shadow-xl hover:scale-105 transition">
                         {{ $item['hours'] }} jam
                     </div>
                 @endforeach
@@ -497,6 +504,184 @@
             @error('selectedDuration')
                 <span class="error">Pilih durasi sewa😊</span>
             @enderror
+
+            <div class="space-y-3 relative" x-data="{ openDuration: false }" >
+
+                <div class="flex space-x-2 w-full" x-data="{
+                    activeTab: @entangle('selectedDuration').live,
+                    price: @entangle('selectedPrice').live,
+                    {{-- jumlah: @entangle('jumlah').defer, --}}
+                
+                    setActiveTab(tab, priceValue) {
+                        this.activeTab = tab;
+                        this.price = priceValue;
+                        {{-- this.jumlah = 0; --}}
+                        $wire.jumlah = 0;
+                    }
+                }">
+                </div>
+                <button
+                    @click="() => { openDuration = !openDuration;
+                                                    window.dispatchEvent(
+                                                        new CustomEvent('open-bottom-sheet', {
+                                                            detail: { id: 'customDuration' }
+                                                        })
+                                                    )
+                                                }"
+                    class="w-full p-2.5 cursor-pointer text-center font-semibold rounded-2xl border-2 transition-colors duration-150 text-black border-slate-900 hover:bg-slate-900 hover:text-white dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900">
+                    Durasi Custom
+                </button>
+                <div x-show="openDuration" x-collapse x-cloak class="top-5 z-50 right-0 mt-2 hidden sm:flex w-full ">
+                    <div class="rounded-md ring-1 ring-black ring-opacity-5 w-full">
+
+                        <div
+                            class="p-4  dark:bg-gray-800 text-lg w-full border-2 border-slate-900 shadow-xl rounded-xl">
+                            <div class="relative z-10">
+                                <label for="customDuration" class="block text-sm font-medium text-white/90 ">
+                                    Masukkan Durasi Sendiri
+                                </label>
+
+                                <div class="flex items-center gap-3 w-full" x-data="{ unit: $wire.entangle('unit') }">
+                                    <!-- Input jumlah -->
+                                    <input id="customDuration" type="number" wire:model.live.debounce.250ms="jumlah"
+                                        min="24" class="w-24 px-2 py-1.5 border-2 border-black rounded-xl"
+                                        placeholder="Jumlah">
+
+                                    <!-- Pilihan unit waktu -->
+                                    <div
+                                        class="flex overflow-hidden w-full justify-between border-2 border-black rounded-xl">
+                                        <template x-for="opt in ['Hari','Minggu','Bulan']" :key="opt">
+                                            <button type="button" @click="$wire.setCustom(opt); unit = opt"
+                                                :class="{
+                                                    'bg-black text-white': unit ===
+                                                        opt,
+                                                    'hover:border-white/40 hover:bg-white/10': unit !== opt
+                                                }"
+                                                class="px-3 py-2 text-sm border-r border-white/20 transition-all duration-200 w-full">
+                                                <span x-text="opt"></span>
+                                            </button>
+                                        </template>
+
+                                    </div>
+                                </div>
+
+                                <p class="text-xs mt-1 font-semibold italic text-gray-400">Contoh: 3 Hari, 2
+                                    Minggu, 1 Bulan</p>
+                            </div>
+                            <div class="mt-4 text-base font-medium">
+                                <p class="text-sm ">
+                                    Durasi sewa:
+                                    @switch($unit)
+                                        @case('Jam')
+                                            {{ $jumlah }} jam
+                                        @break
+
+                                        @case('Hari')
+                                            {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
+                                        @break
+
+                                        @case('Minggu')
+                                            {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
+                                        @break
+
+                                        @case('Bulan')
+                                            {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
+                                        @break
+
+                                        @default
+                                    @endswitch
+                                    <br>
+                                    Total Harga: Rp <span x-text="new Intl.NumberFormat('id-ID').format(price)"
+                                        class="text-red-500"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </x-modal>
+    <x-bottom-sheet id="customDuration" title="Pilih durasi" glass="">
+        <div
+            class="max-w-md mx-auto space-y-6 
+    bg-gradient-to-br from-white/15 to-white/5 dark:from-gray-800/40 dark:to-gray-900/20
+    backdrop-blur-xl 
+    border border-white/20 dark:border-gray-700/50 
+    rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]
+    p-6 relative overflow-hidden
+    transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_12px_48px_0_rgba(0,0,0,0.35)]">
+
+            <!-- Gradient overlay untuk efek kaca -->
+            <div
+                class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none rounded-3xl">
+            </div>
+            <div class="relative z-10">
+                <label for="customDuration" class="block text-sm font-medium text-white/90 mb-2">
+                    Masukkan Durasi Sendiri
+                </label>
+
+                <div class="flex items-center gap-3 w-full" x-data="{ unit: $wire.entangle('unit') }">
+                    <!-- Input jumlah -->
+                    <input id="customDuration" type="number" wire:model.live.debounce.250ms="jumlah" min="24"
+                        class="w-24 px-2 py-1.5 border border-white/30 
+             rounded-xl bg-white/10 backdrop-blur-sm text-center 
+             text-white placeholder-white/50 
+             focus:ring-2 focus:ring-blue-400/70 focus:border-blue-300 
+             outline-none transition-all duration-200
+             hover:bg-white/20"
+                        placeholder="Jumlah">
+
+                    <!-- Pilihan unit waktu -->
+                    <div
+                        class="flex bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl overflow-hidden w-full justify-between">
+                        <template x-for="opt in ['Hari','Minggu','Bulan']" :key="opt">
+                            <button type="button" @click="$wire.setCustom(opt); unit = opt"
+                                :class="{
+                                    'bg-white/20 text-white backdrop-blur-sm border-white/40': unit === opt,
+                                    'hover:border-white/40 hover:bg-white/10': unit !== opt
+                                }"
+                                class="px-3 py-2 text-sm border-r border-white/20 transition-all duration-200 w-full">
+                                <span x-text="opt"></span>
+                            </button>
+                        </template>
+
+                    </div>
+                </div>
+
+                <p class="text-xs text-white/70 mt-1">Contoh: 3 Hari, 2 Minggu, 1 Bulan</p>
+            </div>
+
+
+            <!-- Preview Total -->
+            <div
+                class="p-4 rounded-2xl border border-white/30 
+        bg-white/10 backdrop-blur-md relative z-10
+        transition-all duration-200 hover:bg-white/20">
+                <p class="text-sm text-white/90">
+                    Durasi sewa:
+                    @switch($unit)
+                        @case('Jam')
+                            {{ $jumlah }} jam
+                        @break
+
+                        @case('Hari')
+                            {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
+                        @break
+
+                        @case('Minggu')
+                            {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
+                        @break
+
+                        @case('Bulan')
+                            {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
+                        @break
+
+                        @default
+                    @endswitch
+                    <br>
+                    Total Harga: Rp <span x-text="new Intl.NumberFormat('id-ID').format(price)"></span>
+                </p>
+            </div>
+        </div>
+    </x-bottom-sheet>
 </div>

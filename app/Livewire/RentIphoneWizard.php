@@ -19,6 +19,11 @@ class RentIphoneWizard extends Component
     public $selectedIphone = null;
     public $price = 0;
     public $iphone_search = '';
+    public $unit = '';
+    public $is_available = false;
+    public ?int $jumlah = null;
+    public $totalHarga = 0;
+    public int $basePricePerHour = 5000;
 
     // STEP 1
     public $iphones;
@@ -222,13 +227,6 @@ class RentIphoneWizard extends Component
             'jaminan_type' => $this->jaminan_type,
         ]);
 
-        Revenue::create([
-            'booking_id' => $booking->id,
-            'amount' => $booking->price,
-            'type' =>  'booking',
-            'created' => now('Asia/Jakarta'),
-        ]);
-
         $message = "Halo {$booking->customer_name},\n\n"
             . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
             . "Berikut adalah detail booking Anda:\n"
@@ -429,6 +427,83 @@ class RentIphoneWizard extends Component
     //     $this->requested_booking_date = $date;
     //     $this->requested_time = $time;
     // }
+
+    public function setCustom($unit)
+    {
+        $this->unit = $unit;
+        $this->basePricePerHour = Iphones::find($this->selectedIphoneId)
+            ?->durations()
+            ->where('hours', 24)
+            ->first()
+            ?->pivot
+            ?->price ?? 5000;
+        $this->updateDurationAndPrice();
+    }
+
+    public function updatedJumlah()
+    {
+        $this->updateDurationAndPrice();
+    }
+
+    private function updateDurationAndPrice()
+    {
+
+        if (empty($this->unit) || empty($this->jumlah)) {
+            $this->selectedDuration = 0;
+            $this->selectedPrice = 0;
+            return;
+        }
+
+        if ($this->unit === 'Jam' && $this->jumlah < 24) {
+            $this->jumlah = 24;
+        }
+
+
+        if ($this->jumlah < 1) {
+            $this->selectedDuration = 0;
+            $this->selectedPrice = 0;
+            return;
+        }
+
+
+        if ($this->basePricePerHour === 5000) {
+            # code...
+            switch ($this->unit) {
+
+                case 'Hari':
+                    $this->selectedDuration = $this->jumlah * 24;
+                    break;
+                case 'Minggu':
+                    $this->selectedDuration = $this->jumlah * 24 * 7;
+                    break;
+                case 'Bulan':
+                    $this->selectedDuration = $this->jumlah * 24 * 30; // asumsi 30 hari
+                    break;
+                default:
+                    $this->selectedDuration = $this->jumlah;
+                    break;
+            }
+        } else {
+            switch ($this->unit) {
+
+                case 'Hari':
+                    $this->selectedDuration = $this->jumlah;
+                    break;
+                case 'Minggu':
+                    $this->selectedDuration = $this->jumlah * 7;
+                    break;
+                case 'Bulan':
+                    $this->selectedDuration = $this->jumlah * 30; // asumsi 30 hari
+                    break;
+                default:
+                    $this->selectedDuration = $this->jumlah;
+                    break;
+            }
+        }
+
+        // hitung harga (contoh sederhana per jam)
+        $this->selectedPrice = $this->selectedDuration * $this->basePricePerHour;
+    }
 
     public function render()
     {

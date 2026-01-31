@@ -20,6 +20,7 @@
     price: @entangle('selectedPrice').live,
 
     init() {
+    console.log(this.price)
         if (this.selectedDate) {
             this.selectedDate = new Date(this.selectedDate);
         } else {
@@ -215,7 +216,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                                     <!-- Kalender -->
                                     <div
-                                        class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-[25vw] border-2 rounded-xl border-slate-900 shadow-xl">
+                                        class="p-4 bg-white dark:bg-gray-800 text-lg z-10 w-full lg:w-full border-2 rounded-xl border-slate-900 shadow-xl">
                                         <div class="border-b-2 border-gray-300 pb-4">
                                             <div class="flex items-center  text-lg">
                                                 <!-- Hour Picker -->
@@ -381,23 +382,13 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                             @endforeach
 
                         </div>
-                        <button
-                            @click="() => {
-        openDuration = !openDuration;
-        window.dispatchEvent(
-            new CustomEvent('open-bottom-sheet', {
-                detail: { id: 'customDuration' }
-            })
-        )
-    }"
-                            class="w-full p-2.5 cursor-pointer text-center font-semibold rounded-2xl border-2
-           transition-colors duration-150
-
-           text-black border-slate-900
-           hover:bg-slate-900 hover:text-white
-
-           dark:text-gray-100 dark:border-gray-600
-           dark:hover:bg-gray-100 dark:hover:text-gray-900">
+                        <button @click="() => { openDuration = !openDuration;
+                                                window.dispatchEvent(
+                                                    new CustomEvent('open-bottom-sheet', {
+                                                        detail: { id: 'customDuration' }
+                                                    })
+                                                )
+                                            }" class="w-full p-2.5 cursor-pointer text-center font-semibold rounded-2xl border-2 transition-colors duration-150 text-black border-slate-900 hover:bg-slate-900 hover:text-white dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-100 dark:hover:text-gray-900">
                             Durasi Custom
                         </button>
 
