@@ -161,7 +161,7 @@
     <div class="w-full mt-5">
         {{-- {{ $iphones->links() }} --}}
     </div>
-    <x-modal name="iphone-wizard" :show="true" maxWidth="4xl" minh="min-h-screen overflow-scroll">
+    <x-modal name="iphone-wizard" :show="$errors->isNotEmpty()" maxWidth="4xl" minh="min-h-screen overflow-scroll">
         <livewire:rent-iphone-wizard />
     </x-modal>
     {{-- <x-modal name="booking-create" :show="$errors->isNotEmpty()">
