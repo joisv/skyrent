@@ -331,6 +331,7 @@
                         <option value="Kartu Pelajar">Kartu Pelajar</option>
                         <option value="SIM">SIM</option>
                         <option value="Kartu Identitas Mahasiswa">Kartu Identitas Mahasiswa</option>
+                        <option value="Kartu Identitas Anak">Kartu Identitas Anak</option>
                     </select>
 
                     @error('jaminan_type')
