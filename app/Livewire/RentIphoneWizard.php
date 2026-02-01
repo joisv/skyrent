@@ -196,6 +196,10 @@ class RentIphoneWizard extends Component
 
     public function submit(): void
     {
+        if ($this->jumlah > 1) {
+            $this->selectedDuration = $this->selectedDuration * 24;
+        }
+
         $this->validate([
             'selectedIphoneId' => 'required|exists:iphones,id',
             'customer_name' => 'required|string|max:255',

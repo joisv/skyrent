@@ -2,8 +2,8 @@
     x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')" @close-modal="show = false"
     x-data="{
         price: @entangle('selectedPrice').live,
-
-        init(){
+    
+        init() {
             console.log(this.price)
         }
     }">
@@ -400,7 +400,7 @@
                         <div class="space-y-3 text-sm text-gray-700 w-full">
                             <div class="flex justify-between gap-6  w-full">
                                 <span class="text-gray-500">
-                                    Waktu Pengambilan (Tanggal & Jam)
+                                   Tanggal Booking
                                 </span>
                                 <span class="font-medium text-end">
                                     {{ $requested_booking_date }} {{ $requested_time }}
@@ -408,18 +408,31 @@
                             </div>
 
                             <div class="flex justify-between gap-6">
-                                <span class="text-gray-500">
-                                    Estimasi Waktu Pengembalian
-                                </span>
-                                <span class="font-medium text-end">
-                                    {{ $end_booking_date }} {{ $end_time }}
-                                </span>
-                            </div>
-
-                            <div class="flex justify-between gap-6">
                                 <span class="text-gray-500">Durasi</span>
                                 <span class="font-medium text-end">
-                                    {{ $selectedDuration }} jam
+                                    @if ($jumlah > 1)
+                                        @switch($unit)
+                                            @case('Jam')
+                                                {{ $jumlah }} jam
+                                            @break
+
+                                            @case('Hari')
+                                                {{ $jumlah }} hari ({{ $jumlah * 24 }} jam)
+                                            @break
+
+                                            @case('Minggu')
+                                                {{ $jumlah }} minggu ({{ $jumlah * 24 * 7 }} jam)
+                                            @break
+
+                                            @case('Bulan')
+                                                {{ $jumlah }} bulan ({{ $jumlah * 24 * 30 }} jam)
+                                            @break
+
+                                            @default
+                                        @endswitch
+                                    @else
+                                        {{ $selectedDuration }} jam
+                                    @endif
                                 </span>
                             </div>
                         </div>
@@ -506,7 +519,7 @@
                 <span class="error">Pilih durasi sewa😊</span>
             @enderror
 
-            <div class="space-y-3 relative" x-data="{ openDuration: false }" >
+            <div class="space-y-3 relative" x-data="{ openDuration: false }">
 
                 <div class="flex space-x-2 w-full" x-data="{
                     activeTab: @entangle('selectedDuration').live,
