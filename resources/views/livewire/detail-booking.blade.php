@@ -225,5 +225,53 @@
         @endforelse
     </div>
 
+    <!-- Duration options -->
+    <div class="space-y-3">
+        <p class="text-sm font-semibold">Pilih Durasi</p>
 
+        <div class="grid grid-cols-3 gap-2">
+            @if ($durations && $durations->count())
+                @foreach ($durations as $duration)
+                    <button wire:click="$set('selectedDurationId', {{ $duration->id }})"
+                        class="border rounded-lg p-3 text-center
+            {{ $selectedDurationId === $duration->id ? 'bg-black text-white' : 'hover:bg-gray-100' }}">
+                        <div class="font-semibold">{{ $duration->hours }} Jam</div>
+
+                        @if ($duration->pivot)
+                            <div class="text-xs opacity-70">
+                                Rp {{ number_format($duration->pivot->price, 0, ',', '.') }}
+                            </div>
+                        @endif
+                    </button>
+                @endforeach
+            @endif
+
+        </div>
+    </div>
+
+    <!-- Multiplier -->
+    <div class="mt-4">
+        <label class="text-sm font-medium">Jumlah (x)</label>
+        <input type="number" min="1" wire:model.live.debounce.300ms="multiplier"
+            class="w-full mt-1 rounded-lg border px-3 py-2">
+    </div>
+
+    <!-- Preview -->
+    @if ($totalHours > 0)
+        <div class="mt-4 rounded-lg border p-4 text-sm space-y-1">
+            <p>Total Jam: <strong>{{ $totalHours }}</strong></p>
+            <p>Selesai Baru: <strong>{{ $newEnd }}</strong></p>
+
+            @if (!$available)
+                <p class="text-red-600">❌ Tidak tersedia</p>
+            @endif
+        </div>
+    @endif
+
+    <!-- Action -->
+    <button wire:click="extend" class="mt-4 w-full bg-black text-white py-2 rounded-lg
+    disabled:opacity-50"
+        @disabled(!$available)>
+        Tambah Durasi
+    </button>
 </div>

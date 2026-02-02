@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -73,5 +74,55 @@ class Booking extends Model
     public function paymentProofs()
     {
         return $this->hasMany(PaymentProof::class);
+    }
+
+    public function extendHours(int $hours): void
+    {
+        $start = Carbon::parse(
+            "{$this->start_booking_date} {$this->start_time}",
+            'Asia/Jakarta'
+        );
+
+        $end = Carbon::parse(
+            "{$this->end_booking_date} {$this->end_time}",
+            'Asia/Jakarta'
+        );
+
+        // Tambah jam
+        $newEnd = $end->copy()->addHours($hours);
+
+        $this->duration += $hours;
+        $this->end_booking_date = $newEnd->toDateString();
+        $this->end_time = $newEnd->format('H:i');
+
+        $this->saveQuietly();
+    }
+
+    public function canExtend(int $hours): bool
+    {
+        $currentEnd = Carbon::parse(
+            "{$this->end_booking_date} {$this->end_time}",
+            'Asia/Jakarta'
+        );
+
+        $newEnd = $currentEnd->copy()->addHours($hours);
+
+        return !Booking::where('iphone_id', $this->iphone_id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('id', '!=', $this->id)
+            ->get()
+            ->contains(function ($booking) use ($currentEnd, $newEnd) {
+                $start = Carbon::parse(
+                    "{$booking->start_booking_date} {$booking->start_time}",
+                    'Asia/Jakarta'
+                );
+
+                $end = Carbon::parse(
+                    "{$booking->end_booking_date} {$booking->end_time}",
+                    'Asia/Jakarta'
+                );
+
+                return $currentEnd->lt($end) && $newEnd->gt($start);
+            });
     }
 }

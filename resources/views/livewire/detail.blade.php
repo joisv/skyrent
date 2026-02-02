@@ -305,7 +305,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                                         <div class="flex items-center gap-3 w-full" x-data="{ unit: $wire.entangle('unit') }">
                                             <!-- Input jumlah -->
                                             <input id="customDuration" type="number"
-                                                wire:model.live.debounce.250ms="jumlah" min="24"
+                                                wire:model.live="jumlah" min="24"
                                                 class="w-24 px-2 py-1.5 border-2 border-black rounded-xl"
                                                 placeholder="Jumlah">
 

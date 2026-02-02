@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Booking;
 use App\Models\ReturnIphone;
+use App\Models\Revenue;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -11,16 +12,116 @@ use Livewire\Component;
 
 class DetailBooking extends Component
 {
+    public Booking $booking;
+
     public $detailBookingIphones;
     public $returns;
     public $condition;
+    public $bookingId;
+    public int $hours = 1;
+    public bool $available = true;
+    public string $newEnd = '';
+    public $durations;
+    public $selectedDurationId = null;
+    public int $multiplier = 1;
+    public $totalHours;
 
     #[On('get-detail')]
     public function getDetailIphone($id)
     {
-        $this->detailBookingIphones = Booking::with(['revenue', 'iphone', 'payment', 'returns'])->findOrFail($id);
+        $this->detailBookingIphones = Booking::with([
+            'revenue',
+            'iphone.durations',
+            'payment',
+            'returns',
+        ])->findOrFail($id);
+
+        $this->booking = $this->detailBookingIphones;
+        $this->durations = $this->booking->iphone->durations
+            ->sortBy('hours')
+            ->values();
+
+        $this->bookingId = $this->detailBookingIphones->id;
+
+        $this->durations = $this->booking->iphone
+            ->durations()
+            ->orderBy('hours')
+            ->get();
         $this->returns = $this->detailBookingIphones->returns()->latest()->get();
+        $this->recalculate();
     }
+
+    public function updated($property)
+    {
+        if (in_array($property, ['selectedDurationId', 'multiplier'])) {
+            $this->recalculate();
+        }
+    }
+
+    private function recalculate()
+    {
+        if (! $this->selectedDurationId || $this->multiplier < 1) {
+            $this->resetPreview();
+            return;
+        }
+
+        $duration = $this->durations
+            ->firstWhere('id', $this->selectedDurationId);
+
+        if (! $duration) {
+            $this->resetPreview();
+            return;
+        }
+
+        $this->totalHours = $duration->hours * $this->multiplier;
+
+        $end = Carbon::parse(
+            "{$this->booking->end_booking_date} {$this->booking->end_time}",
+            'Asia/Jakarta'
+        );
+
+        $newEnd = $end->copy()->addHours($this->totalHours);
+        $this->newEnd = $newEnd->format('d M Y H:i');
+
+        $this->available = $this->booking->canExtend($this->totalHours);
+    }
+
+    private function resetPreview()
+    {
+        $this->totalHours = 0;
+        $this->newEnd = '';
+        $this->available = false;
+    }
+
+
+    public function extend()
+    {
+        if (! $this->available || $this->totalHours < 1) {
+            return;
+        }
+
+        $duration = $this->durations
+            ->firstWhere('id', $this->selectedDurationId);
+
+        if (! $duration) return;
+
+        $this->booking->extendHours($this->totalHours);
+
+        Revenue::create([
+            'booking_id' => $this->booking->id,
+            'amount' => $duration->price * $this->multiplier,
+            'type' => 'extend',
+            'created' => now('Asia/Jakarta'),
+        ]);
+
+        // Reset UI
+        $this->selectedDurationId = null;
+        $this->multiplier = 1;
+        $this->resetPreview();
+
+        $this->dispatch('extend-success');
+    }
+
 
     public function save()
     {
@@ -43,8 +144,10 @@ class DetailBooking extends Component
         $this->reset('condition');
         $this->updateStatusBooking($this->detailBookingIphones->id, 'returned');
         $this->dispatch('close-modal');
-
     }
+
+
+
 
     public function updateStatusBooking($bookingId, $status)
     {
@@ -79,10 +182,8 @@ class DetailBooking extends Component
     }
 
     #[On('status-updated')]
-    public function refreshStatus()
-    {
-    }
-    
+    public function refreshStatus() {}
+
     public function render()
     {
         return view('livewire.detail-booking');

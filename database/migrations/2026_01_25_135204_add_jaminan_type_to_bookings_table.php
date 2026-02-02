@@ -18,6 +18,7 @@ return new class extends Migration
                 'Kartu Pelajar',
                 'SIM',
                 'Kartu Identitas Mahasiswa',
+                'Kartu Identitas Anak'
             ])->nullable();
         });
     }

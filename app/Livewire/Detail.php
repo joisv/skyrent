@@ -55,7 +55,6 @@ class Detail extends Component
     public $totalHarga = 0;
     public int $basePricePerHour = 5000;
 
-
     public function next()
     {
         $this->validate([
@@ -90,6 +89,7 @@ class Detail extends Component
 
     public function updatedJumlah()
     {
+        // dd($this->jumlah);
         $this->updateDurationAndPrice();
     }
 
@@ -151,6 +151,8 @@ class Detail extends Component
     #[On('updated:selectedHour')]
     #[On('updated:selectedMinute')]
     #[On('updated:selectedDuration')]
+    #[On('updated:jumlah')]
+    #[On('updated:unit')]
     public function updated()
     {
         $this->checkAvailability();
@@ -181,11 +183,11 @@ class Detail extends Component
 
         $this->is_available = true;
 
+        // now = 2025-09-09 18:51:59.697095 Asia/Jakarta (+07:00)
         // start = 2025-09-09 19:28:35.515 Asia/Jakarta (+07:00)
         // end = 2025-09-10 19:28:35.515 Asia/Jakarta (+07:00)
         // bookingStart =  2025-09-08 15:35:00.0 Asia/Jakarta (+07:00)
         // bookingEnd = 2025-09-09 15:35:00.0 Asia/Jakarta (+07:00)
-        // now = 2025-09-09 18:51:59.697095 Asia/Jakarta (+07:00)
 
         foreach ($bookings as $booking) {
             $bookingStart = Carbon::parse("{$booking->requested_booking_date} {$booking->requested_time}", 'Asia/Jakarta');
@@ -266,8 +268,8 @@ class Detail extends Component
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
             'customer_email' => $this->customer_email,
 
-            'requested_booking_date' => carbon()->now()->toDateString(),
-            'requested_time' => Carbon::now()->format('H:i'),
+            'requested_booking_date' => Carbon::parse($this->selectedDate)->timezone('Asia/Jakarta')->toDateString(),
+            'requested_time' => sprintf('%02d:%02d', $this->selectedHour, $this->selectedMinute),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
             'status' => 'pending',

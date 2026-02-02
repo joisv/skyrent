@@ -85,24 +85,18 @@ class RentIphoneWizard extends Component
             default => [],
         };
     }
-
+    
     public function next(): void
     {
         $this->validate();
 
         if ($this->step === 1) {
-            $this->handleStepOne(); // kalau lolos → lanjut
+            $this->handleStepOne();
         }
 
         if ($this->step < 4) {
             $this->step++;
         }
-
-        // if ($this->step === 4) {
-        //     dd('Reached step 3');
-        //     // Isi data customer untuk review
-        //     $this->submit();
-        // }
     }
 
     public function back(): void
@@ -216,8 +210,8 @@ class RentIphoneWizard extends Component
             'customer_name' => $this->customer_name,
             'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
             'customer_email' => $this->customer_email,
-            'requested_booking_date' => carbon()->now()->toDateString(),
-            'requested_time' => Carbon::now()->format('H:i'),
+            'requested_booking_date' => $this->requested_booking_date,
+            'requested_time' => $this->requested_time,
             // 'end_booking_date' => $end->toDateString(),
             // 'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
@@ -231,6 +225,7 @@ class RentIphoneWizard extends Component
             'jaminan_type' => $this->jaminan_type,
         ]);
 
+        // debug off
         $message = "Halo {$booking->customer_name},\n\n"
             . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
             . "Berikut adalah detail booking Anda:\n"
