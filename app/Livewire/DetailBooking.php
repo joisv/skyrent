@@ -26,6 +26,7 @@ class DetailBooking extends Component
     public $selectedDurationId = null;
     public int $multiplier = 1;
     public $totalHours;
+    public $sumRevenues;
 
     #[On('get-detail')]
     public function getDetailIphone($id)
@@ -41,7 +42,7 @@ class DetailBooking extends Component
         $this->durations = $this->booking->iphone->durations
             ->sortBy('hours')
             ->values();
-
+        $this->sumRevenues = $this->booking->iphone->revenues->sum('amount');
         $this->bookingId = $this->detailBookingIphones->id;
 
         $this->durations = $this->booking->iphone
@@ -52,8 +53,20 @@ class DetailBooking extends Component
         $this->recalculate();
     }
 
+    #[On('modal-durasi')]
+    public function reRender()
+    {
+        $this->durations = $this->booking->iphone->durations
+            ->sortBy('hours')
+            ->values();
+    }
+
     public function updated($property)
     {
+        $this->durations = $this->booking->iphone->durations
+            ->sortBy('hours')
+            ->values();
+
         if (in_array($property, ['selectedDurationId', 'multiplier'])) {
             $this->recalculate();
         }
@@ -120,7 +133,37 @@ class DetailBooking extends Component
         // Reset UI
         $this->selectedDurationId = null;
         $this->multiplier = 1;
+        $this->durations = $this->booking->iphone->durations
+            ->sortBy('hours')
+            ->values();
+        $this->sumRevenues = $this->booking->iphone->revenues->sum('amount');
         $this->resetPreview();
+        $this->dispatch('modal-durasi');
+        LivewireAlert::title('Berhasil menambahkandurasi!')
+            ->text('Durasi berhasil ditambahkan ke booking')
+            ->success()
+            ->toast()
+            ->position('top-end')
+            ->show();
+    }
+
+    public function changeMultiplier(string $action): void
+    {
+        $this->durations = $this->booking->iphone->durations
+            ->sortBy('hours')
+            ->values();
+
+        switch ($action) {
+            case 'increase':
+                $this->multiplier++;
+                break;
+
+            case 'decrease':
+                if ($this->multiplier > 1) {
+                    $this->multiplier--;
+                }
+                break;
+        }
     }
 
 

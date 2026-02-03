@@ -10,32 +10,35 @@
                 </p>
             </div>
 
-            <x-mary-dropdown>
-                <x-slot:trigger>
-                    <button
-                        class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold
-                    {{ $detailBookingIphones?->status === 'pending'
-                        ? 'bg-yellow-500 text-white'
-                        : ($detailBookingIphones?->status === 'confirmed'
-                            ? 'bg-green-600 text-white'
-                            : ($detailBookingIphones?->status === 'returned'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-red-600 text-white')) }}">
-                        {{ ucfirst($detailBookingIphones?->status) }}
-                    </button>
-                </x-slot:trigger>
-
-                <div class="p-1 space-y-1">
-                    @foreach (['pending', 'confirmed', 'returned', 'cancelled'] as $status)
-                        <button {{ $detailBookingIphones?->status === $status ? 'disabled' : '' }}
-                            wire:click="updateStatusBooking({{ $detailBookingIphones?->id }}, '{{ $status }}')"
-                            class="w-full px-3 py-2 text-left text-sm rounded-md
-                               hover:bg-gray-100 disabled:opacity-50">
-                            {{ ucfirst($status) }}
+            <div class="flex space-x-2">
+                <button class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500 text-white hover:bg-white hover:text-black hover:border-black border-2 ease-in duration-100" @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
+                <x-mary-dropdown>
+                    <x-slot:trigger>
+                        <button
+                            class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold
+                        {{ $detailBookingIphones?->status === 'pending'
+                            ? 'bg-yellow-500 text-white'
+                            : ($detailBookingIphones?->status === 'confirmed'
+                                ? 'bg-green-600 text-white'
+                                : ($detailBookingIphones?->status === 'returned'
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-red-600 text-white')) }}">
+                            {{ ucfirst($detailBookingIphones?->status) }}
                         </button>
-                    @endforeach
-                </div>
-            </x-mary-dropdown>
+                    </x-slot:trigger>
+    
+                    <div class="p-1 space-y-1">
+                        @foreach (['pending', 'confirmed', 'returned', 'cancelled'] as $status)
+                            <button {{ $detailBookingIphones?->status === $status ? 'disabled' : '' }}
+                                wire:click="updateStatusBooking({{ $detailBookingIphones?->id }}, '{{ $status }}')"
+                                class="w-full px-3 py-2 text-left text-sm rounded-md
+                                   hover:bg-gray-100 disabled:opacity-50">
+                                {{ ucfirst($status) }}
+                            </button>
+                        @endforeach
+                    </div>
+                </x-mary-dropdown>
+            </div>
         </div>
 
         {{-- PERANGKAT --}}
@@ -93,7 +96,7 @@
                 @if ($detailBookingIphones?->revenue)
                     <div class="hidden sm:flex sm:flex-col">
                         <p class=" font-bold text-green-600">
-                            {{-- Rp {{ number_format($detailBookingIphones->revenues()->sum('amount'), 0, ',', '.') }} --}}
+                            Rp {{ number_format($sumRevenues, 0, ',', '.') }}
                         </p>
                         <p class="text-xs text-gray-400">
                             {{ \Carbon\Carbon::parse($detailBookingIphones->revenue->created)->translatedFormat('d M Y H:i') }}
@@ -225,53 +228,83 @@
         @endforelse
     </div>
 
-    <!-- Duration options -->
-    <div class="space-y-3">
-        <p class="text-sm font-semibold">Pilih Durasi</p>
+    <x-modal name="tambah-durasi" :show="$errors->isNotEmpty()" maxWidth="sm">
+        <div class="p-3" @modal-durasi.window="show = false">
+            <!-- Duration options -->
+            <div class="space-y-3">
+                <p class="text-sm font-semibold">Pilih Durasi</p>
 
-        <div class="grid grid-cols-3 gap-2">
-            @if ($durations && $durations->count())
-                @foreach ($durations as $duration)
-                    <button wire:click="$set('selectedDurationId', {{ $duration->id }})"
-                        class="border rounded-lg p-3 text-center
-            {{ $selectedDurationId === $duration->id ? 'bg-black text-white' : 'hover:bg-gray-100' }}">
-                        <div class="font-semibold">{{ $duration->hours }} Jam</div>
+                <div class="grid grid-cols-3 gap-2">
+                    @if ($durations && $durations->count())
+                        @foreach ($durations as $duration)
+                            <button wire:click="$set('selectedDurationId', {{ $duration->id }})"
+                                class="border rounded-lg p-3 text-center {{ $selectedDurationId === $duration->id ? 'bg-black text-white' : 'hover:bg-gray-100' }}">
+                                <div class="font-semibold">{{ $duration->hours }} Jam</div>
+                                @if ($duration->pivot)
+                                    <div class="text-xs opacity-70"> Rp
+                                        {{ number_format($duration->pivot->price, 0, ',', '.') }} </div>
+                                @endif
+                            </button>
+                        @endforeach
+                    @endif
 
-                        @if ($duration->pivot)
-                            <div class="text-xs opacity-70">
-                                Rp {{ number_format($duration->pivot->price, 0, ',', '.') }}
-                            </div>
-                        @endif
+                </div>
+            </div>
+
+            <!-- Multiplier -->
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Jumlah
+                </label>
+
+                <div class="flex items-center gap-3">
+                    <!-- Decrease -->
+                    <button wire:click="changeMultiplier('decrease')" @disabled($multiplier <= 1)
+                        class="w-9 h-9 flex items-center justify-center
+                   rounded-lg border border-gray-300
+                   text-lg font-semibold
+                   transition
+                   {{ $multiplier <= 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-100 active:scale-95' }}">
+                        −
                     </button>
-                @endforeach
+
+                    <!-- Value -->
+                    <span class="min-w-[3rem] text-center text-lg font-semibold">
+                        {{ $multiplier }}
+                    </span>
+
+                    <!-- Increase -->
+                    <button wire:click="changeMultiplier('increase')"
+                        class="w-9 h-9 flex items-center justify-center
+                   rounded-lg border border-orange-500
+                   hover:bg-orange-500 hover:text-white
+                   active:scale-95 transition">
+                        +
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            @if ($totalHours > 0)
+                <div class="mt-4 rounded-lg border p-4 text-sm space-y-1">
+                    <p>Total Jam: <strong>{{ $totalHours }}</strong></p>
+                    <p>Selesai Baru: <strong>{{ $newEnd }}</strong></p>
+
+                    @if (!$available)
+                        <p class="text-red-600">❌ Tidak tersedia</p>
+                    @endif
+                </div>
             @endif
 
+            <!-- Action -->
+            <button wire:click="extend"
+                class="mt-4 w-full bg-orange-500 text-white py-2 rounded-lg
+        disabled:opacity-50"
+                @disabled(!$available)>
+                Tambah Durasi
+            </button>
+
         </div>
-    </div>
+    </x-modal>
 
-    <!-- Multiplier -->
-    <div class="mt-4">
-        <label class="text-sm font-medium">Jumlah (x)</label>
-        <input type="number" min="1" wire:model.live.debounce.300ms="multiplier"
-            class="w-full mt-1 rounded-lg border px-3 py-2">
-    </div>
-
-    <!-- Preview -->
-    @if ($totalHours > 0)
-        <div class="mt-4 rounded-lg border p-4 text-sm space-y-1">
-            <p>Total Jam: <strong>{{ $totalHours }}</strong></p>
-            <p>Selesai Baru: <strong>{{ $newEnd }}</strong></p>
-
-            @if (!$available)
-                <p class="text-red-600">❌ Tidak tersedia</p>
-            @endif
-        </div>
-    @endif
-
-    <!-- Action -->
-    <button wire:click="extend" class="mt-4 w-full bg-black text-white py-2 rounded-lg
-    disabled:opacity-50"
-        @disabled(!$available)>
-        Tambah Durasi
-    </button>
 </div>

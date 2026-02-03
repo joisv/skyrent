@@ -2,10 +2,6 @@
     x-on:display-duration-options.window="$dispatch('open-modal', 'duration-options-modal')" @close-modal="show = false"
     x-data="{
         price: @entangle('selectedPrice').live,
-    
-        init() {
-            console.log(this.price)
-        }
     }">
     @if ($errors->any())
         <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
