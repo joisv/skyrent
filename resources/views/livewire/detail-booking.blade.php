@@ -93,7 +93,7 @@
                 @if ($detailBookingIphones?->revenue)
                     <div class="hidden sm:flex sm:flex-col">
                         <p class=" font-bold text-green-600">
-                            Rp {{ number_format($detailBookingIphones->revenue->amount, 0, ',', '.') }}
+                            {{-- Rp {{ number_format($detailBookingIphones->revenues()->sum('amount'), 0, ',', '.') }} --}}
                         </p>
                         <p class="text-xs text-gray-400">
                             {{ \Carbon\Carbon::parse($detailBookingIphones->revenue->created)->translatedFormat('d M Y H:i') }}

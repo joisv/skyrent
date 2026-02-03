@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Booking;
+use App\Models\Duration;
 use App\Models\ReturnIphone;
 use App\Models\Revenue;
 use Carbon\Carbon;
@@ -100,16 +101,18 @@ class DetailBooking extends Component
             return;
         }
 
-        $duration = $this->durations
-            ->firstWhere('id', $this->selectedDurationId);
+        $duration = $this->booking
+            ->iphone
+            ->durations()
+            ->where('durations.id', $this->selectedDurationId)
+            ->first();
 
         if (! $duration) return;
 
         $this->booking->extendHours($this->totalHours);
-
         Revenue::create([
             'booking_id' => $this->booking->id,
-            'amount' => $duration->price * $this->multiplier,
+            'amount' => $duration->pivot->price * $this->multiplier,
             'type' => 'extend',
             'created' => now('Asia/Jakarta'),
         ]);
@@ -118,8 +121,6 @@ class DetailBooking extends Component
         $this->selectedDurationId = null;
         $this->multiplier = 1;
         $this->resetPreview();
-
-        $this->dispatch('extend-success');
     }
 
 

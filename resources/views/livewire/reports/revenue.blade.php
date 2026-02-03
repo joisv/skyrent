@@ -107,6 +107,10 @@
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
                                     Booking
                                 </span>
+                            @elseif($revenue->type === 'extend')
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                                    Extend
+                                </span>
                             @elseif($revenue->type === 'penalty')
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
                                     Denda

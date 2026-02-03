@@ -39,12 +39,25 @@ class Iphones extends Model
         );
     }
 
+    // public function durations()
+    // {
+    //     return $this->belongsToMany(Duration::class)
+    //         ->withPivot('price')
+    //         ->withTimestamps();
+    // }
+
     public function durations()
     {
-        return $this->belongsToMany(Duration::class)
+        return $this->belongsToMany(
+            Duration::class,
+            'duration_iphones', // pivot table
+            'iphones_id',       // foreign key iphone
+            'duration_id'       // foreign key duration
+        )
             ->withPivot('price')
             ->withTimestamps();
     }
+
 
     public function gallery()
     {
