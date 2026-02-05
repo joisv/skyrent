@@ -2,7 +2,7 @@
     <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 space-y-6">
 
         {{-- HEADER --}}
-        <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start justify-between gap-3 ">
             <div>
                 <h1 class="text-lg font-semibold text-gray-900">Detail Booking</h1>
                 <p class="text-xs text-gray-500 font-mono">
@@ -10,8 +10,10 @@
                 </p>
             </div>
 
-            <div class="flex space-x-2">
-                <button class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500 text-white hover:bg-white hover:text-black hover:border-black border-2 ease-in duration-100" @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
+            <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                <div>
+                    <button class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500 text-white hover:bg-white hover:text-black hover:border-black border-2 ease-in duration-100" @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
+                </div>
                 <x-mary-dropdown>
                     <x-slot:trigger>
                         <button

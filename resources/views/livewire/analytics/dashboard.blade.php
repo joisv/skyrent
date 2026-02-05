@@ -83,11 +83,63 @@
                         <div class="w-full lg:w-[70%]">
                             <livewire:analytics.revenue-chart />
                         </div>
-                        <div class="mt-10 md:0 w-full lg:w-[30%] bg-red-500 h-20">
+                        <div class="mt-10 md:0 w-full lg:w-[30%] h-20">
                             <div wire:loading wire:target="getRevenues">
                                 Checking availability of bookings...
                             </div>
-                            @dump($bookings)
+                            <div class="px-5 py-4">
+                                <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                                    Booking Hari Ini
+                                </h2>
+                                <p class="text-sm text-gray-500">
+                                    {{ \Carbon\Carbon::today()->translatedFormat('d F Y') }}
+                                </p>
+                            </div>
+
+                            @if (!empty($bookings))
+                                @forelse ($bookings as $booking)
+                                    <div class="px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                                        <div class="flex items-start justify-between gap-4">
+
+                                            {{-- Left --}}
+                                            <div class="space-y-1">
+                                                <p class="font-medium text-gray-800 dark:text-gray-100">
+                                                    {{ $booking->customer_name }}
+                                                </p>
+
+                                                <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                                                    <span
+                                                        class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
+                                                        {{ $booking->iphone->name ?? '-' }}
+                                                    </span>
+
+                                                    <span>• {{ $booking->total_hours }} jam</span>
+                                                </div>
+
+                                                <p class="text-xs text-gray-400">
+                                                    Kode: {{ $booking->booking_code }}
+                                                </p>
+                                            </div>
+
+                                            {{-- Right --}}
+                                            <div class="text-right shrink-0">
+                                                <p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    {{-- {{ $booking->created->format('H:i') }} --}}
+                                                </p>
+                                                <p class="text-xs text-gray-400">
+                                                    {{-- {{ $booking->created->diffForHumans() }} --}}
+                                                </p>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="px-5 py-12 text-center text-gray-500">
+                                        Tidak ada booking hari ini
+                                    </div>
+                                @endforelse
+
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -97,12 +149,12 @@
                             <livewire:analytics.bookings-chart />
                         </div>
                     </div>
-                     <div class="mt-10 md:0 w-full lg:w-[30%] bg-red-500 h-20">
-                            <div wire:loading wire:target="getRevenues">
-                                Checking availability of bookings...
-                            </div>
-                            @dump($bookings)
+                    <div class="mt-10 md:0 w-full lg:w-[30%] bg-red-500 h-20">
+                        <div wire:loading wire:target="getRevenues">
+                            Checking availability of bookings...
                         </div>
+                        @dump($bookings)
+                    </div>
                 </div>
             </div>
         </div>

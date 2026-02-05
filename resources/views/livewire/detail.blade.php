@@ -139,11 +139,14 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
 
                 {{-- Title + Price --}}
                 <div class="flex items-center justify-between">
-                    <h1
-                        class="text-3xl font-medium font-neulis
-                       text-gray-900 dark:text-gray-100">
-                        {{ $iphone->name }}
-                    </h1>
+                    <div>
+                        <h1
+                            class="text-3xl font-medium font-neulis
+                           text-gray-900 dark:text-gray-100">
+                            {{ $iphone->name }}
+                        </h1>
+                        <p class="text-lg dark:text-gray-200 font-neulis text-gray-500">{{ $iphone->serial_number }}</p>
+                    </div>
 
                     <div>
                         <div class="flex space-x-1 md:hidden">

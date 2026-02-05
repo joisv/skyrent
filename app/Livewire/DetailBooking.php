@@ -28,6 +28,11 @@ class DetailBooking extends Component
     public $totalHours;
     public $sumRevenues;
 
+    public function getRevenue()
+    {
+        $this->sumRevenues = Booking::findOrFail($this->booking->id)->revenue()->sum('amount');
+    }
+    
     #[On('get-detail')]
     public function getDetailIphone($id)
     {
@@ -42,9 +47,9 @@ class DetailBooking extends Component
         $this->durations = $this->booking->iphone->durations
             ->sortBy('hours')
             ->values();
-        $this->sumRevenues = $this->booking->iphone->revenues->sum('amount');
+        
         $this->bookingId = $this->detailBookingIphones->id;
-
+        $this->getRevenue();
         $this->durations = $this->booking->iphone
             ->durations()
             ->orderBy('hours')
@@ -136,7 +141,7 @@ class DetailBooking extends Component
         $this->durations = $this->booking->iphone->durations
             ->sortBy('hours')
             ->values();
-        $this->sumRevenues = $this->booking->iphone->revenues->sum('amount');
+        $this->getRevenue();
         $this->resetPreview();
         $this->dispatch('modal-durasi');
         LivewireAlert::title('Berhasil menambahkandurasi!')

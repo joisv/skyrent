@@ -37,7 +37,7 @@
 
                             {{-- optional subtitle --}}
                             <p class="text-sm mb-4 text-gray-500 dark:text-gray-400">
-                                Ready digunakan
+                                {{ $iphone->serial_number }}
                             </p>
 
                             {{-- CTA --}}
