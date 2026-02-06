@@ -146,6 +146,7 @@ class BookingPage extends Component
                 'customer_email',
                 'booking_code',
                 'status',
+                'iphone.serial_number',
                 'iphone.name'
             ], $this->search);
         }

@@ -230,7 +230,7 @@
         @endforelse
     </div>
 
-    <x-modal name="tambah-durasi" :show="$errors->isNotEmpty()" maxWidth="sm">
+    <x-modal name="tambah-durasi" :show="$errors->IsNotEmpty()" maxWidth="sm">
         <div class="p-3" @modal-durasi.window="show = false">
             <!-- Duration options -->
             <div class="space-y-3">

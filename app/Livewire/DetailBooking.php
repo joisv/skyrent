@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\Booking;
-use App\Models\Duration;
 use App\Models\ReturnIphone;
 use App\Models\Revenue;
 use Carbon\Carbon;
@@ -21,7 +20,7 @@ class DetailBooking extends Component
     public $bookingId;
     public int $hours = 1;
     public bool $available = true;
-    public string $newEnd = '';
+    public $newEnd = '';
     public $durations;
     public $selectedDurationId = null;
     public int $multiplier = 1;
@@ -32,7 +31,7 @@ class DetailBooking extends Component
     {
         $this->sumRevenues = Booking::findOrFail($this->booking->id)->revenue()->sum('amount');
     }
-    
+
     #[On('get-detail')]
     public function getDetailIphone($id)
     {
@@ -47,7 +46,7 @@ class DetailBooking extends Component
         $this->durations = $this->booking->iphone->durations
             ->sortBy('hours')
             ->values();
-        
+
         $this->bookingId = $this->detailBookingIphones->id;
         $this->getRevenue();
         $this->durations = $this->booking->iphone
@@ -104,6 +103,38 @@ class DetailBooking extends Component
 
         $this->available = $this->booking->canExtend($this->totalHours);
     }
+
+    public function recalculatePreview()
+    {
+        if (! $this->selectedDurationId) {
+            $this->totalHours = 0;
+            $this->newEnd = null;
+            return;
+        }
+
+        $duration = $this->booking
+            ->iphone
+            ->durations()
+            ->where('durations.id', $this->selectedDurationId)
+            ->first();
+
+        if (! $duration) {
+            $this->totalHours = 0;
+            $this->newEnd = null;
+            return;
+        }
+
+        // Hitung total jam
+        $this->totalHours = $duration->hours * $this->multiplier;
+
+        $endDateTime = $this->booking->end_booking_date . ' ' . $this->booking->end_time;
+
+        // Hitung waktu selesai baru
+        $this->newEnd = \Carbon\Carbon::parse($endDateTime)
+            ->addHours($this->totalHours)
+            ->format('d M Y H:i');
+    }
+
 
     private function resetPreview()
     {
@@ -169,6 +200,7 @@ class DetailBooking extends Component
                 }
                 break;
         }
+        $this->recalculatePreview();
     }
 
 

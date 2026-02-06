@@ -1,5 +1,5 @@
 <div x-data="">
-    <x-tables.table name="Series" count="{{ $iphones->count() }} Series">
+    <x-tables.table name="Daftar iPhone" count="{{ $iphones->count() }} iPhone">
         <x-slot name="secondBtn" >
             <button class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white" wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
                 <span>Bulk delete</span>
@@ -43,12 +43,14 @@
                     wire:model.live="selectedAll">
                     {{-- <input type="hidden" wire:model.live="firstId" value="{{ $serieses[0]->id }}"> --}}
             </x-tables.th>
-            <x-tables.th>Name</x-tables.th>
+            <x-tables.th>nomor</x-tables.th>
+            <x-tables.th>Nama</x-tables.th>
             <x-tables.th>Serial Number</x-tables.th>
-            <x-tables.th>Created</x-tables.th>
-            <x-tables.th>Updated</x-tables.th>
+            <x-tables.th>Dibuat</x-tables.th>
+            <x-tables.th>Dirubah</x-tables.th>
             <x-tables.th>Action</x-tables.th>
         </x-slot>
+        @php $no = 1; @endphp
         <x-slot name="tbody">
             @foreach ($iphones as $index => $iphone)
                 <tr>
@@ -56,6 +58,9 @@
                         <input id="default-{{ $index }}" type="checkbox"
                             class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                             wire:model.live="mySelected" value="{{ $iphone->id }}">
+                    </x-tables.td>
+                    <x-tables.td>
+                        {{ $no++ }}
                     </x-tables.td>
                     <x-tables.td>
                         {{ $iphone->name }}
