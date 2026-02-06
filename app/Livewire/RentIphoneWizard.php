@@ -226,79 +226,79 @@ class RentIphoneWizard extends Component
         ]);
 
         // debug off
-        // $message = "Halo {$booking->customer_name},\n\n"
-        //     . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
-        //     . "Berikut adalah detail booking Anda:\n"
-        //     . "--------------------------------------\n"
-        //     . "Kode Booking : *{$booking->booking_code}*\n"
-        //     . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
-        //     . "Tanggal      : {$booking->requested_booking_date}\n"
-        //     . "Waktu        : {$booking->requested_time}\n"
-        //     . "Durasi       : {$booking->duration} jam\n"
-        //     . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
-        //     . "--------------------------------------\n\n"
-        //     . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
-        //     . "Apabila pembayaran belum kami terima hingga batas waktu tersebut, "
-        //     . "maka booking akan *dibatalkan secara otomatis*.\n\n"
-        //     . "Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini "
-        //     . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
-        //     . "Untuk memeriksa status booking, silakan kunjungi:\n"
-        //     . url('/booking-status') . "\n\n"
-        //     . "Terima kasih atas kerja samanya.\n"
-        //     . "SkyRental";
+        $message = "Halo {$booking->customer_name},\n\n"
+            . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
+            . "Berikut adalah detail booking Anda:\n"
+            . "--------------------------------------\n"
+            . "Kode Booking : *{$booking->booking_code}*\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            . "Tanggal      : {$booking->requested_booking_date}\n"
+            . "Waktu        : {$booking->requested_time}\n"
+            . "Durasi       : {$booking->duration} jam\n"
+            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
+            . "--------------------------------------\n\n"
+            . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
+            . "Apabila pembayaran belum kami terima hingga batas waktu tersebut, "
+            . "maka booking akan *dibatalkan secara otomatis*.\n\n"
+            . "Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini "
+            . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
+            . "Untuk memeriksa status booking, silakan kunjungi:\n"
+            . url('/booking-status') . "\n\n"
+            . "Terima kasih atas kerja samanya.\n"
+            . "SkyRental";
 
-        // $adminMessage = "<b>Booking Baru Diterima</b>\n\n"
-        //     . "<b>Nama</b> : {$booking->customer_name}\n"
-        //     . "<b>HP</b>   : {$booking->customer_phone}\n"
-        //     . "<b>Email</b>: {$booking->customer_email}\n\n"
-        //     . "<b>Kode Booking</b>: {$booking->booking_code}\n"
-        //     . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
-        //     . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
-        //     . "<b>Waktu</b>       : {$booking->requested_time}\n"
-        //     . "<b>Durasi</b>      : {$booking->duration} jam\n"
-        //     . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
-        //     . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
+        $adminMessage = "<b>Booking Baru Diterima</b>\n\n"
+            . "<b>Nama</b> : {$booking->customer_name}\n"
+            . "<b>HP</b>   : {$booking->customer_phone}\n"
+            . "<b>Email</b>: {$booking->customer_email}\n\n"
+            . "<b>Kode Booking</b>: {$booking->booking_code}\n"
+            . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
+            . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
+            . "<b>Waktu</b>       : {$booking->requested_time}\n"
+            . "<b>Durasi</b>      : {$booking->duration} jam\n"
+            . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
+            . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
 
-        // $groupMessage = "BOOKING BARU MASUK\n\n"
-        //     . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
-        //     . "Nama         : {$booking->customer_name}\n"
-        //     . "No. HP       : {$booking->customer_phone}\n"
-        //     . "Alamat       : {$booking->address}\n"
-        //     . "Jaminan       : {$booking->jaminan_type}\n"
-        //     . "Email        : {$booking->customer_email}\n\n"
-        //     . "Kode Booking : {$booking->booking_code}\n"
-        //     . "Tanggal      : {$booking->requested_booking_date}\n"
-        //     . "Waktu        : {$booking->requested_time}\n"
-        //     . "Durasi       : {$booking->duration} jam\n"
-        //     . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
-        //     . "Status       : {$booking->status} \n"
-        //     . "Admin Panel:\n"
-        //     . url('/admin/bookings/');
+        $groupMessage = "BOOKING BARU MASUK\n\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            . "Nama         : {$booking->customer_name}\n"
+            . "No. HP       : {$booking->customer_phone}\n"
+            . "Alamat       : {$booking->address}\n"
+            . "Jaminan       : {$booking->jaminan_type}\n"
+            . "Email        : {$booking->customer_email}\n\n"
+            . "Kode Booking : {$booking->booking_code}\n"
+            . "Tanggal      : {$booking->requested_booking_date}\n"
+            . "Waktu        : {$booking->requested_time}\n"
+            . "Durasi       : {$booking->duration} jam\n"
+            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
+            . "Status       : {$booking->status} \n"
+            . "Admin Panel:\n"
+            . url('/admin/bookings/');
 
-        // $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
-        // $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
+        $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
+        $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
 
-        // Http::withHeaders([
-        //     'Authorization' => env('FONNTE_TOKEN'),
-        // ])->post('https://api.fonnte.com/send', [
-        //     'target'  => env('FONNTE_GROUP_ID'),
-        //     'message' => $groupMessage,
-        // ]);
+        Http::withHeaders([
+            'Authorization' => env('FONNTE_TOKEN'),
+        ])->post('https://api.fonnte.com/send', [
+            'target'  => env('FONNTE_GROUP_ID'),
+            'message' => $groupMessage,
+        ]);
 
-        // if ($this->sendWhatsapp) {
-        //     Http::withHeaders([
-        //         'Authorization' => env('FONNTE_TOKEN'),
-        //     ])->post('https://api.fonnte.com/send', [
-        //         'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
-        //         'message' => $message,
-        //     ]);
+        if ($this->sendWhatsapp) {
+            Http::withHeaders([
+                'Authorization' => env('FONNTE_TOKEN'),
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+                'message' => $message,
+            ]);
 
-        //     Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
-        //         'chat_id'    => $chatId,
-        //         'text'       => $adminMessage,
-        //         'parse_mode' => 'HTML',
-        //     ]);
-        // }
+            Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+                'chat_id'    => $chatId,
+                'text'       => $adminMessage,
+                'parse_mode' => 'HTML',
+            ]);
+        }
 
 
         // Reset
