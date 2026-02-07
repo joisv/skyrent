@@ -225,7 +225,7 @@
                                     <h3 class="text-lg font-medium text-gray-900">
                                         iPhone {{ $booking->iphone->name }}
                                     </h3>
-                                    <h3 class="text-base font-medium text-gray-900"> {{ $iphone->serial_number }}</h3>
+                                    <h3 class="text-base font-medium text-gray-900"> {{ $booking->iphone->serial_number }}</h3>
                                     <p class="text-sm text-gray-500">
                                         Pengembalian:
                                         <span class="font-semibold text-gray-700">

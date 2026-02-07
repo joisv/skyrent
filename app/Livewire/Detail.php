@@ -255,7 +255,7 @@ class Detail extends Component
             'address' => $this->pickup_type === 'delivery'
                 ? 'required|string|min:10|max:255'
                 : 'nullable|string|max:255',
-            'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa',
+            'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa, Kartu Identitas Anak',
             'terms_condition' => 'accepted'
         ], [
             'customer_phone.regex' => 'Format nomor tidak boleh diawali 0 atau 62.',
