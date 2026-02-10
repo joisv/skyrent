@@ -36,9 +36,9 @@
                             </h3>
 
                             {{-- optional subtitle --}}
-                            <p class="text-sm mb-4 text-gray-500 dark:text-gray-400">
+                            {{-- <p class="text-sm mb-4 text-gray-500 dark:text-gray-400">
                                 {{ $iphone->serial_number }}
-                            </p>
+                            </p> --}}
 
                             {{-- CTA --}}
                             <a href="{{ route('detail', $iphone->slug) }}" wire:navigate
