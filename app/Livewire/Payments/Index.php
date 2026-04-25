@@ -6,6 +6,7 @@ use App\Models\Payment;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Illuminate\Support\Facades\Http;
 
 class Index extends Component
 {
@@ -97,7 +98,7 @@ class Index extends Component
             $this->selectedAll = false;
         }
     }
-    
+
     public function getData()
     {
         $query = Payment::query();
@@ -115,7 +116,7 @@ class Index extends Component
         return $query;
     }
 
-        public function updatedSelectedAll($val)
+    public function updatedSelectedAll($val)
     {
         $val ? $this->mySelected = $this->getData()->limit($this->paginate)->pluck('id') : $this->mySelected = [];
     }
@@ -134,10 +135,10 @@ class Index extends Component
         $this->mySelected = [];
         $this->selectedAll = false;
     }
-    
+
     #[On('refresh-payment')]
     public function reRender() {}
-    
+
     public function render()
     {
         return view('livewire.payments.index', [

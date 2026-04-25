@@ -254,7 +254,7 @@
 
                     <div x-data="{
                         countryCode: @entangle('countryCode'),
-                        customerPhone: @entangle('customer_phone'),
+                        customerPhone: @entangle('customer_phone').live,
                         countries: [
                             { code: '+62', name: 'Indonesia', flag: 'ID' },
                             { code: '+60', name: 'Malaysia', flag: 'MY' },
@@ -396,7 +396,7 @@
                         <div class="space-y-3 text-sm text-gray-700 w-full">
                             <div class="flex justify-between gap-6  w-full">
                                 <span class="text-gray-500">
-                                   Tanggal Booking
+                                    Tanggal Booking
                                 </span>
                                 <span class="font-medium text-end">
                                     {{ $requested_booking_date }} {{ $requested_time }}
@@ -507,6 +507,8 @@
                         :class="{ 'bg-black text-white ': activeTab === {{ $item['hours'] }} }"
                         class="p-3 font-semibold text-base text-center rounded-xl border-2 border-slate-300 cursor-pointer w-full hover:shadow-xl hover:scale-105 transition">
                         {{ $item['hours'] }} jam
+                        <div class="text-xs opacity-70"> Rp
+                            {{ number_format($item['price'], 0, ',', '.') }} </div>
                     </div>
                 @endforeach
             </div>

@@ -82,11 +82,10 @@
                 <x-tables.th>Customer</x-tables.th>
                 <x-tables.th>WA</x-tables.th>
                 <x-tables.th>iPhone</x-tables.th>
-                <x-tables.th>Start Date</x-tables.th>
-                <x-tables.th>End Date</x-tables.th>
                 <x-tables.th>Duration</x-tables.th>
                 <x-tables.th>Updated</x-tables.th>
                 <x-tables.th>Created</x-tables.th>
+                <x-tables.th>Edit</x-tables.th>
 
             </x-slot>
             <x-slot name="tbody">
@@ -108,7 +107,8 @@
                                     Booking
                                 </span>
                             @elseif($revenue->type === 'extend')
-                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                                <span
+                                    class="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
                                     Extend
                                 </span>
                             @elseif($revenue->type === 'penalty')
@@ -133,15 +133,6 @@
                         <x-tables.td>
                             {{ $revenue->booking->iphone->name ?? '-' }}
                         </x-tables.td>
-
-                        <x-tables.td>
-                            {{ \Carbon\Carbon::parse($revenue->booking->start_booking_date)->format('d M Y') }}
-                        </x-tables.td>
-
-                        <x-tables.td>
-                            {{ \Carbon\Carbon::parse($revenue->booking->end_booking_date)->format('d M Y') }}
-                        </x-tables.td>
-
                         <x-tables.td>
                             {{ $revenue->booking->duration ?? '-' }} Jam
                         </x-tables.td>
@@ -152,6 +143,14 @@
                         <x-tables.td>
                             {{ \Carbon\Carbon::parse($revenue->created)->format('d M Y H:i') }}
                         </x-tables.td>
+                        <x-tables.td>
+                            <x-primary-button type="button"
+                                @click="() => {  
+                                    $dispatch('get-detail', { id : {{ $revenue->id }} })
+                                    $dispatch('open-modal', 'detail-revenue') }">edit</x-primary-button>
+                            <x-danger-button type="button"
+                                wire:click="destroyAlert({{ $revenue->id }}, 'delete')">delete</x-danger-button>
+                        </x-tables.td>
 
                     </tr>
                 @endforeach
@@ -159,5 +158,137 @@
             </x-slot>
         </x-tables.table>
     </div>
+    <x-modal name="detail-revenue" :show="$errors->isNotEmpty()">
+        <div @close-modal.window=" show = false ">
+            <div maxWidth="sm" class="p-5">
 
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800">
+                        Detail Revenue
+                    </h2>
+                    <button class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+
+                <!-- Content -->
+                <div class="space-y-4">
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Booking ID</span>
+
+                        @if (!$singleRevenue || !$singleRevenue->booking)
+                            <div
+                                class="w-32 h-4 rounded 
+                    bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 
+                    animate-pulse">
+                            </div>
+                        @else
+                            <span class=" text-gray-800 font-neulis">
+                                {{ $singleRevenue->booking->booking_code }}
+                            </span>
+                        @endif
+                    </div>
+
+                    {{-- amount --}}
+                    <div x-data="{
+                        raw: @entangle('amount').live,
+                    
+                        formatRupiah(value) {
+                            if (!value) return 'Rp0';
+                            return 'Rp' + new Intl.NumberFormat('id-ID').format(value);
+                        },
+                    
+                        parseNumber(value) {
+                            return value.replace(/[^0-9]/g, '');
+                        }
+                    }" class="flex justify-between items-center">
+                        <span class="text-gray-500">Amount</span>
+
+                        <div class="flex justify-end">
+                            @if (!$singleRevenue)
+                                <!-- Skeleton input -->
+                                <div
+                                    class="w-32 h-5 rounded 
+                    bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 
+                    animate-pulse">
+                                </div>
+                            @else
+                                <!-- Input asli -->
+                                <input type="text" :value="formatRupiah(raw)"
+                                    @input="raw = parseNumber($event.target.value)" @focus="$event.target.select()"
+                                    class="text-right font-semibold text-orange-500 bg-transparent border-none outline-none focus:ring-0 p-0 w-32" />
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Type</span>
+
+                        @if (!$singleRevenue)
+                            <!-- Skeleton badge -->
+                            <div
+                                class="w-20 h-6 rounded-full 
+                    bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 
+                    animate-pulse">
+                            </div>
+                        @else
+                            @if ($singleRevenue->type === 'booking')
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                    Booking
+                                </span>
+                            @elseif($singleRevenue->type === 'extend')
+                                <span
+                                    class="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                                    Extend
+                                </span>
+                            @elseif($singleRevenue->type === 'penalty')
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                    Denda
+                                </span>
+                            @else
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                                    -
+                                </span>
+                            @endif
+                        @endif
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Tanggal</span>
+
+                        @if (!$created)
+                            <!-- Skeleton tanggal -->
+                            <div
+                                class="w-40 h-4 rounded 
+                    bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 
+                    animate-pulse">
+                            </div>
+                        @else
+                            <!-- Data asli -->
+                            <span class="text-gray-800">
+                                {{ \Carbon\Carbon::parse($created)->format('d M Y H:i') }}
+                            </span>
+                        @endif
+                    </div>
+
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t my-5"></div>
+
+                <!-- Footer -->
+                <div class="flex justify-end space-x-2">
+                    <button class="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-900 transition"
+                        wire:click="editRev" wire:loading.attr="disabled">
+                        simpan
+                    </button>
+                    <button class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition"
+                        @click=" show = false">
+                        Tutup
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </x-modal>
 </div>

@@ -3,7 +3,9 @@
 namespace App\Livewire\Reports;
 
 use App\Models\Revenue as ModelsRevenue;
+use Livewire\Attributes\On;
 use Livewire\Component;
+use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 
 class Revenue extends Component
 {
@@ -21,6 +23,11 @@ class Revenue extends Component
     public $revenueLastMonth;
     public $revenuePenalty;
     public $revenueThisMonthPercentage;
+
+    // getrevenue
+    public $singleRevenue;
+    public $amount = 0;
+    public $created;
 
     public function mount()
     {
@@ -43,7 +50,7 @@ class Revenue extends Component
 
         $this->revenuePenalty = ModelsRevenue::where('type', 'penalty')->sum('amount');
 
-        
+
         // Persentase Kenaikan/Penurunan Bulan Ini vs Bulan Lalu
         if ($this->revenueLastMonth > 0) {
             $growth = (($this->revenueThisMonth - $this->revenueLastMonth) / $this->revenueLastMonth) * 100;
@@ -54,18 +61,33 @@ class Revenue extends Component
     }
 
 
+    public function editRev()
+    {
+        $amount = (int) preg_replace('/[^0-9]/', '', $this->amount);
+
+        $this->singleRevenue->update([
+            'amount' => $amount
+        ]);
+        $this->dispatch('close-modal');
+        LivewireAlert::title('Success!')
+            ->text('Berhasil merubah pendapatan')
+            ->success()
+            ->toast()
+            ->position('top-end')
+            ->show();
+    }
+
     public function getData()
     {
         $query = ModelsRevenue::query()
-            ->with(['booking.iphone']); // Eager load relasi booking dan iphone
+            ->with(['booking.iphone']);
 
         if ($this->search) {
-            // Sesuaikan dengan kolom dan relasi yang kamu ingin cari
             $query->search([
                 'amount',
-                'booking.name',          // Misal: nama pemesan
-                'booking.description',   // Misal: keterangan booking
-                'booking.iphone.model',  // Jika ingin cari berdasarkan model iPhone
+                'booking.name',          // nama pemesan
+                'booking.description',   //keterangan booking
+                'booking.iphone.model',  //ingin cari berdasarkan model iPhone
                 'updated_at'
             ], $this->search);
         }
@@ -77,6 +99,93 @@ class Revenue extends Component
         return $query;
     }
 
+    #[On('get-detail')]
+    public function getDetailRevenue($id)
+    {
+        $this->singleRevenue = ModelsRevenue::where('id', $id)->with('booking')->first();
+        $this->amount = $this->singleRevenue->amount;
+        $this->created = $this->singleRevenue->created;
+    }
+
+    public function destroy()
+    {
+        if (auth()->user()->can('delete')) {
+            if ($this->mySelected) {
+                try {
+                    //code...
+                    // dd('masuk ke try');
+                    ModelsRevenue::whereIn('id', $this->mySelected)->delete();
+                    $this->mySelected = [];
+                    $this->selectedAll = false;
+                    LivewireAlert::title('Data berhasil dihapus')
+                        ->position('top-end')
+                        ->text('bulk delete data berhasil')
+                        ->timer(5000)
+                        ->toast()
+                        ->success()
+                        ->show();
+                } catch (\Throwable $th) {
+                    LivewireAlert::title('iPhone tidak ditemukan 1')
+                        ->position('top-end')
+                        ->text('tidak dapat menghapus data')
+                        ->timer(5000)
+                        ->toast()
+                        ->error()
+                        ->show();
+                }
+            } else {
+                LivewireAlert::title('iPhone tidak ditemukan 2')
+                    ->position('top-end')
+                    ->text('tidak dapat menghapus data')
+                    ->timer(5000)
+                    ->toast()
+                    ->error()
+                    ->show();
+            }
+        } else {
+            LivewireAlert::title('kamu tidak memiliki izin')
+                ->position('top-end')
+                ->text('tidak dapat menghapus data')
+                ->timer(5000)
+                ->toast()
+                ->error()
+                ->show();
+            $this->mySelected = [];
+            $this->selectedAll = false;
+        }
+    }
+
+    public function delete($data)
+    {
+        if (auth()->user()->can('delete')) {
+            $this->mySelected[] = $data['data'];
+            $this->destroy('deleted successfully');
+        } else {
+            LivewireAlert::title('kamu tidak memiliki izin')
+                ->position('top-end')
+                ->text('tidak dapat menghapus data')
+                ->timer(5000)
+                ->error()
+                ->show();
+            $this->mySelected = [];
+            $this->selectedAll = false;
+        }
+    }
+
+    public function destroyAlert($value = '', $onConfirm = 'destroy')
+    {
+
+        LivewireAlert::title('Delete this posts ?')
+            ->warning()
+            ->toast()
+            ->position('top-end')
+            ->withConfirmButton('Delete')
+            ->confirmButtonColor('green')
+            ->cancelButtonColor('red')
+            ->withCancelButton('Cancel')
+            ->onConfirm($onConfirm, ['data' => $value])
+            ->show();
+    }
 
 
     public function render()

@@ -13,7 +13,30 @@ class BookingObserver
      */
     public function created(Booking $booking): void
     {
-        //
+        if (!$booking->start_booking_date && $booking->requested_booking_date) {
+            if ($booking->status == 'confirmed') {
+                $start = Carbon::parse(
+                    $booking->requested_booking_date . ' ' . $booking->requested_time
+                );
+                $end = $start->copy()->addHours((int) $booking->duration);
+
+                $booking->start_booking_date = $start->toDateString();
+                $booking->start_time = $start->format('H:i');
+                $booking->end_booking_date = $end->toDateString();
+                $booking->end_time = $end->format('H:i');
+
+                $booking->saveQuietly();
+            }
+            if (!$booking->revenue && $booking->status !== 'cancelled') {
+
+                Revenue::create([
+                    'booking_id' => $booking->id,
+                    'amount' => $booking->price,
+                    'type' =>  'booking',
+                    'created' => now('Asia/Jakarta'),
+                ]);
+            }
+        }
     }
 
     /**
@@ -35,7 +58,7 @@ class BookingObserver
         }
 
         if (!$booking->revenue && $booking->status !== 'cancelled') {
-            
+
             Revenue::create([
                 'booking_id' => $booking->id,
                 'amount' => $booking->price,

@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Illuminate\Support\Facades\Http;
 
 class DetailBooking extends Component
 {
@@ -159,11 +160,56 @@ class DetailBooking extends Component
         if (! $duration) return;
 
         $this->booking->extendHours($this->totalHours);
+        $this->booking->update([
+            'reminder_sent' => false,
+        ]);
         Revenue::create([
             'booking_id' => $this->booking->id,
             'amount' => $duration->pivot->price * $this->multiplier,
             'type' => 'extend',
             'created' => now('Asia/Jakarta'),
+        ]);
+
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatId = env('TELEGRAM_CHAT_ID');
+
+        // booking message
+        $successExtendMessage = "Halo {$this->booking->customer_name},\n\n"
+            . "Penambahan durasi sewa Anda di *SkyRental* telah *berhasil dikonfirmasi*.\n\n"
+            . "Berikut detail terbaru booking Anda:\n"
+            . "--------------------------------------\n"
+            . "Kode Booking : *{$this->booking->booking_code}*\n"
+            . "Perangkat    : {$this->booking->iphone->name} {$this->booking->iphone->serial_number}\n"
+            . "Tambah Waktu : {$this->totalHours} jam\n"
+            . "Selesai  : {$this->newEnd} \n"
+            . "--------------------------------------\n\n"
+            . "Penambahan waktu telah kami konfirmasi.\n"
+            . "Silakan menggunakan perangkat sesuai durasi terbaru.\n\n"
+            . "Terima kasih atas kepercayaan Anda 🙏\n"
+            . "SkyRental";
+
+        $adminExtendSuccessMessage = "<b>Tambah Durasi Berhasil</b>\n\n"
+            . "<b>Nama</b> : {$this->booking->customer_name}\n"
+            . "<b>HP</b>   : {$this->booking->customer_phone}\n"
+            . "<b>Email</b>: {$this->booking->customer_email}\n\n"
+            . "<b>Kode Booking</b> : {$this->booking->booking_code}\n"
+            . "<b>Perangkat</b>    : {$this->booking->iphone->name} {$this->booking->iphone->serial_number}\n"
+            . "<b>Tambah Waktu</b> : {$this->totalHours} jam\n"
+            . "<b>Waktu Selesai</b>: {$this->newEnd}\n\n"
+            . "<b>Status</b>       : Berhasil\n\n"
+            . "🔗 <a href='" . url('/admin/bookings/' . $this->booking->id) . "'>Lihat detail di Admin Panel</a>";
+
+        Http::withHeaders([
+            'Authorization' => env('FONNTE_TOKEN'),
+        ])->post('https://api.fonnte.com/send', [
+            'target' => $this->formatPhoneNumber($this->booking->customer_phone), //formater
+            'message' => $successExtendMessage,
+        ]);
+
+        Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+            'chat_id'    => $chatId,
+            'text'       => $adminExtendSuccessMessage,
+            'parse_mode' => 'HTML',
         ]);
 
         // Reset UI
@@ -264,6 +310,24 @@ class DetailBooking extends Component
 
     #[On('status-updated')]
     public function refreshStatus() {}
+
+    function formatPhoneNumber($phone)
+    {
+        // hapus semua karakter non-digit
+        $digits = preg_replace('/\D/', '', $phone);
+
+        // kalau nomor sudah diawali 62 -> biarkan
+        if (substr($digits, 0, 2) === '62') {
+            return $digits;
+        }
+
+        // kalau diawali 0 -> ubah ke 62
+        if (substr($digits, 0, 1) === '0') {
+            return '62' . substr($digits, 1);
+        }
+
+        return $digits;
+    }
 
     public function render()
     {

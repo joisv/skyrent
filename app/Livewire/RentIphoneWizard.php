@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\Payment;
-use App\Models\Revenue;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -52,6 +51,30 @@ class RentIphoneWizard extends Component
     public $iphone_name;
     public $serial_number;
 
+    // check whatsapp number
+    // public function updating($property, $value)
+    // {
+    //     $result = $this->checkNumberWhatsapp($this->formatPhoneNumber($value, '0'));
+    //     dd($result);
+    // }
+
+    // public function checkNumberWhatsapp($number)
+    // {
+    //     $response = Http::withHeaders([
+    //         'Authorization' => env('FONNTE_TOKEN'),
+    //     ])->post(
+    //         'https://api.fonnte.com/validate',
+    //         [
+    //             'target' => $number,
+    //             'countryCode' => '62',
+    //         ],
+    //     );
+
+    //     // Ambil response
+    //     $data = $response->body();
+    //     return $data;
+    // }
+
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
     {
@@ -75,7 +98,7 @@ class RentIphoneWizard extends Component
                 'customer_phone' => 'required|string|max:15',
                 'customer_email' => 'nullable|email|max:255',
                 'address' => 'required|string|max:255',
-                'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa, Kartu Identitas Anak',
+                'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa,Kartu Identitas Anak',
 
             ],
             3 => [
@@ -85,7 +108,7 @@ class RentIphoneWizard extends Component
             default => [],
         };
     }
-    
+
     public function next(): void
     {
         $this->validate();
@@ -216,7 +239,7 @@ class RentIphoneWizard extends Component
             // 'end_time' => $end->format('H:i'),
             'duration' => $this->selectedDuration,
             'price' => $this->selectedPrice,
-            'status' => 'pending',
+            'status' => 'confirmed',
             'created' => Carbon::now('Asia/Jakarta'),
             'booking_code' => Booking::generateBookingCode(),
             'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
@@ -275,8 +298,8 @@ class RentIphoneWizard extends Component
             . "Admin Panel:\n"
             . url('/admin/bookings/');
 
-        $token = env('TELEGRAM_BOT_TOKEN'); // simpan token di .env
-        $chatId = env('TELEGRAM_CHAT_ID'); // chat id kamu
+        $token = env('TELEGRAM_BOT_TOKEN');
+        $chatId = env('TELEGRAM_CHAT_ID');
 
         Http::withHeaders([
             'Authorization' => env('FONNTE_TOKEN'),
@@ -289,7 +312,7 @@ class RentIphoneWizard extends Component
             Http::withHeaders([
                 'Authorization' => env('FONNTE_TOKEN'),
             ])->post('https://api.fonnte.com/send', [
-                'target' => $this->formatPhoneNumber($booking->customer_phone), // hapus tanda "-" biar format sesuai
+                'target' => $this->formatPhoneNumber($booking->customer_phone), //formater
                 'message' => $message,
             ]);
 
@@ -362,22 +385,25 @@ class RentIphoneWizard extends Component
         $this->requested_time = $now->format('H:i');
     }
 
-    function formatPhoneNumber($phone)
+    function formatPhoneNumber($phone, $mode = '62')
     {
         // hapus semua karakter non-digit
         $digits = preg_replace('/\D/', '', $phone);
 
-        // kalau nomor sudah diawali 62 -> biarkan
+        // normalisasi ke format 62
         if (substr($digits, 0, 2) === '62') {
-            return $digits;
+            $normalized = $digits;
+        } elseif (substr($digits, 0, 1) === '0') {
+            $normalized = '62' . substr($digits, 1);
+        } else {
+            $normalized = '62' . $digits;
         }
 
-        // kalau diawali 0 -> ubah ke 62
-        if (substr($digits, 0, 1) === '0') {
-            return '62' . substr($digits, 1);
+        if ($mode === '0') {
+            return '0' . substr($normalized, 2);
         }
 
-        return $digits;
+        return $normalized;
     }
 
     public function loadIphones()

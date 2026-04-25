@@ -302,7 +302,7 @@
             <button wire:click="extend"
                 class="mt-4 w-full bg-orange-500 text-white py-2 rounded-lg
         disabled:opacity-50"
-                @disabled(!$available)>
+                @disabled(!$available) wire:loading.attr="disabled">
                 Tambah Durasi
             </button>
 
