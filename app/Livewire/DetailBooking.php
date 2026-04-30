@@ -93,11 +93,11 @@ class DetailBooking extends Component
         $endDateTime = Carbon::parse($endDate . ' ' . $endTime);
         $now = Carbon::now();
 
-        // telat atau tidak
-        $isLate = $now->greaterThan($endDateTime);
+        $diffInMinutes = $endDateTime->diffInMinutes($now, false);
 
-        // hitung selisih dalam jam
-        $diffInHours = $endDateTime->diffInMinutes($now) / 60;
+        $diffInHours = $diffInMinutes / 60;
+
+        $isLate = $diffInMinutes > 60;
 
         return [
             'is_late' => $isLate,
