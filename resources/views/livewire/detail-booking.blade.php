@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto p-4 space-y-6" @close-modal="show = false">
-    <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 space-y-6">
+    <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 space-y-6" @success-save.window="show = false">
 
         {{-- HEADER --}}
         <div class="flex items-start justify-between gap-3 ">
@@ -12,7 +12,9 @@
 
             <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                 <div>
-                    <button class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500 text-white hover:bg-white hover:text-black hover:border-black border-2 ease-in duration-100" @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
+                    <button
+                        class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500 text-white hover:bg-white hover:text-black hover:border-black border-2 ease-in duration-100"
+                        @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
                 </div>
                 <x-mary-dropdown>
                     <x-slot:trigger>
@@ -28,7 +30,7 @@
                             {{ ucfirst($detailBookingIphones?->status) }}
                         </button>
                     </x-slot:trigger>
-    
+
                     <div class="p-1 space-y-1">
                         @foreach (['pending', 'confirmed', 'returned', 'cancelled'] as $status)
                             <button {{ $detailBookingIphones?->status === $status ? 'disabled' : '' }}
@@ -203,17 +205,18 @@
     </div>
 
     {{-- Pengembalian --}}
-    <div class="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <h2 class="text-base font-semibold text-gray-800">Pengembalian</h2>
+    <div class="bg-white rounded-xl shadow-sm px-6 space-y-4">
+        @php
+            $nonLateStatuses = ['returned', 'canceled', 'pending'];
+        @endphp
 
-        <form wire:submit="save" class="space-y-3">
-            <textarea wire:model="condition" class="w-full p-3 text-sm border rounded-lg focus:ring focus:ring-blue-200"
-                placeholder="Catatan kondisi iPhone"></textarea>
-
-            <button class="w-full py-2.5 bg-blue-600 text-white rounded-lg font-semibold text-sm">
-                Simpan Pengembalian
-            </button>
-        </form>
+        <button
+            class="w-full py-2.5 rounded-lg font-semibold text-sm
+           bg-orange-500 text-white
+           disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+            wire:click="returnIphone" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
+            Tandai Selesai
+        </button>
 
         @forelse($returns ?? [] as $return)
             <div class="p-4 bg-gray-50 rounded-lg text-sm space-y-1">
@@ -221,7 +224,7 @@
                     {{ \Carbon\Carbon::parse($return->returned_at)->translatedFormat('d M Y H:i') }}
                 </p>
                 <p>Denda: <span class="font-medium">
-                        Rp {{ number_format($return->calculatePenalty(), 0, ',', '.') }}
+                        Rp {{ number_format($return->penalty_fee, 0, ',', '.') }}
                     </span></p>
                 <p class="text-gray-600">Kondisi: {{ $return->condition ?? '-' }}</p>
             </div>
@@ -308,5 +311,84 @@
 
         </div>
     </x-modal>
+    <x-modal name="tambah-denda" :show="$errors->IsNotEmpty()" maxWidth="sm">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-4" @success-save.window="show = false">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-800">
+                    Status Pengembalian
+                </h2>
+                <button @click="open = false" class="text-gray-400 hover:text-gray-600">
+                    ✕
+                </button>
+            </div>
 
+            <!-- Status -->
+            <div class="mb-4">
+                <!-- contoh kondisi -->
+                <div class="text-sm text-gray-500 mb-1">Status</div>
+
+                @if ($is_late)
+                    <!-- TELAT -->
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600">
+                        Telat
+                    </div>
+                @else
+                    <!-- TIDAK TELAT -->
+                    <div
+                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-600">
+                        Tepat Waktu
+                    </div>
+                @endif
+
+            </div>
+
+            <!-- Durasi -->
+            @php
+                $hours = floor($diff_hours);
+                $minutes = round(($diff_hours - $hours) * 60);
+            @endphp
+            <div class="mb-4">
+                <div class="text-sm text-gray-500 mb-1">Durasi Keterlambatan</div>
+                <div class="text-gray-800 font-semibold">
+                    {{ $hours }} jam {{ $minutes }} menit
+                </div>
+            </div>
+
+            <!-- Input Denda -->
+            <div class="mb-6" x-data="{
+                raw: @entangle('penaltyFee').live,
+            
+                formatRupiah(value) {
+                    if (!value) return 'Rp0';
+                    return 'Rp' + new Intl.NumberFormat('id-ID').format(value);
+                },
+            
+                parseNumber(value) {
+                    return value.replace(/[^0-9]/g, '');
+                }
+            }">
+                <label class="text-sm text-gray-500 mb-1 block">
+                    Denda (Rp)
+                </label>
+                <input type="text" placeholder="Masukkan nominal" :value="formatRupiah(raw)"
+                    @input="raw = parseNumber($event.target.value)" @focus="$event.target.select()"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+
+            <!-- Action -->
+            <div class="flex justify-end gap-2">
+                <button class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100" @click="show = false">
+                    Batal
+                </button>
+
+                <button class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition disabled:opacity-50"
+                    wire:click="savePenaltyFee" wire:loading.attr="disabled">
+                    Simpan
+                </button>
+            </div>
+        </div>
+
+    </x-modal>
 </div>

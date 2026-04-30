@@ -10,6 +10,7 @@ use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Illuminate\Support\Facades\Http;
+use phpDocumentor\Reflection\Types\This;
 
 class DetailBooking extends Component
 {
@@ -27,6 +28,82 @@ class DetailBooking extends Component
     public int $multiplier = 1;
     public $totalHours;
     public $sumRevenues;
+
+    public bool $is_late;
+    public $diff_hours;
+    public $penaltyFee;
+    // Pengembalian
+
+    public function updateStatusIphone(string $status = 'returned')
+    {
+        $booking = Booking::find($this->detailBookingIphones->id);
+        $booking->update(['status' => $status]);
+        ReturnIphone::create([
+            'booking_id' => $this->bookingId,
+            'penalty_fee' => $this->is_late ? $this->penaltyFee : 0,
+            'returned_at' => now('Asia/Jakarta'),
+            'condition'   => 'Pengembalian berhasil.',
+        ]);
+        $this->dispatch('success-save');
+        $this->dispatch('close-modal');
+        $this->reset([
+            'penaltyFee',
+            'is_late',
+            'diff_hours'
+        ]);
+        LivewireAlert::title('Status berhasil diubah')
+            ->position('top-end')
+            ->text('Status booking telah diperbarui')
+            ->toast()
+            ->success()
+            ->show();
+    }
+
+    public function savePenaltyFee()
+    {
+        Revenue::create([
+            'booking_id' => $this->bookingId,
+            'amount'     => $this->penaltyFee,
+            'type'       => 'penalty',
+            'created'    => now(),
+        ]);
+        $this->updateStatusIphone();
+    }
+
+    public function returnIphone()
+    {
+        if ($this->is_late && $this->detailBookingIphones->status == 'confirmed') {
+            $this->dispatch('open-modal', 'tambah-denda');
+        } elseif ($this->detailBookingIphones->status == 'confirmed') {
+            $this->updateStatusIphone();
+        } elseif ($this->is_late) {
+            $this->updateStatusIphone();
+        } else {
+            LivewireAlert::title('Tidak bisa merubah status iPhone')
+                ->text(dd($this->is_late))
+                ->position('top-end')
+                ->toast()
+                ->error()
+                ->show();
+        }
+    }
+
+    public function validateReturnTime($endDate, $endTime)
+    {
+        $endDateTime = Carbon::parse($endDate . ' ' . $endTime);
+        $now = Carbon::now();
+
+        // telat atau tidak
+        $isLate = $now->greaterThan($endDateTime);
+
+        // hitung selisih dalam jam
+        $diffInHours = $endDateTime->diffInMinutes($now) / 60;
+
+        return [
+            'is_late' => $isLate,
+            'diff_hours' => round($diffInHours, 2),
+        ];
+    }
 
     public function getRevenue()
     {
@@ -47,6 +124,14 @@ class DetailBooking extends Component
         $this->durations = $this->booking->iphone->durations
             ->sortBy('hours')
             ->values();
+
+        $returnStatus = $this->validateReturnTime($this->detailBookingIphones->end_booking_date, $this->detailBookingIphones->end_time);
+        $nonLateStatuses = ['returned', 'canceled', 'pending'];
+
+        $this->is_late = in_array($this->detailBookingIphones->status, $nonLateStatuses)
+            ? false
+            : $returnStatus['is_late'];
+        $this->diff_hours = $returnStatus['diff_hours'];
 
         $this->bookingId = $this->detailBookingIphones->id;
         $this->getRevenue();
@@ -249,29 +334,29 @@ class DetailBooking extends Component
         $this->recalculatePreview();
     }
 
+    // Tidak digunakan untuk sementara
+    // public function save()
+    // {
+    //     $return = new ReturnIphone([
+    //         'returned_at' => Carbon::now('Asia/Jakarta'),
+    //         'condition'   => $this->condition,
+    //     ]);
 
-    public function save()
-    {
-        $return = new ReturnIphone([
-            'returned_at' => Carbon::now('Asia/Jakarta'),
-            'condition'   => $this->condition,
-        ]);
+    //     // assign booking_id dulu
+    //     $return->booking()->associate($this->detailBookingIphones);
 
-        // assign booking_id dulu
-        $return->booking()->associate($this->detailBookingIphones);
+    //     // baru hitung penalty
+    //     $return->penalty_fee = $return->calculatePenalty();
 
-        // baru hitung penalty
-        $return->penalty_fee = $return->calculatePenalty();
-
-        // simpan
-        $return->save();
+    //     // simpan
+    //     $return->save();
 
 
-        // reset input
-        $this->reset('condition');
-        $this->updateStatusBooking($this->detailBookingIphones->id, 'returned');
-        $this->dispatch('close-modal');
-    }
+    //     // reset input
+    //     $this->reset('condition');
+    //     $this->updateStatusBooking($this->detailBookingIphones->id, 'returned');
+    //     $this->dispatch('close-modal');
+    // }
 
 
 
