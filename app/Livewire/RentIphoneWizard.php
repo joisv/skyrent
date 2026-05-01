@@ -298,25 +298,30 @@ class RentIphoneWizard extends Component
             . "Admin Panel:\n"
             . url('/admin/bookings/');
 
-        $token = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
+        $telegramToken = config('services.telegram.bot_token');
+        $chatId        = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
+        $groupId       = config('services.fonnte.group_id');
 
+        // Kirim ke grup WhatsApp
         Http::withHeaders([
-            'Authorization' => env('FONNTE_TOKEN'),
+            'Authorization' => $whatsappToken,
         ])->post('https://api.fonnte.com/send', [
-            'target'  => env('FONNTE_GROUP_ID'),
+            'target'  => $groupId,
             'message' => $groupMessage,
         ]);
 
         if ($this->sendWhatsapp) {
+            // Kirim ke customer
             Http::withHeaders([
-                'Authorization' => env('FONNTE_TOKEN'),
+                'Authorization' => $whatsappToken,
             ])->post('https://api.fonnte.com/send', [
-                'target' => $this->formatPhoneNumber($booking->customer_phone), //formater
+                'target'  => $this->formatPhoneNumber($booking->customer_phone),
                 'message' => $message,
             ]);
 
-            Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+            // Kirim ke Telegram
+            Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
                 'chat_id'    => $chatId,
                 'text'       => $adminMessage,
                 'parse_mode' => 'HTML',

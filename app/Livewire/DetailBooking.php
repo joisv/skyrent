@@ -255,9 +255,6 @@ class DetailBooking extends Component
             'created' => now('Asia/Jakarta'),
         ]);
 
-        $token = env('TELEGRAM_BOT_TOKEN');
-        $chatId = env('TELEGRAM_CHAT_ID');
-
         // booking message
         $successExtendMessage = "Halo {$this->booking->customer_name},\n\n"
             . "Penambahan durasi sewa Anda di *SkyRental* telah *berhasil dikonfirmasi*.\n\n"
@@ -284,14 +281,20 @@ class DetailBooking extends Component
             . "<b>Status</b>       : Berhasil\n\n"
             . "🔗 <a href='" . url('/admin/bookings/' . $this->booking->id) . "'>Lihat detail di Admin Panel</a>";
 
+        $telegramToken = config('services.telegram.bot_token');
+        $chatId        = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
+
+        // Kirim WhatsApp
         Http::withHeaders([
-            'Authorization' => env('FONNTE_TOKEN'),
+            'Authorization' => $whatsappToken,
         ])->post('https://api.fonnte.com/send', [
-            'target' => $this->formatPhoneNumber($this->booking->customer_phone), //formater
+            'target'  => $this->formatPhoneNumber($this->booking->customer_phone),
             'message' => $successExtendMessage,
         ]);
 
-        Http::post("https://api.telegram.org/bot{$token}/sendMessage", [
+        // Kirim Telegram
+        Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
             'chat_id'    => $chatId,
             'text'       => $adminExtendSuccessMessage,
             'parse_mode' => 'HTML',
