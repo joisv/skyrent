@@ -97,7 +97,7 @@ class DetailBooking extends Component
 
         $diffInHours = $diffInMinutes / 60;
 
-        $isLate = $diffInMinutes > 60;
+        $isLate = $diffInMinutes > 90;
 
         return [
             'is_late' => $isLate,

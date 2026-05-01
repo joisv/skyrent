@@ -102,8 +102,8 @@ class RentIphoneWizard extends Component
 
             ],
             3 => [
-                'customerName' => 'required|min:3',
-                'customerPhone' => 'required',
+                'customer_name' => 'required|min:3',
+                'customer_phone' => 'required',
             ],
             default => [],
         };
