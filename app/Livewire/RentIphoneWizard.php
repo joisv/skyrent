@@ -248,6 +248,11 @@ class RentIphoneWizard extends Component
             'jaminan_type' => $this->jaminan_type,
         ]);
 
+        $telegramToken = config('services.telegram.bot_token');
+        $chatId        = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
+        $groupId       = config('services.fonnte.group_id');
+        
         // debug off
         $message = "Halo {$booking->customer_name},\n\n"
             . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
@@ -298,10 +303,7 @@ class RentIphoneWizard extends Component
             . "Admin Panel:\n"
             . url('/admin/bookings/');
 
-        $telegramToken = config('services.telegram.bot_token');
-        $chatId        = config('services.telegram.chat_id');
-        $whatsappToken = config('services.fonnte.token');
-        $groupId       = config('services.fonnte.group_id');
+
 
         // Kirim ke grup WhatsApp
         Http::withHeaders([

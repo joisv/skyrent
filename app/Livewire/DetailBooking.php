@@ -31,7 +31,7 @@ class DetailBooking extends Component
 
     public bool $is_late;
     public $diff_hours;
-    public $penaltyFee;
+    public $penaltyFee = 0;
     // Pengembalian
 
     public function updateStatusIphone(string $status = 'returned')

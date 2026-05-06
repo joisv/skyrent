@@ -1,5 +1,5 @@
 <div class="w-full">
-    <x-mary-menu active-bg-color="bg-purple-500/10 ">
+    <x-mary-menu active-bg-color="bg-orange-500/15 ">
         <!-- Logo -->
         <div class="shrink-0 lg:flex items-center lg:mb-8 mb-0 hidden">
             <a href="{{ route('dashboard') }}" wire:navigate class="w-full ">
@@ -31,7 +31,8 @@
             <x-mary-menu-item title="Pengaturan Dasar" icon="o-adjustments-horizontal" wire:navigate :href="route('settings.basic')"
                 :active="request()->routeIs('settings.basic')" />
             <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
-            <x-mary-menu-item title="Daftar Pengguna" icon="o-users" wire:navigate :href="route('settings.users')" :active="request()->routeIs('settings.users')" />
+            <x-mary-menu-item title="Daftar Pengguna" icon="o-users" wire:navigate :href="route('settings.users')"
+                :active="request()->routeIs('settings.users')" />
 
             <x-mary-menu-item title="Slider" icon="o-photo" wire:navigate :href="route('settings.sliders')" :active="request()->routeIs('settings.sliders')" />
 
@@ -39,12 +40,13 @@
         <x-mary-menu-separator />
         <x-mary-menu-item title="Pembayaran" icon="o-credit-card" wire:navigate :href="route('payments')" :active="request()->routeIs('payments')" />
         <x-mary-menu-item title="Hak Akses dan Peran" icon="o-key" wire:navigate />
-        <x-mary-menu-item title="Notifikasi" icon="o-bell" wire:navigate />
         <x-mary-menu-item title="FAQ" icon="o-question-mark-circle" wire:navigate :href="route('faq')"
             :active="request()->routeIs('faq')" />
-        </x-menu>
+        <x-mary-menu-item title="Notifikasi" icon="o-bell" wire:navigate badge="*"
+            badge-classes="badge-soft badge-error" />
 
         <x-mary-menu-separator />
         <livewire:layout.logout />
+    </x-mary-menu>
 
 </div>

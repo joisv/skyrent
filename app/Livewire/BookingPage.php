@@ -28,6 +28,73 @@ class BookingPage extends Component
     public $bookingToday;
     public $returnTodayCount;
 
+    public string $message = '';
+    public bool $isLate = false;
+    public int $reminderId;
+
+    public function sendReminder()
+    {
+        $telegramToken = config('services.telegram.bot_token');
+        $chatId        = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
+        $groupId       = config('services.fonnte.group_id');
+
+        $booking = Booking::find($this->reminderId);
+
+        $message = "Halo {$booking->customer_name},\n\n"
+            . "Ini adalah pengingat terkait penyewaan iPhone Anda di *SkyRental*.\n\n"
+            . "Berikut detail penyewaan Anda:\n"
+            . "--------------------------------------\n"
+            . "Kode Booking : *{$booking->booking_code}*\n"
+            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            . "Tanggal Sewa : {$booking->requested_booking_date}\n"
+            . "Waktu Mulai  : {$booking->requested_time}\n"
+            . "Durasi       : {$booking->duration} jam\n"
+            . "--------------------------------------\n\n"
+            . $this->message
+            . "Silakan hubungi kami jika membutuhkan perpanjangan waktu.\n\n"
+            . "Terima kasih atas kerja samanya.\n"
+            . "*SkyRental*";
+
+        Http::withHeaders([
+            'Authorization' => $whatsappToken,
+        ])->post('https://api.fonnte.com/send', [
+            'target'  => $this->formatPhoneNumber($booking->customer_phone),
+            'message' => $message,
+        ]);
+        $this->dispatch('close-modal', 'reminder-message');
+        $this->dispatch('close-modal', 'return');
+        LivewireAlert::title('Pesan berhasil dikirim')
+            ->position('top-end')
+            ->text("Pesan berhasil dikirim ke {$booking->customer_name}")
+            ->timer(4000)
+            ->toast()
+            ->success()
+            ->show();
+    }
+
+
+    function formatPhoneNumber($phone, $mode = '62')
+    {
+        // hapus semua karakter non-digit
+        $digits = preg_replace('/\D/', '', $phone);
+
+        // normalisasi ke format 62
+        if (substr($digits, 0, 2) === '62') {
+            $normalized = $digits;
+        } elseif (substr($digits, 0, 1) === '0') {
+            $normalized = '62' . substr($digits, 1);
+        } else {
+            $normalized = '62' . $digits;
+        }
+
+        if ($mode === '0') {
+            return '0' . substr($normalized, 2);
+        }
+
+        return $normalized;
+    }
+
     public function mount()
     {
         $this->loadStats();
@@ -46,7 +113,9 @@ class BookingPage extends Component
 
     public function getReturnToday()
     {
-        $this->returnToday = Booking::where('status', 'confirmed')->whereDate('end_booking_date', Carbon::today())->get();
+        $this->returnToday = Booking::where('status', 'confirmed')
+            ->whereDate('end_booking_date', '<=', Carbon::today())
+            ->get();
     }
 
     public function destroy()
@@ -228,7 +297,8 @@ class BookingPage extends Component
     // }
 
     #[On('close-modal')]
-    public function reRender() {
+    public function reRender()
+    {
         $this->revenueToday = Revenue::whereDate('created_at', now()->toDateString())->sum('amount');
     }
 

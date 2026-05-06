@@ -1,11 +1,11 @@
 <div x-data="{
     createBooking() {
-        {{-- $dispatch('booking-create') --}}
-        $dispatch('open-modal', 'booking-create')
-    },
-    iPhoneWizardtest(){
-        $dispatch('open-modal', 'iphone-wizard')
-    }
+            {{-- $dispatch('booking-create') --}}
+            $dispatch('open-modal', 'booking-create')
+        },
+        iPhoneWizardtest() {
+            $dispatch('open-modal', 'iphone-wizard')
+        }
 }">
     {{-- @dump($returnToday) --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -20,8 +20,7 @@
             $wire.getReturnToday()   
         }"
             class="shadow-2xl">
-            <x-mary-stat title="Kembali Hari Ini" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left"
-                color="text-purple-600" />
+            <x-mary-stat title="iPhone Belum Kembali" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left" color="text-purple-600" />
         </button>
         <button @click="() => { $dispatch('open-modal', 'booking-today') }" class="shadow-2xl">
             <x-mary-stat title="Booking Hari Ini" :value="$bookingToday->count() . ' Booking'" icon="o-clipboard-document-list"
@@ -33,13 +32,14 @@
     <x-tables.table name="Booking">
         <x-slot name="secondBtn">
             <button
-            class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
-            wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
-            <span>Bulk delete</span>
-        </button>
-    </x-slot>
-    <x-slot name="addBtn">
-            <x-tables.addbtn class="p-2 bg-orange-500 text-white" @click="iPhoneWizardtest()">Booking baru</x-tables.addbtn>
+                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
+                wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
+                <span>Bulk delete</span>
+            </button>
+        </x-slot>
+        <x-slot name="addBtn">
+            <x-tables.addbtn class="p-2 bg-orange-500 text-white" @click="iPhoneWizardtest()">Booking
+                baru</x-tables.addbtn>
             {{-- <x-tables.addbtn type="button" x-data="" @click="createBooking()">
                 Add Booking
             </x-tables.addbtn> --}}
@@ -208,42 +208,96 @@
             </div>
         @endif
     </x-modal>
-    <x-modal name="return">
+    <x-modal name="return" maxWidth="4xl">
         @if (isset($returnToday) && $returnToday->isNotEmpty())
             <div class="p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">iPhone Dikembalikan Hari Ini</h2>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     @foreach ($returnToday as $booking)
-                        <div class="bg-white border rounded-2xl shadow-sm p-4 hover:shadow-md transition duration-200">
-                            <div class="flex items-center space-x-3">
-                                <div
-                                    class="flex items-center justify-center w-12 h-12 bg-yellow-100 text-yellow-600 rounded-xl">
-                                    <x-mary-icon name="o-clock" class="w-6 h-6" />
-                                </div>
+                        @php
+                            $isLate = \Carbon\Carbon::parse($booking->end_booking_date)->lt(\Carbon\Carbon::today());
+                        @endphp
+                        <div
+                            class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition duration-200">
+
+                            {{-- Header --}}
+                            <div class="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 class="text-lg font-medium text-gray-900">
-                                        iPhone {{ $booking->iphone->name }}
+                                    <h3 class="text-base font-semibold text-gray-900">
+                                        {{ $booking->customer_name }}
                                     </h3>
-                                    <h3 class="text-base font-medium text-gray-900"> {{ $booking->iphone->serial_number }}</h3>
-                                    <p class="text-sm text-gray-500">
-                                        Pengembalian:
-                                        <span class="font-semibold text-gray-700">
-                                            {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
-                                        </span>
+                                    <p class="text-xs text-gray-500">
+                                        Penyewa
+                                    </p>
+                                </div>
+
+                                {{-- Badge --}}
+                                <span
+                                    class="px-2.5 py-1 text-xs font-medium rounded-full
+                    {{ $isLate ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-700' }}">
+                                    {{ $isLate ? 'Terlambat' : 'Hari Ini' }}
+                                </span>
+                            </div>
+
+                            {{-- Device Info --}}
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-600">Device</p>
+                                <h4 class="text-sm font-medium text-gray-900">
+                                    iPhone {{ $booking->iphone->name }}
+                                </h4>
+                                <p class="text-xs text-gray-500">
+                                    SN: {{ $booking->iphone->serial_number }}
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    Kode Sewa: {{ $booking->booking_code }}
+                                </p>
+                            </div>
+
+                            {{-- Pengembalian --}}
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                <div>
+                                    <p class="text-xs text-gray-500">Tanggal Kembali</p>
+                                    <p class="text-sm font-medium text-gray-800">
+                                        {{ \Carbon\Carbon::parse($booking->end_booking_date)->format('d M Y') }}
+                                    </p>
+                                </div>
+
+                                <div class="text-right">
+                                    <p class="text-xs text-gray-500">Jam</p>
+                                    <p class="text-sm font-semibold text-yellow-600">
+                                        {{ \Carbon\Carbon::parse($booking->end_time)->format('H:i') }}
                                     </p>
                                 </div>
                             </div>
-                            <div class="mt-3 flex justify-between items-center">
-                                <span class="text-sm text-gray-600">
-                                    Status:
-                                    <span class="font-medium text-yellow-600">Harus dikembalikan</span>
-                                </span>
-                                {{-- Jika mau tombol aksi bisa ditaruh di sini --}}
-                                {{-- <button wire:click="reminder({{ $booking->id }})"
-                        class="px-3 py-1.5 bg-yellow-600 text-white text-sm rounded-xl hover:bg-yellow-700 transition">
-                        Ingatkan
-                    </button> --}}
+                            <div class="mt-4 flex">
+                                {{-- Tombol WhatsApp --}}
+                                @php
+                                    $reminderMessage = $isLate
+                                        ? "*Status: TERLAMBAT*\n" .
+                                            "Pengembalian iPhone Anda telah melewati batas waktu.\n" .
+                                            "Mohon segera melakukan pengembalian untuk menghindari penambahan biaya.\n\n"
+                                        : "*Status: PENGEMBALIAN HARI INI*\n" .
+                                            "Mohon untuk melakukan pengembalian iPhone sesuai jadwal.\n\n";
+                                @endphp
+
+                                <button
+                                    @click="() => {
+        $wire.set('isLate', {{ $isLate ? 'true' : 'false' }});
+        $wire.set('reminderId', {{ $booking->id }});
+        $wire.set('message', @js($reminderMessage));
+        $dispatch('open-modal', 'reminder-message');
+                                    }"
+                                    class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition w-full justify-center
+    {{ $isLate ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600' }}"
+                                    wire:loading.attr="disabled">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path
+                                            d="M20.52 3.48A11.94 11.94 0 0012.06 0C5.48 0 .12 5.36.12 11.94c0 2.1.55 4.16 1.6 5.98L0 24l6.26-1.63a11.9 11.9 0 005.8 1.48h.01c6.58 0 11.94-5.36 11.94-11.94 0-3.19-1.24-6.19-3.49-8.43zM12.07 21.5c-1.8 0-3.57-.48-5.13-1.38l-.37-.22-3.72.97.99-3.63-.24-.37a9.45 9.45 0 01-1.45-5.03c0-5.23 4.25-9.48 9.48-9.48 2.53 0 4.9.99 6.69 2.78a9.42 9.42 0 012.79 6.7c0 5.23-4.25 9.48-9.48 9.48zm5.2-7.1c-.28-.14-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.74.92-.91 1.11-.17.19-.33.21-.61.07-.28-.14-1.18-.43-2.24-1.37-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.13-.13.28-.33.42-.5.14-.17.19-.28.28-.47.09-.19.05-.36-.02-.5-.07-.14-.64-1.54-.88-2.11-.23-.56-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.28-1 1-1 2.44 0 1.44 1.03 2.83 1.18 3.03.14.19 2.03 3.1 4.92 4.35.69.3 1.22.48 1.64.61.69.22 1.32.19 1.82.12.56-.08 1.67-.68 1.9-1.33.23-.65.23-1.2.16-1.33-.07-.12-.26-.19-.54-.33z" />
+                                    </svg>
+                                    {{ $isLate ? 'Tagih' : 'Ingatkan' }}
+                                </button>
                             </div>
                         </div>
                     @endforeach
@@ -265,7 +319,8 @@
             </div>
             <div class="p-5 text-center" wire:loading.remove>
                 <h1 class="text-lg font-semibold">Tidak ada iPhone yang dikembalikan hari ini.</h1>
-                <p class="mt-2 text-gray-600">Tidak ada iPhone yang perlu ditindaklanjuti untuk proses pengembalian hari ini.</p>
+                <p class="mt-2 text-gray-600">Tidak ada iPhone yang perlu ditindaklanjuti untuk proses pengembalian
+                    hari ini.</p>
             </div>
         @endif
     </x-modal>
@@ -321,6 +376,55 @@
             @else
                 <p class="text-gray-500 text-center py-6">Belum ada booking yang dibuat hari ini.</p>
             @endif
+        </div>
+    </x-modal>
+    <x-modal name="reminder-message">
+        <div class="p-5 space-y-4">
+
+            {{-- Header --}}
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Kirim Pesan WhatsApp
+                </h2>
+                <p class="text-sm text-gray-500">
+                    Edit pesan sebelum dikirim ke penyewa
+                </p>
+            </div>
+
+            {{-- Divider --}}
+            <div class="border-t border-gray-100"></div>
+
+            {{-- Textarea --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Pesan
+                </label>
+
+                <textarea wire:model="message" rows="8"
+                    class="w-full rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-100 text-sm p-3 resize-none"
+                    placeholder="Tulis atau edit pesan di sini...">
+        </textarea>
+            </div>
+
+            {{-- Action --}}
+            <div class="flex justify-end gap-2 pt-2">
+
+                {{-- Send --}}
+                <button wire:click="sendReminder" wire:loading.attr="disabled"
+                    class="px-4 py-2 text-sm rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition flex items-center gap-2">
+
+                    {{-- Loading --}}
+                    <span wire:loading wire:target="sendReminder" class="animate-spin">
+                        ⏳
+                    </span>
+
+                    <span wire:loading.remove wire:target="sendReminder">
+                        Kirim Pesan
+                    </span>
+                </button>
+
+            </div>
+
         </div>
     </x-modal>
 </div>
