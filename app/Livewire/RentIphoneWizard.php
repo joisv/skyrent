@@ -6,49 +6,74 @@ use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\Payment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
 
 class RentIphoneWizard extends Component
 {
     public int $step = 1;
+
     public $countryCode = '+62';
+
     public $selectedIphone = null;
+
     public $price = 0;
+
     public $iphone_search = '';
+
     public $unit = '';
+
     public $is_available = false;
+
     public ?int $jumlah = null;
+
     public $totalHarga = 0;
+
     public int $basePricePerHour = 5000;
 
     // STEP 1
     public $iphones;
-    public ?int $selectedIphoneId = null;
-    public $requested_booking_date;
-    public $requested_time;
-    public $selectedDuration;
-    public $selectedPrice;
-    public $durations = [];
-    public $end_booking_date;
-    public $end_time;
 
+    public ?int $selectedIphoneId = null;
+
+    public $requested_booking_date;
+
+    public $requested_time;
+
+    public $selectedDuration;
+
+    public $selectedPrice;
+
+    public $durations = [];
+
+    public $end_booking_date;
+
+    public $end_time;
 
     // STEP 2
     public $customer_name;
+
     public $customer_phone;
+
     public $customer_email;
+
     public $address;
+
     public $jaminan_type = 'KTP';
+
     public $payments;
+
     public $selectedPaymentId = 1;
+
     public $selectedPayment;
 
     // STEP 3
     public $sendWhatsapp = true;
+
     public $iphone_name;
+
     public $serial_number;
 
     // check whatsapp number
@@ -133,19 +158,20 @@ class RentIphoneWizard extends Component
     {
         $this->calculateEndDateTime();
 
-        if (!$this->end_booking_date || !$this->end_time) {
+        if (! $this->end_booking_date || ! $this->end_time) {
             LivewireAlert::title('Gagal Hitung Waktu')
                 ->text('Gagal menghitung waktu selesai booking.')
                 ->error()
                 ->toast()
                 ->position('top-end')
                 ->show();
+
             return;
         }
 
         // Gabungkan tanggal dan waktu dari booking sekarang
-        $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d') . ' ' . $this->requested_time);
-        $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
+        $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d').' '.$this->requested_time);
+        $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d').' '.$this->end_time);
 
         // 🔍 Cek apakah ada booking bentrok
         $bookings = Booking::where('iphone_id', $this->selectedIphoneId)
@@ -153,7 +179,7 @@ class RentIphoneWizard extends Component
             ->get();
 
         $conflict = $bookings->contains(function ($booking) use ($start, $end) {
-            $bookingStart = Carbon::parse($booking->requested_booking_date . ' ' . $booking->requested_time);
+            $bookingStart = Carbon::parse($booking->requested_booking_date.' '.$booking->requested_time);
 
             // Hitung bookingEnd berdasarkan requested + durasi
             $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
@@ -169,6 +195,7 @@ class RentIphoneWizard extends Component
                 ->toast()
                 ->position('top-end')
                 ->show();
+
             return;
         }
     }
@@ -176,9 +203,10 @@ class RentIphoneWizard extends Component
     public function calculateEndDateTime()
     {
 
-        if (!$this->requested_booking_date || !$this->requested_time || !$this->selectedDuration) {
+        if (! $this->requested_booking_date || ! $this->requested_time || ! $this->selectedDuration) {
             $this->end_booking_date = null;
             $this->end_time = null;
+
             return;
         }
 
@@ -191,7 +219,7 @@ class RentIphoneWizard extends Component
             $this->end_booking_date = $endDateTime->toDateString();
             $this->end_time = $endDateTime->format('H:i');
         } catch (\Exception $e) {
-            logger()->error('DateTime parse error: ' . $e->getMessage());
+            logger()->error('DateTime parse error: '.$e->getMessage());
             $this->end_booking_date = null;
             $this->end_time = null;
         }
@@ -231,7 +259,7 @@ class RentIphoneWizard extends Component
         $booking = Booking::create([
             'iphone_id' => $this->selectedIphoneId,
             'customer_name' => $this->customer_name,
-            'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
+            'customer_phone' => $this->countryCode.'-'.$this->customer_phone,
             'customer_email' => $this->customer_email,
             'requested_booking_date' => $this->requested_booking_date,
             'requested_time' => $this->requested_time,
@@ -249,87 +277,98 @@ class RentIphoneWizard extends Component
         ]);
 
         $telegramToken = config('services.telegram.bot_token');
-        $chatId        = config('services.telegram.chat_id');
+        $chatId = config('services.telegram.chat_id');
         $whatsappToken = config('services.fonnte.token');
-        $groupId       = config('services.fonnte.group_id');
-        
+        $groupId = config('services.fonnte.group_id');
+
         // debug off
         $message = "Halo {$booking->customer_name},\n\n"
-            . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
-            . "Berikut adalah detail booking Anda:\n"
-            . "--------------------------------------\n"
-            . "Kode Booking : *{$booking->booking_code}*\n"
-            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
-            . "Tanggal      : {$booking->requested_booking_date}\n"
-            . "Waktu        : {$booking->requested_time}\n"
-            . "Durasi       : {$booking->duration} jam\n"
-            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n"
-            . "--------------------------------------\n\n"
-            . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
-            . "Apabila pembayaran belum kami terima hingga batas waktu tersebut, "
-            . "maka booking akan *dibatalkan secara otomatis*.\n\n"
-            . "Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini "
-            . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
-            . "Untuk memeriksa status booking, silakan kunjungi:\n"
-            . url('/booking-status') . "\n\n"
-            . "Terima kasih atas kerja samanya.\n"
-            . "SkyRental";
+            ."Terima kasih telah melakukan booking di *SkyRental*.\n\n"
+            ."Berikut adalah detail booking Anda:\n"
+            ."--------------------------------------\n"
+            ."Kode Booking : *{$booking->booking_code}*\n"
+            ."Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            ."Tanggal      : {$booking->requested_booking_date}\n"
+            ."Waktu        : {$booking->requested_time}\n"
+            ."Durasi       : {$booking->duration} jam\n"
+            .'Total Biaya  : Rp'.number_format($booking->price, 0, ',', '.')."\n"
+            ."--------------------------------------\n\n"
+            ."Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
+            .'Apabila pembayaran belum kami terima hingga batas waktu tersebut, '
+            ."maka booking akan *dibatalkan secara otomatis*.\n\n"
+            .'Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini '
+            ."atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
+            ."Untuk memeriksa status booking, silakan kunjungi:\n"
+            .url('/booking-status')."\n\n"
+            ."Terima kasih atas kerja samanya.\n"
+            .'SkyRental';
 
         $adminMessage = "<b>Booking Baru Diterima</b>\n\n"
-            . "<b>Nama</b> : {$booking->customer_name}\n"
-            . "<b>HP</b>   : {$booking->customer_phone}\n"
-            . "<b>Email</b>: {$booking->customer_email}\n\n"
-            . "<b>Kode Booking</b>: {$booking->booking_code}\n"
-            . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
-            . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
-            . "<b>Waktu</b>       : {$booking->requested_time}\n"
-            . "<b>Durasi</b>      : {$booking->duration} jam\n"
-            . "<b>Total Biaya</b>: Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
-            . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
+            ."<b>Nama</b> : {$booking->customer_name}\n"
+            ."<b>HP</b>   : {$booking->customer_phone}\n"
+            ."<b>Email</b>: {$booking->customer_email}\n\n"
+            ."<b>Kode Booking</b>: {$booking->booking_code}\n"
+            ."<b>Perangkat</b>   : {$booking->iphone->name}\n"
+            ."<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
+            ."<b>Waktu</b>       : {$booking->requested_time}\n"
+            ."<b>Durasi</b>      : {$booking->duration} jam\n"
+            .'<b>Total Biaya</b>: Rp'.number_format($booking->price, 0, ',', '.')."\n\n"
+            ."🔗 <a href='".url('/admin/bookings/'.$booking->id)."'>Lihat detail di Admin Panel</a>";
 
         $groupMessage = "BOOKING BARU MASUK\n\n"
-            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
-            . "Nama         : {$booking->customer_name}\n"
-            . "No. HP       : {$booking->customer_phone}\n"
-            . "Alamat       : {$booking->address}\n"
-            . "Jaminan       : {$booking->jaminan_type}\n"
-            . "Email        : {$booking->customer_email}\n\n"
-            . "Kode Booking : {$booking->booking_code}\n"
-            . "Tanggal      : {$booking->requested_booking_date}\n"
-            . "Waktu        : {$booking->requested_time}\n"
-            . "Durasi       : {$booking->duration} jam\n"
-            . "Total Biaya  : Rp" . number_format($booking->price, 0, ',', '.') . "\n\n"
-            . "Status       : {$booking->status} \n"
-            . "Admin Panel:\n"
-            . url('/admin/bookings/');
-
-
+            ."Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+            ."Nama         : {$booking->customer_name}\n"
+            ."No. HP       : {$booking->customer_phone}\n"
+            ."Alamat       : {$booking->address}\n"
+            ."Jaminan       : {$booking->jaminan_type}\n"
+            ."Email        : {$booking->customer_email}\n\n"
+            ."Kode Booking : {$booking->booking_code}\n"
+            ."Tanggal      : {$booking->requested_booking_date}\n"
+            ."Waktu        : {$booking->requested_time}\n"
+            ."Durasi       : {$booking->duration} jam\n"
+            .'Total Biaya  : Rp'.number_format($booking->price, 0, ',', '.')."\n\n"
+            ."Status       : {$booking->status} \n"
+            ."Admin Panel:\n"
+            .url('/admin/bookings/');
 
         // Kirim ke grup WhatsApp
-        Http::withHeaders([
-            'Authorization' => $whatsappToken,
-        ])->post('https://api.fonnte.com/send', [
-            'target'  => $groupId,
-            'message' => $groupMessage,
-        ]);
+        try {
+            Http::timeout(10)->withHeaders([
+                'Authorization' => $whatsappToken,
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $groupId,
+                'message' => $groupMessage,
+            ]);
+        } catch (\Exception $e) {
+            logger()->error('Fonnte Group Error: '.$e->getMessage());
+        }
 
         if ($this->sendWhatsapp) {
             // Kirim ke customer
-            Http::withHeaders([
-                'Authorization' => $whatsappToken,
-            ])->post('https://api.fonnte.com/send', [
-                'target'  => $this->formatPhoneNumber($booking->customer_phone),
-                'message' => $message,
-            ]);
-
-            // Kirim ke Telegram
-            Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
-                'chat_id'    => $chatId,
-                'text'       => $adminMessage,
-                'parse_mode' => 'HTML',
-            ]);
+            try {
+                Http::timeout(10)->withHeaders([
+                    'Authorization' => $whatsappToken,
+                ])->post('https://api.fonnte.com/send', [
+                    'target' => $this->formatPhoneNumber($booking->customer_phone),
+                    'message' => $message,
+                ]);
+            } catch (\Exception $e) {
+                logger()->error('Fonnte Customer Error: '.$e->getMessage());
+            }
         }
 
+        // Kirim ke Telegram
+        if ($telegramToken && $chatId) {
+            try {
+                Http::timeout(10)->post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+                    'chat_id' => $chatId,
+                    'text' => $adminMessage,
+                    'parse_mode' => 'HTML',
+                ]);
+            } catch (\Exception $e) {
+                logger()->error('Telegram Error: '.$e->getMessage());
+            }
+        }
 
         // Reset
         $this->dispatch('close-modal');
@@ -344,7 +383,7 @@ class RentIphoneWizard extends Component
             'end_booking_date',
             'requested_time',
             'end_time',
-            'price'
+            'price',
         ]);
         $this->step = 1;
         $this->requested_booking_date = Carbon::now('Asia/Jakarta');
@@ -369,7 +408,7 @@ class RentIphoneWizard extends Component
     public function updatedSelectedPaymentId()
     {
         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
-        if (!$this->selectedPayment) {
+        if (! $this->selectedPayment) {
             $this->selectedPaymentId = optional($this->payments->first())->id ?? null;
             $this->selectedPayment = $this->payments->first();
         }
@@ -382,7 +421,7 @@ class RentIphoneWizard extends Component
         $this->payments = Payment::orderBy('created_at', 'desc')->get();
         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
 
-        if (!$this->selectedPayment) {
+        if (! $this->selectedPayment) {
             $this->selectedPaymentId = optional($this->payments->first())->id ?? null;
             $this->selectedPayment = $this->payments->first();
         }
@@ -392,7 +431,7 @@ class RentIphoneWizard extends Component
         $this->requested_time = $now->format('H:i');
     }
 
-    function formatPhoneNumber($phone, $mode = '62')
+    public function formatPhoneNumber($phone, $mode = '62')
     {
         // hapus semua karakter non-digit
         $digits = preg_replace('/\D/', '', $phone);
@@ -401,13 +440,13 @@ class RentIphoneWizard extends Component
         if (substr($digits, 0, 2) === '62') {
             $normalized = $digits;
         } elseif (substr($digits, 0, 1) === '0') {
-            $normalized = '62' . substr($digits, 1);
+            $normalized = '62'.substr($digits, 1);
         } else {
-            $normalized = '62' . $digits;
+            $normalized = '62'.$digits;
         }
 
         if ($mode === '0') {
-            return '0' . substr($normalized, 2);
+            return '0'.substr($normalized, 2);
         }
 
         return $normalized;
@@ -423,8 +462,8 @@ class RentIphoneWizard extends Component
             }])
             ->when($this->iphone_search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->iphone_search . '%')
-                        ->orWhere('serial_number', 'like', '%' . $this->iphone_search . '%');
+                    $q->where('name', 'like', '%'.$this->iphone_search.'%')
+                        ->orWhere('serial_number', 'like', '%'.$this->iphone_search.'%');
                 });
             })
             ->get()
@@ -484,6 +523,7 @@ class RentIphoneWizard extends Component
         if (empty($this->unit) || empty($this->jumlah)) {
             $this->selectedDuration = 0;
             $this->selectedPrice = 0;
+
             return;
         }
 
@@ -491,16 +531,15 @@ class RentIphoneWizard extends Component
             $this->jumlah = 24;
         }
 
-
         if ($this->jumlah < 1) {
             $this->selectedDuration = 0;
             $this->selectedPrice = 0;
+
             return;
         }
 
-
         if ($this->basePricePerHour === 5000) {
-            # code...
+            // code...
             switch ($this->unit) {
 
                 case 'Hari':
@@ -541,7 +580,7 @@ class RentIphoneWizard extends Component
     public function render()
     {
         return view('livewire.rent-iphone-wizard', [
-            'iphones' => $this->loadIphones()
+            'iphones' => $this->loadIphones(),
         ]);
     }
 }
