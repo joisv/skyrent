@@ -5,6 +5,7 @@
         },
         iPhoneWizardtest() {
             $dispatch('open-modal', 'iphone-wizard')
+            $dispatch('reload-iphone')
         }
 }">
     {{-- @dump($returnToday) --}}
