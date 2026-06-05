@@ -10,7 +10,7 @@ use Livewire\Component;
 class TopDevice extends Component
 {
     public $search = '';
-    public $sortField = 'created_at';
+    public $sortField = 'amount';
     public $sortDirection = 'desc';
     public $paginate = 10;
 
