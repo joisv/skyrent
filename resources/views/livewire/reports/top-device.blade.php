@@ -10,9 +10,10 @@
          <x-mary-stat title="Unit Tersedia" :value="$totalAvailable" icon="o-device-phone-mobile" color="text-info" />
 
          {{-- Top Device --}}
-         <x-mary-stat title="Top Device" :value="$topDevice['nama'] ?? '-'" icon="o-star" color="text-warning" />
+         <div class="">
+             <x-mary-stat title="Top Device" :value="($topDevice['nama'] ?? '-') . ' ' . ($topDevice['serial_number'] ?? '')" icon="o-star" color="text-warning" />
+         </div>
      </div>
-
      {{-- datatable --}}
      <div class="mt-10">
          <x-tables.table name="Pendapatan" count="">
@@ -87,7 +88,7 @@
 
                          {{-- Jumlah disewa --}}
                          <x-tables.td>
-                            {{ $device['total_disewa'] }} jam
+                             {{ $device['total_disewa'] }} jam
                          </x-tables.td>
 
                          {{-- Pendapatan --}}

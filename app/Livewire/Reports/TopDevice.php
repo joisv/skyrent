@@ -54,6 +54,7 @@ class TopDevice extends Component
 
             return [
                 'nama' => $device->name,
+                'serial_number' => $device->serial_number,
                 'created' => $device->created_at,
                 'updated_at' => $device->updated_at,
                 'total_disewa' => $totalDisewa,
