@@ -87,7 +87,7 @@
 
                          {{-- Jumlah disewa --}}
                          <x-tables.td>
-                             {{ $device['total_disewa'] }}x
+                            {{ $device['total_disewa'] }} jam
                          </x-tables.td>
 
                          {{-- Pendapatan --}}

@@ -50,12 +50,13 @@ class TopDevice extends Component
         // 🔄 Map ke data siap tampil
         $devices = $devices->map(function ($device) use ($totalRevenue) {
             $totalPendapatan = $device->revenues->sum('amount');
+            $totalDisewa = $device->bookings->sum('duration');
 
             return [
                 'nama' => $device->name,
                 'created' => $device->created_at,
                 'updated_at' => $device->updated_at,
-                'total_disewa' => $device->bookings_count,
+                'total_disewa' => $totalDisewa,
                 'total_pendapatan' => $totalPendapatan,
                 'kontribusi' => $totalRevenue > 0
                     ? round(($totalPendapatan / $totalRevenue) * 100, 2)
@@ -78,7 +79,7 @@ class TopDevice extends Component
             ])->values();
         }
 
-        // 🏆 Top device berdasarkan kontribusi
+        // Top device berdasarkan kontribusi
         $this->topDevice = $devices->sortByDesc('kontribusi')->first();
 
         // 📊 Statistik tambahan
