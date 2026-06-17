@@ -144,9 +144,15 @@
 
             <div>
                 <p class="text-xs text-gray-500">Telepon</p>
-                <p class="font-mono text-gray-900">
-                    {{ $detailBookingIphones->customer_phone ?? '-' }}
-                </p>
+                <div class="flex items-center">
+                    <p class="font-mono text-gray-900">
+                        {{ $detailBookingIphones->customer_phone ?? '-' }}
+                    </p>
+                    <button class="ml-2 text-xs text-blue-600 hover:underline"
+                        @click="$dispatch('open-modal', 'edit-booking')">
+                        edit
+                    </button>
+                </div>
             </div>
 
             <div>
@@ -232,6 +238,49 @@
             <p class="text-sm text-gray-400 italic">Belum ada data pengembalian</p>
         @endforelse
     </div>
+    {{-- Detail Booking Edit --}}
+    <x-modal name="edit-booking" :show="$errors->IsNotEmpty()" maxWidth="sm">
+        <div class="p-3 space-y-3 flex flex-col justify-end"  @modal-edit.window="show = false">
+            <div x-data="{
+                countryCode: @entangle('countryCode'),
+                customerPhone: @entangle('customer_phone').live,
+                countries: [
+                    { code: '+62', name: 'Indonesia', flag: 'ID' },
+                    { code: '+60', name: 'Malaysia', flag: 'MY' },
+                    { code: '+65', name: 'Singapore', flag: 'SG' },
+                    { code: '+66', name: 'Thailand', flag: 'TH' },
+                    { code: '+63', name: 'Philippines', flag: 'PH' },
+                    { code: '+95', name: 'Myanmar', flag: 'MM' },
+                    { code: '+855', name: 'Cambodia', flag: 'KH' },
+                    { code: '+856', name: 'Laos', flag: 'LA' },
+                    { code: '+84', name: 'Vietnam', flag: 'VN' },
+                    { code: '+673', name: 'Brunei', flag: 'BN' }
+                ]
+            }" class="flex gap-2">
+
+                <!-- Dropdown Kode Negara -->
+                <select x-model="countryCode"
+                    class="w-[40%] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-2.5">
+                    <template x-for="country in countries" :key="country.code">
+                        <option :value="country.code" x-text="country.flag + ' ' + country.code"></option>
+                    </template>
+                </select>
+
+                <!-- Input Nomor -->
+                <input type="tel" id="customer_phone" x-model="customerPhone"
+                    @input="
+        let raw = $event.target.value.replace(/[^0-9]/g, '');
+        customerPhone = raw.match(/.{1,4}/g)?.join('-') || '';
+    "
+                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+           focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
+           dark:text-white p-2.5"
+                    placeholder="8123-4567-8901" />
+
+            </div>
+            <button class="bg-orange-500 text-white py-2 px-4 rounded-lg justify-end disabled:opacity-50" wire:click="updateDetailBooking" wire:loading.attr="disabled">simpan</button>
+        </div>
+    </x-modal>
 
     <x-modal name="tambah-durasi" :show="$errors->IsNotEmpty()" maxWidth="sm">
         <div class="p-3" @modal-durasi.window="show = false">
@@ -383,7 +432,8 @@
                     Batal
                 </button>
 
-                <button class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition disabled:opacity-50"
+                <button
+                    class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition disabled:opacity-50"
                     wire:click="savePenaltyFee" wire:loading.attr="disabled">
                     Simpan
                 </button>

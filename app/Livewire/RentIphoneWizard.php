@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Illuminate\Support\Facades\DB;
 
 class RentIphoneWizard extends Component
 {
@@ -76,30 +77,6 @@ class RentIphoneWizard extends Component
 
     public $serial_number;
 
-    // check whatsapp number
-    // public function updating($property, $value)
-    // {
-    //     $result = $this->checkNumberWhatsapp($this->formatPhoneNumber($value, '0'));
-    //     dd($result);
-    // }
-
-    // public function checkNumberWhatsapp($number)
-    // {
-    //     $response = Http::withHeaders([
-    //         'Authorization' => env('FONNTE_TOKEN'),
-    //     ])->post(
-    //         'https://api.fonnte.com/validate',
-    //         [
-    //             'target' => $number,
-    //             'countryCode' => '62',
-    //         ],
-    //     );
-
-    //     // Ambil response
-    //     $data = $response->body();
-    //     return $data;
-    // }
-
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
     {
@@ -140,6 +117,29 @@ class RentIphoneWizard extends Component
 
         if ($this->step === 1) {
             $this->handleStepOne();
+        }
+
+        if ($this->step === 2) {
+            $whatsappToken = config('services.fonnte.token');
+            // cek apakah nomor whatsapp customer valid
+            $check = Http::timeout(10)->withHeaders([
+                'Authorization' => $whatsappToken,
+            ])->post('https://api.fonnte.com/validate', [
+                'target' => $this->formatPhoneNumber($this->customer_phone),
+            ]);
+
+            $data = $check->json();
+
+            if (!empty($data['not_registered'])) {
+                LivewireAlert::title('Nomor Tidak Terdaftar')
+                    ->text('Nomor WhatsApp yang Anda masukkan tidak terdaftar.')
+                    ->warning()
+                    ->toast()
+                    ->position('top-end')
+                    ->show();
+
+                return;
+            }
         }
 
         if ($this->step < 4) {
@@ -241,6 +241,11 @@ class RentIphoneWizard extends Component
 
     public function submit(): void
     {
+        $telegramToken = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
+        $groupId = config('services.fonnte.group_id');
+
         if ($this->jumlah > 1) {
             $this->selectedDuration = $this->selectedDuration * 24;
         }
@@ -256,118 +261,163 @@ class RentIphoneWizard extends Component
             'price' => 'required|numeric|min:0',
         ]);
 
-        $booking = Booking::create([
-            'iphone_id' => $this->selectedIphoneId,
-            'customer_name' => $this->customer_name,
-            'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
-            'customer_email' => $this->customer_email,
-            'requested_booking_date' => $this->requested_booking_date,
-            'requested_time' => $this->requested_time,
-            // 'end_booking_date' => $end->toDateString(),
-            // 'end_time' => $end->format('H:i'),
-            'duration' => $this->selectedDuration,
-            'price' => $this->selectedPrice,
-            'status' => 'confirmed',
-            'created' => Carbon::now('Asia/Jakarta'),
-            'booking_code' => Booking::generateBookingCode(),
-            'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
-            'address' => $this->address,
-            'pickup_type' => 'pickup',
-            'jaminan_type' => $this->jaminan_type,
-        ]);
+        DB::beginTransaction();
 
-        $telegramToken = config('services.telegram.bot_token');
-        $chatId = config('services.telegram.chat_id');
-        $whatsappToken = config('services.fonnte.token');
-        $groupId = config('services.fonnte.group_id');
-
-        // debug off
-        $message = "Halo {$booking->customer_name},\n\n"
-            . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
-            . "Berikut adalah detail booking Anda:\n"
-            . "--------------------------------------\n"
-            . "Kode Booking : *{$booking->booking_code}*\n"
-            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
-            . "Tanggal      : {$booking->requested_booking_date}\n"
-            . "Waktu        : {$booking->requested_time}\n"
-            . "Durasi       : {$booking->duration} jam\n"
-            . 'Total Biaya  : Rp' . number_format($booking->price, 0, ',', '.') . "\n"
-            . "--------------------------------------\n\n"
-            . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
-            . 'Apabila pembayaran belum kami terima hingga batas waktu tersebut, '
-            . "maka booking akan *dibatalkan secara otomatis*.\n\n"
-            . 'Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini '
-            . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
-            . "Untuk memeriksa status booking, silakan kunjungi:\n"
-            . url('/booking-status') . "\n\n"
-            . "Terima kasih atas kerja samanya.\n"
-            . 'SkyRental';
-
-        $adminMessage = "<b>Booking Baru Diterima</b>\n\n"
-            . "<b>Nama</b> : {$booking->customer_name}\n"
-            . "<b>HP</b>   : {$booking->customer_phone}\n"
-            . "<b>Email</b>: {$booking->customer_email}\n\n"
-            . "<b>Kode Booking</b>: {$booking->booking_code}\n"
-            . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
-            . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
-            . "<b>Waktu</b>       : {$booking->requested_time}\n"
-            . "<b>Durasi</b>      : {$booking->duration} jam\n"
-            . '<b>Total Biaya</b>: Rp' . number_format($booking->price, 0, ',', '.') . "\n\n"
-            . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
-
-        $groupMessage = "BOOKING BARU MASUK\n\n"
-            . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
-            . "Nama         : {$booking->customer_name}\n"
-            . "No. HP       : {$booking->customer_phone}\n"
-            . "Alamat       : {$booking->address}\n"
-            . "Jaminan       : {$booking->jaminan_type}\n"
-            . "Email        : {$booking->customer_email}\n\n"
-            . "Kode Booking : {$booking->booking_code}\n"
-            . "Tanggal      : {$booking->requested_booking_date}\n"
-            . "Waktu        : {$booking->requested_time}\n"
-            . "Durasi       : {$booking->duration} jam\n"
-            . 'Total Biaya  : Rp' . number_format($booking->price, 0, ',', '.') . "\n\n"
-            . "Status       : {$booking->status} \n"
-            . "Admin Panel:\n"
-            . url('/admin/bookings/');
-
-        // Kirim ke grup WhatsApp
         try {
-            Http::timeout(10)->withHeaders([
-                'Authorization' => $whatsappToken,
-            ])->post('https://api.fonnte.com/send', [
-                'target' => $groupId,
-                'message' => $groupMessage,
-            ]);
-        } catch (\Exception $e) {
-            logger()->error('Fonnte Group Error: ' . $e->getMessage());
-        }
 
-        if ($this->sendWhatsapp) {
-            // Kirim ke customer
+            $booking = Booking::create([
+                'iphone_id' => $this->selectedIphoneId,
+                'customer_name' => $this->customer_name,
+                'customer_phone' => $this->countryCode . '-' . $this->customer_phone,
+                'customer_email' => $this->customer_email,
+                'requested_booking_date' => $this->requested_booking_date,
+                'requested_time' => $this->requested_time,
+                // 'end_booking_date' => $end->toDateString(),
+                // 'end_time' => $end->format('H:i'),
+                'duration' => $this->selectedDuration,
+                'price' => $this->selectedPrice,
+                'status' => 'confirmed',
+                'created' => Carbon::now('Asia/Jakarta'),
+                'booking_code' => Booking::generateBookingCode(),
+                'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
+                'address' => $this->address,
+                'pickup_type' => 'pickup',
+                'jaminan_type' => $this->jaminan_type,
+            ]);
+
+            // debug off
+            $message = "Halo {$booking->customer_name},\n\n"
+                . "Terima kasih telah melakukan booking di *SkyRental*.\n\n"
+                . "Berikut adalah detail booking Anda:\n"
+                . "--------------------------------------\n"
+                . "Kode Booking : *{$booking->booking_code}*\n"
+                . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+                . "Tanggal      : {$booking->requested_booking_date}\n"
+                . "Waktu        : {$booking->requested_time}\n"
+                . "Durasi       : {$booking->duration} jam\n"
+                . 'Total Biaya  : Rp' . number_format($booking->price, 0, ',', '.') . "\n"
+                . "--------------------------------------\n\n"
+                . "Mohon segera melakukan pembayaran *maksimal 30 menit* setelah pesan ini diterima.\n"
+                . 'Apabila pembayaran belum kami terima hingga batas waktu tersebut, '
+                . "maka booking akan *dibatalkan secara otomatis*.\n\n"
+                . 'Setelah melakukan pembayaran, silakan lakukan konfirmasi dengan membalas pesan ini '
+                . "atau mengirim bukti pembayaran melalui WhatsApp ini.\n\n"
+                . "Untuk memeriksa status booking, silakan kunjungi:\n"
+                . url('/booking-status') . "\n\n"
+                . "Terima kasih atas kerja samanya.\n"
+                . 'SkyRental';
+
+            $groupMessage = "BOOKING BARU MASUK\n\n"
+                . "Perangkat    : {$booking->iphone->name} {$booking->iphone->serial_number}\n"
+                . "Nama         : {$booking->customer_name}\n"
+                . "No. HP       : {$booking->customer_phone}\n"
+                . "Alamat       : {$booking->address}\n"
+                . "Jaminan       : {$booking->jaminan_type}\n"
+                . "Email        : {$booking->customer_email}\n\n"
+                . "Kode Booking : {$booking->booking_code}\n"
+                . "Tanggal      : {$booking->requested_booking_date}\n"
+                . "Waktu        : {$booking->requested_time}\n"
+                . "Durasi       : {$booking->duration} jam\n"
+                . 'Total Biaya  : Rp' . number_format($booking->price, 0, ',', '.') . "\n\n"
+                . "Status       : {$booking->status} \n"
+                . "Admin Panel:\n"
+                . url('/admin/bookings/');
+
+            $adminMessage = "<b>Booking Baru Diterima</b>\n\n"
+                . "<b>Nama</b> : {$booking->customer_name}\n"
+                . "<b>HP</b>   : {$booking->customer_phone}\n"
+                . "<b>Email</b>: {$booking->customer_email}\n\n"
+                . "<b>Kode Booking</b>: {$booking->booking_code}\n"
+                . "<b>Perangkat</b>   : {$booking->iphone->name}\n"
+                . "<b>Tanggal</b>     : {$booking->requested_booking_date}\n"
+                . "<b>Waktu</b>       : {$booking->requested_time}\n"
+                . "<b>Durasi</b>      : {$booking->duration} jam\n"
+                . '<b>Total Biaya</b>: Rp' . number_format($booking->price, 0, ',', '.') . "\n\n"
+                . "🔗 <a href='" . url('/admin/bookings/' . $booking->id) . "'>Lihat detail di Admin Panel</a>";
+
+            if ($this->sendWhatsapp) {
+
+                Http::timeout(10)
+                    ->withHeaders([
+                        'Authorization' => $whatsappToken,
+                    ])
+                    ->post('https://api.fonnte.com/send', [
+                        'target' => $this->formatPhoneNumber($booking->customer_phone),
+                        'message' => $message,
+                    ]);
+
+                Http::timeout(10)->withHeaders([
+                    'Authorization' => $whatsappToken,
+                ])->post('https://api.fonnte.com/validate', [
+                    'target' => $this->formatPhoneNumber($booking->customer_phone),
+                ]);
+
+                // if (! $response->successful()) {
+                //     DB::rollBack();
+
+                //     LivewireAlert::title('Gagal')
+                //         ->text('Pesan WhatsApp gagal dikirim.')
+                //         ->warning()
+                //         ->toast()
+                //         ->position('top-end')
+                //         ->show();
+
+                //     return;
+                // }
+
+                // $result = $response->json();
+                // // Sesuaikan dengan format response Fonnte
+                // if (isset($result['status']) && $result['status'] === false) {
+                //     DB::rollBack();
+
+                //     LivewireAlert::title('Gagal')
+                //         ->text('Pesan WhatsApp gagal dikirim.')
+                //         ->warning()
+                //         ->toast()
+                //         ->position('top-end')
+                //         ->show();
+
+                //     return;
+                // }
+            }
+
+            DB::commit();
+
+            // Kirim ke Telegram
+            if ($telegramToken && $chatId) {
+                try {
+                    Http::timeout(10)->post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+                        'chat_id' => $chatId,
+                        'text' => $adminMessage,
+                        'parse_mode' => 'HTML',
+                    ]);
+                } catch (\Exception $e) {
+                    logger()->error('Telegram Error: ' . $e->getMessage());
+                }
+            }
+
             try {
                 Http::timeout(10)->withHeaders([
                     'Authorization' => $whatsappToken,
                 ])->post('https://api.fonnte.com/send', [
-                    'target' => $this->formatPhoneNumber($booking->customer_phone),
-                    'message' => $message,
+                    'target' => $groupId,
+                    'message' => $groupMessage,
                 ]);
             } catch (\Exception $e) {
-                logger()->error('Fonnte Customer Error: ' . $e->getMessage());
+                logger()->error('Fonnte Group Error: ' . $e->getMessage());
             }
-        }
+        } catch (\Exception $e) {
 
-        // Kirim ke Telegram
-        if ($telegramToken && $chatId) {
-            try {
-                Http::timeout(10)->post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
-                    'chat_id' => $chatId,
-                    'text' => $adminMessage,
-                    'parse_mode' => 'HTML',
-                ]);
-            } catch (\Exception $e) {
-                logger()->error('Telegram Error: ' . $e->getMessage());
-            }
+            DB::rollBack();
+
+            logger()->error($e->getMessage());
+
+            LivewireAlert::title('Error')
+                ->text('Terjadi kesalahan saat membuat booking.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
         }
 
         // Reset
@@ -385,10 +435,13 @@ class RentIphoneWizard extends Component
             'end_time',
             'price',
         ]);
+        $this->sendWhatsapp = true;
         $this->step = 1;
-        $this->requested_booking_date = Carbon::now('Asia/Jakarta');
+        $this->requested_booking_date =
+            Carbon::today('Asia/Jakarta')->format('Y-m-d');
         $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
         $this->loadIphones();
+
         LivewireAlert::title('Success!')
             ->text('Booking berhasil disimpan.')
             ->success()
@@ -396,6 +449,7 @@ class RentIphoneWizard extends Component
             ->position('top-end')
             ->show();
     }
+
     public function selectIphone(int $iphoneId, string $name, $serial_number)
     {
         $this->selectedIphoneId = $iphoneId;

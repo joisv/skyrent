@@ -34,6 +34,32 @@ class DetailBooking extends Component
     public $penaltyFee = 0;
     // Pengembalian
 
+    // detail booking
+    public $customer_phone;
+    public $countryCode = '+62';
+
+    public function updateDetailBooking()
+    {
+        $this->validate([
+            'customer_phone' => 'required|string',
+        ]);
+
+        $this->booking->update([
+            'customer_phone' =>  $this->countryCode . '-' . $this->customer_phone,
+        ]);
+
+        LivewireAlert::title('Berhasil mengubah detail booking')
+            ->position('top-end')
+            ->text('Detail booking telah diperbarui')
+            ->toast()
+            ->success()
+            ->show();
+
+        $this->dispatch('modal-edit');
+    }
+
+ 
+
     public function updateStatusIphone(string $status = 'returned')
     {
         $booking = Booking::find($this->detailBookingIphones->id);
@@ -119,7 +145,8 @@ class DetailBooking extends Component
             'payment',
             'returns',
         ])->findOrFail($id);
-
+        $this->customer_phone = preg_replace('/^\+62-/', '', $this->detailBookingIphones->customer_phone);
+        // $this->customer_phone = str_replace('-', '', $phone);
         $this->booking = $this->detailBookingIphones;
         $this->durations = $this->booking->iphone->durations
             ->sortBy('hours')
