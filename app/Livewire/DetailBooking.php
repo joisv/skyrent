@@ -58,10 +58,15 @@ class DetailBooking extends Component
         $this->dispatch('modal-edit');
     }
 
- 
+
 
     public function updateStatusIphone(string $status = 'returned')
     {
+        $telegramToken = config('services.telegram.bot_token');
+        $chatId = config('services.telegram.chat_id');
+        $whatsappToken = config('services.fonnte.token');
+        $groupId = config('services.fonnte.group_id');
+
         $booking = Booking::find($this->detailBookingIphones->id);
         $booking->update(['status' => $status]);
         ReturnIphone::create([
@@ -70,6 +75,58 @@ class DetailBooking extends Component
             'returned_at' => now('Asia/Jakarta'),
             'condition'   => 'Pengembalian berhasil.',
         ]);
+
+        $message = "Halo {$this->booking->customer_name},\n\n"
+            . "Terima kasih telah menggunakan layanan *SkyRental*.\n\n"
+            . "Kami mengonfirmasi bahwa proses pengembalian perangkat telah selesai dan booking Anda telah ditutup.\n\n"
+            . "Detail Rental:\n"
+            . "--------------------------------------\n"
+            . "Kode Booking : *{$this->booking->booking_code}*\n"
+            . "Perangkat    : {$this->booking->iphone->name} {$this->booking->iphone->serial_number}\n"
+            . "Tanggal Sewa : {$this->booking->requested_booking_date}\n"
+            . "Durasi       : {$this->booking->duration} jam\n"
+            . "Total Biaya  : Rp" . number_format($this->booking->price, 0, ',', '.') . "\n"
+            . "--------------------------------------\n\n"
+            . "Perangkat telah kami terima kembali dalam sistem dan status rental Anda dinyatakan *SELESAI*.\n\n"
+            . "Kami sangat menghargai kepercayaan Anda menggunakan layanan SkyRental. Semoga perangkat yang kami sediakan dapat membantu kebutuhan Anda.\n\n"
+            . "Kami tunggu kedatangan Anda kembali di kesempatan berikutnya.\n\n"
+            . "Salam,\n"
+            . "*SkyRental*";
+
+        $adminMessage = "<b>Rental Selesai & Perangkat Dikembalikan</b>\n\n"
+            . "<b>Nama</b> : {$this->booking->customer_name}\n"
+            . "<b>HP</b>   : {$this->booking->customer_phone}\n"
+            . "<b>Email</b>: {$this->booking->customer_email}\n\n"
+            . "<b>Kode Booking</b>: {$this->booking->booking_code}\n"
+            . "<b>Perangkat</b>   : {$this->booking->iphone->name} {$this->booking->iphone->serial_number}\n"
+            . "<b>Tanggal Sewa</b>: {$this->booking->requested_booking_date}\n"
+            . "<b>Durasi</b>      : {$this->booking->duration} jam\n"
+            . "<b>Total Biaya</b> : Rp" . number_format($this->booking->price, 0, ',', '.') . "\n\n"
+            . "✅ Status rental telah selesai.\n"
+            . "📦 Perangkat telah dikembalikan oleh pelanggan.\n\n"
+            . "🔗 <a href='" . url('/admin/bookings/' . $this->booking->id) . "'>Lihat detail di Admin Panel</a>";
+
+        // Kirim WhatsApp
+        Http::timeout(10)
+            ->withHeaders([
+                'Authorization' => $whatsappToken,
+            ])
+            ->post('https://api.fonnte.com/send', [
+                'target' => $this->formatPhoneNumber($this->booking->customer_phone),
+                'message' => $message,
+            ]);
+        if ($telegramToken && $chatId) {
+            try {
+                Http::timeout(10)->post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+                    'chat_id' => $chatId,
+                    'text' => $adminMessage,
+                    'parse_mode' => 'HTML',
+                ]);
+            } catch (\Exception $e) {
+                logger()->error('Telegram Error: ' . $e->getMessage());
+            }
+        }
+
         $this->dispatch('success-save');
         $this->dispatch('close-modal');
         $this->reset([
@@ -106,7 +163,7 @@ class DetailBooking extends Component
             $this->updateStatusIphone();
         } else {
             LivewireAlert::title('Tidak bisa merubah status iPhone')
-                ->text(dd($this->is_late))
+                ->text('Status iPhone tidak dapat diubah.')
                 ->position('top-end')
                 ->toast()
                 ->error()

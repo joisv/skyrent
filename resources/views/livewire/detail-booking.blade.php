@@ -219,8 +219,8 @@
         <button
             class="w-full py-2.5 rounded-lg font-semibold text-sm
            bg-orange-500 text-white
-           disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
-            wire:click="returnIphone" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
+           disabled:bg-orange-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+            wire:click="returnIphone"  wire:loading.attr="disabled" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
             Tandai Selesai
         </button>
 

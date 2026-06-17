@@ -346,11 +346,11 @@ class RentIphoneWizard extends Component
                         'message' => $message,
                     ]);
 
-                Http::timeout(10)->withHeaders([
-                    'Authorization' => $whatsappToken,
-                ])->post('https://api.fonnte.com/validate', [
-                    'target' => $this->formatPhoneNumber($booking->customer_phone),
-                ]);
+                // Http::timeout(10)->withHeaders([
+                //     'Authorization' => $whatsappToken,
+                // ])->post('https://api.fonnte.com/validate', [
+                //     'target' => $this->formatPhoneNumber($booking->customer_phone),
+                // ]);
 
                 // if (! $response->successful()) {
                 //     DB::rollBack();
