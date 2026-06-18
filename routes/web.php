@@ -3,7 +3,8 @@
 use App\Http\Controllers\Client\PageController;
 use App\Models\Iphones;
 use Illuminate\Support\Facades\Route;
-
+use App\Models\Booking;
+use Illuminate\Support\Facades\Response;
 
 
 Route::view('/', [PageController::class, 'welcome'])->name('welcome');
@@ -61,5 +62,34 @@ Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
             ->name('payments');
     });
 
+
+// vcf export
+
+Route::get('/export-vcf', function () {
+
+    return response()->streamDownload(function () {
+
+        Booking::selectRaw('MIN(customer_name) as customer_name, customer_phone')
+            ->groupBy('customer_phone')
+            ->cursor()
+            ->each(function ($booking) {
+
+                $phone = preg_replace('/[^0-9]/', '', $booking->customer_phone);
+
+                if (str_starts_with($phone, '0')) {
+                    $phone = '62' . substr($phone, 1);
+                }
+
+                echo "BEGIN:VCARD\r\n";
+                echo "VERSION:3.0\r\n";
+                echo "FN:SkyRental {$booking->customer_name}\r\n";
+                echo "TEL;TYPE=CELL:{$phone}\r\n";
+                echo "END:VCARD\r\n";
+            });
+
+    }, 'customers.vcf', [
+        'Content-Type' => 'text/vcard',
+    ]);
+});
 
 require __DIR__ . '/auth.php';
