@@ -82,7 +82,7 @@ Route::get('/export-vcf', function () {
 
                 echo "BEGIN:VCARD\r\n";
                 echo "VERSION:3.0\r\n";
-                echo "FN:SkyRental {$booking->customer_name}\r\n";
+                echo "FN:{$booking->customer_name} (SkyRental)\r\n";
                 echo "TEL;TYPE=CELL:{$phone}\r\n";
                 echo "END:VCARD\r\n";
             });
