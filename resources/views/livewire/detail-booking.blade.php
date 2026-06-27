@@ -138,7 +138,9 @@
             <div>
                 <p class="text-xs text-gray-500">Jaminan</p>
                 <p class="font-medium text-gray-900">
-                    {{ $detailBookingIphones->jaminan_type ?? '-' }}
+                    {{ optional($detailBookingIphones)->kia
+                        ? 'Kartu Identitas Anak'
+                        : optional($detailBookingIphones)->jaminan_type ?? '-' }}
                 </p>
             </div>
 
@@ -220,7 +222,7 @@
             class="w-full py-2.5 rounded-lg font-semibold text-sm
            bg-orange-500 text-white
            disabled:bg-orange-300 disabled:text-gray-500 disabled:cursor-not-allowed"
-            wire:click="returnIphone"  wire:loading.attr="disabled" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
+            wire:click="returnIphone" wire:loading.attr="disabled" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
             Tandai Selesai
         </button>
 
@@ -240,7 +242,7 @@
     </div>
     {{-- Detail Booking Edit --}}
     <x-modal name="edit-booking" :show="$errors->IsNotEmpty()" maxWidth="sm">
-        <div class="p-3 space-y-3 flex flex-col justify-end"  @modal-edit.window="show = false">
+        <div class="p-3 space-y-3 flex flex-col justify-end" @modal-edit.window="show = false">
             <div x-data="{
                 countryCode: @entangle('countryCode'),
                 customerPhone: @entangle('customer_phone').live,
@@ -278,7 +280,8 @@
                     placeholder="8123-4567-8901" />
 
             </div>
-            <button class="bg-orange-500 text-white py-2 px-4 rounded-lg justify-end disabled:opacity-50" wire:click="updateDetailBooking" wire:loading.attr="disabled">simpan</button>
+            <button class="bg-orange-500 text-white py-2 px-4 rounded-lg justify-end disabled:opacity-50"
+                wire:click="updateDetailBooking" wire:loading.attr="disabled">simpan</button>
         </div>
     </x-modal>
 

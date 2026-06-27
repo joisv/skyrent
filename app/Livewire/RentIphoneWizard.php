@@ -282,7 +282,8 @@ class RentIphoneWizard extends Component
                 'payment_id' => $this->selectedPayment ? $this->selectedPayment->id : null,
                 'address' => $this->address,
                 'pickup_type' => 'pickup',
-                'jaminan_type' => $this->jaminan_type,
+                'jaminan_type' => $this->jaminan_type === 'Kartu Identitas Anak' ? 'Kartu Pelajar' : $this->jaminan_type,
+                'kia' => $this->jaminan_type === 'Kartu Identitas Anak' ? true : false,
             ]);
 
             // debug off
