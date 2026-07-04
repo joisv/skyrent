@@ -1,5 +1,4 @@
 <div x-data="">
-    <input type="number" wire:model.live.debounce.250ms="customer_number">
     <x-tables.table name="Payment" count="{{ $payments->count() }}">
         <x-slot name="secondBtn">
             <button

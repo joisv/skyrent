@@ -18,7 +18,10 @@ class Iphones extends Model
         'slug',
         'created',
         'booked',
-        'serial_number'
+        'serial_number',
+        'asset_code',
+        'status',
+        'affiliate_id',
     ];
 
     public function bookings()
@@ -77,5 +80,15 @@ class Iphones extends Model
     public function sliders()
     {
         return $this->hasMany(Slider::class);
+    }
+
+    public function affiliate()
+    {
+        return $this->belongsTo(Affiliate::class);
+    }
+
+    public function transfers()
+    {
+        return $this->hasMany(IphoneTransfer::class, 'iphone_id');
     }
 }

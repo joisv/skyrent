@@ -3,8 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Iphones;
+use App\Models\IphoneTransfer;
+use App\Models\User;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
 class IphonesManagements extends Component
@@ -17,13 +18,73 @@ class IphonesManagements extends Component
     public $mySelected = [];
     public $selectedAll = false;
 
+    public bool $showDrawer2 = false;
+    public $users;
+    public $iphone;
+    public $receiver_id;
+    public $notes;
+    public $to_affiliate_id;
+
     public function render()
     {
         $query = $this->getData()->paginate($this->paginate);
+        $this->users = User::whereHas('roles', function ($query) {
+            $query->where('name', 'affiliate-admin');
+        })
+            ->get();
 
         return view('livewire.iphones-managements', [
             'iphones' => $query,
         ]);
+    }
+
+    public function openModalDrawer(int $iphoneId)
+    {
+        $this->showDrawer2 = true;
+        $this->iphone = Iphones::find($iphoneId);
+    }
+
+    public function transfer()
+    {
+        // $this->validate([
+        //     'receiver_id' => 'required|exists:users,id',
+        //     'notes' => 'nullable|string|max:500',
+        //     'to_affiliate_id' => 'required',
+        //     'from_affiliate_id' => 'required',
+        // ]);
+
+        $receiver = User::with('affiliate')->findOrFail($this->receiver_id);
+
+        if (!$receiver->affiliate) {
+            $this->addError('receiver_id', 'User tujuan belum memiliki affiliate.');
+
+            return;
+        }
+
+        $iphone = Iphones::findOrFail($this->iphone->id);
+        IphoneTransfer::create([
+            'iphone_id'         => $iphone->id,
+            'from_affiliate_id' => User::find($this->receiver_id)->affiliate?->id,
+            'to_affiliate_id'   => User::find($this->receiver_id)->affiliate?->id,
+            'sent_by'           => auth()->id(),
+            'status'            => 'in_transit',
+            'notes'             => $this->notes,
+            'sent_at'           => now(),
+        ]);
+        $iphone->update([
+            'status' => 'transferred',
+        ]);
+
+        $this->showDrawer2 = false;
+        $this->reset(['receiver_id', 'notes', 'to_affiliate_id']);
+
+        LivewireAlert::title('Transfer berhasil')
+            ->position('top-end')
+            ->toast()
+            ->text('iPhone berhasil ditransfer')
+            ->timer(5000)
+            ->success()
+            ->show();
     }
 
     public function destroyAlert($value = '', $onConfirm = 'destroy')
@@ -109,18 +170,27 @@ class IphonesManagements extends Component
 
     public function getData()
     {
-        $query = Iphones::query();
+        $query = Iphones::query()
+            ->with([
+                'affiliate',
+                'transfers',
+            ]);
+
+        if (! auth()->user()->hasRole('super-admin')) {
+            $query->where('affiliate_id', auth()->user()->affiliate_id);
+        }
 
         if ($this->search) {
-            $query->search(['name', 'description', 'updated_at', 'serial_number'], $this->search);
+            $query->search(
+                ['name', 'description', 'updated_at', 'serial_number'],
+                $this->search
+            );
         }
 
         if (in_array($this->sortField, ['created_at', 'updated_at'])) {
-
             $query->orderBy($this->sortField, $this->sortDirection);
         }
 
-        // Jangan panggil get() di sini, biarkan query builder tetap sebagai objek query
         return $query;
     }
 

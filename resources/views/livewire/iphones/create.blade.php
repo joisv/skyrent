@@ -168,13 +168,16 @@
                             </svg>
                         </div>
                         <div class="text-start">
-                            <x-input-label for="permalink">Serial Number</x-input-label>
+                            <x-input-label for="permalink">Serial Number & Asset Code</x-input-label>
                         </div>
                     </button>
                     <div x-show="serial_number" x-collapse>
                         <input type="text"
                             class="border-x-0 border-t-0 w-full placeholder:text-gray-400 border-b-2 border-b-gray-300 focus:ring-0 py-2 px-1 focus:border-t-0"
                             placeholder="DX92SL093XJ" id="serial_number" wire:model="serial_number">
+                        <input type="text"
+                            class="border-x-0 border-t-0 w-full placeholder:text-gray-400 border-b-2 border-b-gray-300 focus:ring-0 py-2 px-1 focus:border-t-0"
+                            placeholder="IPHSKY0001" id="asset_code" wire:model="asset_code">
                     </div>
                 </div>
 

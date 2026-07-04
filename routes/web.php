@@ -4,7 +4,6 @@ use App\Http\Controllers\Client\PageController;
 use App\Models\Iphones;
 use Illuminate\Support\Facades\Route;
 use App\Models\Booking;
-use Illuminate\Support\Facades\Response;
 
 
 Route::view('/', [PageController::class, 'welcome'])->name('welcome');
@@ -18,7 +17,7 @@ Route::get('products', [PageController::class, 'products'])->name('products');
 Route::get('booking-status', [PageController::class, 'bookingStatus'])->name('booking.status');
 Route::get('prices', [PageController::class, 'prices'])->name('prices');
 
-Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
+Route::middleware(['auth', 'role:super-admin|admin|staff'])->prefix('admin')
     ->group(function () {
         Route::view('dashboard', 'dashboard')
             ->name('dashboard');
@@ -60,11 +59,21 @@ Route::middleware(['auth', 'role:super-admin|admin'])->prefix('admin')
 
         Route::view('payments', 'payments')
             ->name('payments');
+
+        Route::view('affiliates', 'affiliates')
+            ->name('affiliates');
+
+        Route::view('roles-permissions', 'roles-permissions')->name('roles-permissions');
     });
 
+Route::middleware(['auth', 'role:admin|super-admin|affiliate-admin|affiliate'])->prefix('affiliate')
+    ->group(function () {
+        Route::get('dashboard', function () {
+            return view('affiliate.dashboard');
+        })->name('affiliate.dashboard');
+    });
 
 // vcf export
-
 Route::get('/export-vcf', function () {
 
     return response()->streamDownload(function () {
@@ -86,7 +95,6 @@ Route::get('/export-vcf', function () {
                 echo "TEL;TYPE=CELL:{$phone}\r\n";
                 echo "END:VCARD\r\n";
             });
-
     }, 'customers.vcf', [
         'Content-Type' => 'text/vcard',
     ]);

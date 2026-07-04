@@ -18,7 +18,8 @@ class Create extends Component
         $date,
         $slug,
         $gallery_id,
-        $serial_number;
+        $serial_number,
+        $asset_code;
 
 
     public $durations = [
@@ -41,10 +42,10 @@ class Create extends Component
             'description' => 'nullable|string|max:1000',
             'gallery_id' => 'required|exists:galleries,id',
             'slug' => 'required|string|max:255|unique:iphones,slug',
-            'serial_number' => 'required|string|max:255'
+            'serial_number' => 'required|string|max:255',
+            'asset_code' => 'required|string|max:255'
         ]);
 
-        // 1. Simpan iPhone
         $iphone = Iphones::create([
             'name' => $this->name,
             'description' => $this->description,
@@ -53,10 +54,10 @@ class Create extends Component
             'slug' => $this->slug,
             'created' => $this->date->format('Y-m-d'),
             'serial_number' => $this->serial_number,
+            'asset_code' => $this->asset_code,
         ]);
 
         // dd($this->durations);
-        // 2. Siapkan data attach [duration_id => ['price' => ...]]
         $syncData = [];
         foreach ($this->durations as $item) {
             // Cek apakah duration dengan 'hours' tersebut sudah ada
@@ -77,7 +78,7 @@ class Create extends Component
         $iphone->durations()->attach($syncData);
 
         // 4. Reset input dan beri feedback
-        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id', 'durations', 'serial_number']);
+        $this->reset(['name', 'description', 'urlPoster', 'date', 'slug', 'gallery_id', 'durations', 'serial_number', 'asset_code']);
 
         session()->flash('saved', [
             'title' => 'Changes Saved!',

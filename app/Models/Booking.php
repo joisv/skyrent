@@ -127,4 +127,9 @@ class Booking extends Model
                 return $currentEnd->lt($end) && $newEnd->gt($start);
             });
     }
+
+    public function affiliate()
+    {
+        return $this->belongsTo(Affiliate::class);
+    }
 }
