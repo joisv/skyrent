@@ -104,7 +104,19 @@ class Affiliates extends Component
     public function listIphones($affiliateId)
     {
         $this->dispatch('open-modal', 'list-iphones');
-        $this->iphones = Iphones::where('affiliate_id', $affiliateId)->get();
+
+        $user = auth()->user();
+
+        $query = Iphones::query();
+
+        if ($user->hasRole('affiliate-admin')) {
+            $query->where('affiliate_id', $user->affiliate->id);
+        } else {
+            $query->whereNull('affiliate_id');
+        }
+
+        $this->iphones = $query->get();
+        
         $this->selectedAffiliateId = $affiliateId;
     }
 
@@ -207,6 +219,25 @@ class Affiliates extends Component
 
         $this->is_active = true;
         $this->showCreateDrawer = false;
+        $this->reset([
+            'code',
+            'name',
+            'slug',
+            'email',
+            'phone',
+            'address',
+            'city',
+            'province',
+            'postal_code',
+            'latitude',
+            'longitude',
+            'description',
+            'logo',
+            'banner',
+            'is_active',
+            'is_edit',
+            'affiliate',
+        ]);
         LivewireAlert::title('Berhasil menambahkan Affiliate')
             ->text('Affiliate berhasil ditambahkan.')
             ->success()
@@ -217,10 +248,13 @@ class Affiliates extends Component
 
     public function render()
     {
-        $this->users = User::whereHas('roles', function ($query) {
-            $query->where('name', 'affiliate-admin');
-        })
-            ->get();
+        // $this->users = User::whereHas('roles', function ($query) {
+        //     $query->where('name', 'affiliate-admin');
+        // })->get();
+
+        $this->users =  User::all();
+
+
         return view('livewire.affiliates', [
             'affiliates' => $this->getData()->paginate(10)
         ]);

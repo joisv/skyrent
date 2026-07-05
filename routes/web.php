@@ -17,7 +17,7 @@ Route::get('products', [PageController::class, 'products'])->name('products');
 Route::get('booking-status', [PageController::class, 'bookingStatus'])->name('booking.status');
 Route::get('prices', [PageController::class, 'prices'])->name('prices');
 
-Route::middleware(['auth', 'role:super-admin|admin|staff'])->prefix('admin')
+Route::middleware(['auth', 'role:super-admin|admin|staff|affiliate-admin'])->prefix('admin')
     ->group(function () {
         Route::view('dashboard', 'dashboard')
             ->name('dashboard');

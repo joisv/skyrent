@@ -83,11 +83,9 @@
                     wire:model.live="selectedAll">
             </x-tables.th>
             <x-tables.th>Serial Number</x-tables.th>
-            <x-tables.th>Status</x-tables.th>
             <x-tables.th>Nama</x-tables.th>
-            <x-tables.th>iPhone</x-tables.th>
-            <x-tables.th>Durasi Sewa</x-tables.th>
             <x-tables.th>Tanggal & Waktu Mulai</x-tables.th>
+            <x-tables.th>Dibuat Oleh</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
         </x-slot>
 
@@ -100,8 +98,15 @@
                             class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                             wire:model.live="mySelected" value="{{ $booking->id }}">
                     </x-tables.td>
-                    <x-tables.td>{{ $booking->iphone->serial_number ?? '-' }}</x-tables.td>
                     <x-tables.td>
+                        <p>{{ $booking->iphone->name ?? '-' }}</p>
+                        <p>
+                            {{ $booking->iphone->serial_number ?? '-' }}
+
+                        </p>
+                    </x-tables.td>
+                    <x-tables.td>
+                        <p class="pb-2">{{ $booking->customer_name }}</p>
                         @switch($booking->status)
                             @case('pending')
                                 <span class="px-2 py-1 rounded bg-yellow-500 text-white font-medium text-sm">
@@ -134,15 +139,16 @@
                         @endswitch
                     </x-tables.td>
 
-                    <x-tables.td>{{ $booking->customer_name }}</x-tables.td>
-                    <x-tables.td>{{ $booking->iphone->name ?? '-' }}</x-tables.td>
-                    <x-tables.td>{{ $booking->duration }} jam</x-tables.td>
                     {{-- <x-tables.td>
                         {{ $booking->requested_booking_date ? \Carbon\Carbon::parse($booking->requested_booking_date)->format('d M Y') . ' ' . $booking->requested_time : '-' }}
                     </x-tables.td> --}}
 
                     <x-tables.td>
-                        {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') . ' ' . $booking->start_time : '-' }}
+                        <p>{{ $booking->duration }} jam</p>
+                       <p> {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') . ' ' . $booking->start_time : '-' }}</p>
+                    </x-tables.td>
+                    <x-tables.td>
+                        {{ $booking->user?->name ?? '-' }}
                     </x-tables.td>
 
                     <x-tables.td>

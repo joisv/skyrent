@@ -182,7 +182,7 @@ class IphonesManagements extends Component
 
         if ($this->search) {
             $query->search(
-                ['name', 'description', 'updated_at', 'serial_number'],
+                ['name', 'description', 'updated_at', 'serial_number',],
                 $this->search
             );
         }

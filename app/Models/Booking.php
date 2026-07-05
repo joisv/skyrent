@@ -34,8 +34,15 @@ class Booking extends Model
         'address',
         'pickup_type',
         'jaminan_type',
-        'kia'
+        'kia',
+        'user_id',
+        'affiliate_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public static function generateBookingCode()
     {

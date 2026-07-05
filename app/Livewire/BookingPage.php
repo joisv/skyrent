@@ -199,7 +199,7 @@ class BookingPage extends Component
 
     public function getData()
     {
-        $query = Booking::query()->with('iphone');
+        $query = Booking::query()->with(['iphone', 'user']);
 
         // Filter status (default: confirmed)
         if ($this->filterStatus) {
@@ -215,7 +215,8 @@ class BookingPage extends Component
                 'booking_code',
                 'status',
                 'iphone.serial_number',
-                'iphone.name'
+                'iphone.name',
+                'user.name',
             ], $this->search);
         }
 

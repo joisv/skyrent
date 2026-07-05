@@ -284,6 +284,8 @@ class RentIphoneWizard extends Component
                 'pickup_type' => 'pickup',
                 'jaminan_type' => $this->jaminan_type === 'Kartu Identitas Anak' ? 'Kartu Pelajar' : $this->jaminan_type,
                 'kia' => $this->jaminan_type === 'Kartu Identitas Anak' ? true : false,
+                'user_id' => auth()->user()->id ?? null,
+                'affiliate_id' => auth()->user()->affiliate_id ?? null,
             ]);
 
             // debug off
