@@ -21,14 +21,14 @@ class SeoComposer
     public function compose(View $view)
     {
         $view->with('seo', new SEOData(
-            // site_name: $this->setting->site_name,
-            // title: $this->setting->site_name,
-            // description: $this->setting->description,
-            // robots: 'nofollow, noindex',
-            site_name : '-',
-            title : '-',
-            description : '-',
-            robots : 'nofollow, noindex'
+            site_name: $this->setting->site_name,
+            title: $this->setting->site_name,
+            description: $this->setting->description,
+            robots: 'nofollow, noindex',
+            // site_name : '-',
+            // title : '-',
+            // description : '-',
+            // robots : 'nofollow, noindex'
         ));
 
         $view->with('setting', $this->setting);

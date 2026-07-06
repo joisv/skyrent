@@ -112,7 +112,7 @@ class BookingPage extends Component
 
     public function getReturnToday()
     {
-        $this->returnToday = Booking::where('status', 'confirmed')
+        $this->returnToday = Booking::with('iphone')->where('status', 'confirmed')
             ->whereDate('end_booking_date', '<=', Carbon::today())
             ->get();
     }

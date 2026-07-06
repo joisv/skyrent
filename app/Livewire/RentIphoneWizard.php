@@ -515,7 +515,9 @@ class RentIphoneWizard extends Component
         $now = Carbon::now('Asia/Jakarta');
 
         $this->iphones = Iphones::query()
-            ->with(['bookings' => function ($query) {
+            ->with([
+                'gallery',
+                'bookings' => function ($query) {
                 $query->whereIn('status', ['pending', 'confirmed']);
             }])
             ->when($this->iphone_search, function ($query) {
