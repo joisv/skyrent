@@ -174,6 +174,7 @@ class IphonesManagements extends Component
             ->with([
                 'affiliate',
                 'transfers',
+                'user'
             ]);
 
         if (! auth()->user()->hasRole('super-admin')) {
