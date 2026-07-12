@@ -1,5 +1,5 @@
 <div x-data="">
-     @if ($errors->any())
+    @if ($errors->any())
         <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-[-10px]" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0"
@@ -116,17 +116,21 @@
     </x-mary-drawer>
     <x-tables.table name="Daftar iPhone" count="{{ $iphones->count() }} iPhone">
         <x-slot name="secondBtn">
-            <button
-                class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
-                wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
-                <span>Bulk delete</span>
-            </button>
+            @role('super-admin|admin|staff')
+                <button
+                    class="flex items-center justify-center w-1/2 px-5 py-2 text-sm disabled:text-gray-700 transition-colors duration-200 disabled:bg-white border rounded-lg gap-x-2 sm:w-auto dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:border-gray-700 bg-red-500 text-white"
+                    wire:click="destroyAlert" @if (!$mySelected) disabled @endif>
+                    <span>Bulk delete</span>
+                </button>
+            @endrole
         </x-slot>
         <x-slot name="addBtn">
-            <x-tables.addbtn type="button" x-data=""
-                @click="window.location.href = '{{ route('iphones.create') }}'">
-                Add iPhone
-            </x-tables.addbtn>
+            @role('super-admin|admin|staff')
+                <x-tables.addbtn type="button" x-data=""
+                    @click="window.location.href = '{{ route('iphones.create') }}'">
+                    Add iPhone
+                </x-tables.addbtn>
+            @endrole
         </x-slot>
         <x-slot name="sort">
             <div class="flex items-center space-x-2 w-1/2 ">
@@ -169,12 +173,14 @@
             <x-tables.th>Dibuat</x-tables.th>
             <x-tables.th>Dirubah</x-tables.th>
             <x-tables.th>Diupdate</x-tables.th>
-            <x-tables.th>Action</x-tables.th>
+            @role('super-admin|admin|staff')
+                <x-tables.th>Action</x-tables.th>
+            @endrole
         </x-slot>
         @php $no = 1; @endphp
         <x-slot name="tbody">
             @foreach ($iphones as $index => $iphone)
-            {{-- @dump( $iphone->affiliate->users?->name ?? '-' ) --}}
+                {{-- @dump( $iphone->affiliate->users?->name ?? '-' ) --}}
                 <tr>
                     <x-tables.td>
                         <input id="default-{{ $index }}" type="checkbox"
@@ -189,7 +195,7 @@
                     </x-tables.td>
                     @role('super-admin')
                         <x-tables.td>
-                           {{ $iphone->affiliate?->users->first()?->name ?? '-' }}
+                            {{ $iphone->affiliate?->users->first()?->name ?? '-' }}
                         </x-tables.td>
                     @endrole
                     <x-tables.td>
@@ -201,15 +207,17 @@
                     <x-tables.td>{{ Carbon\Carbon::createFromFormat('Y-m-d', $iphone->created)->format('F j, Y') }}</x-tables.td>
                     <x-tables.td>{{ $iphone->updated_at->format('d M Y') }}</x-tables.td>
                     {{-- <x-tables.td>{{ $iphone->category->name }}</x-tables.td> --}}
-                    <x-tables.td>
-                        <a href="{{ route('iphones.edit', $iphone->id) }}">
-                            <x-primary-button type="button">edit</x-primary-button>
-                        </a>
-                        <x-danger-button type="button"
-                            wire:click="destroyAlert({{ $iphone->id }}, 'delete')">delete</x-danger-button>
-                        <x-primary-button type="button"
-                            wire:click="openModalDrawer({{ $iphone->id }})">transfer</x-primary-button>
-                    </x-tables.td>
+                    @role('super-admin|admin|staff')
+                        <x-tables.td>
+                            <a href="{{ route('iphones.edit', $iphone->id) }}">
+                                <x-primary-button type="button">edit</x-primary-button>
+                            </a>
+                            <x-danger-button type="button"
+                                wire:click="destroyAlert({{ $iphone->id }}, 'delete')">delete</x-danger-button>
+                            <x-primary-button type="button"
+                                wire:click="openModalDrawer({{ $iphone->id }})">transfer</x-primary-button>
+                        </x-tables.td>
+                    @endrole
 
                 </tr>
             @endforeach

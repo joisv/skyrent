@@ -21,7 +21,7 @@
                     :active="request()->routeIs('bookings')" />
             </x-mary-menu-sub>
             <x-mary-menu-sub title="Laporan" icon="o-chart-bar">
-                <x-mary-menu-item title="Pendapatan" wire:navigate :href="route('reports.revenue')" :active="request()->routeIs('reports.revenue')" icon="o-banknotes" />
+                <x-mary-menu-item title="Pendapatan" :href="route('reports.revenue')" :active="request()->routeIs('reports.revenue')" icon="o-banknotes" />
                 <x-mary-menu-item title="Top iPhone" icon="o-trophy" wire:navigate :href="route('reports.topdevice')" :active="request()->routeIs('reports.topdevice')" />
             </x-mary-menu-sub>
             <x-mary-menu-item title="Affiliate" icon="o-user-group" wire:navigate :href="route('affiliates')" :active="request()->routeIs('affiliates')" />
@@ -48,7 +48,12 @@
 
             <x-mary-menu-separator />
         @else
-            <x-mary-menu-item title="Dashboard" icon="o-home" :href="route('affiliate.dashboard')" :active="request()->routeIs('affiliate.dashboard')" />
+            <x-mary-menu-item title="List iPhone" icon="o-plus-circle" wire:navigate :href="route('iphones')"
+                :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
+            <x-mary-menu-item title="Transfer iPhone" icon="o-arrows-right-left" :href="route('affiliate.dashboard')" :active="request()->routeIs('affiliate.dashboard')" wire:navigate/>
+            <x-mary-menu-item title="Booking Baru" icon="o-calendar-days" wire:navigate :href="route('bookings')"
+                :active="request()->routeIs('bookings')" />
+            <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
         @endrole
         <!-- Navigation Links -->
         <livewire:layout.logout />

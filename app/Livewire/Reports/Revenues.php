@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Reports;
 
+use App\Models\Booking;
+use App\Models\Revenue;
 use Livewire\Component;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Revenues extends Component
 {
@@ -14,11 +17,116 @@ class Revenues extends Component
     public ?string $startDate = null;
     public ?string $endDate = null;
     public bool $disableFutureDates = true;
+    public int $totalBooking = 0;
+    public float $totalIncome = 0.0;
+    public array $paymentMethods = [];
+
+    public array $bookingChart = [];
+    public array $paymentChart = [];
+
+    public function loadStatistics()
+    {
+        $query = $this->bookingQuery();
+
+        /**
+         * Total Booking
+         */
+        $this->totalBooking = (clone $query)->count();
+
+        /**
+         * Total Pendapatan
+         */
+        $this->totalIncome = Revenue::query()
+            ->whereHas('booking', function ($q) {
+                $q->whereBetween('created_at', [
+                    Carbon::parse($this->startDate)->startOfDay(),
+                    Carbon::parse($this->endDate)->endOfDay(),
+                ]);
+            })
+            ->sum('amount');
+
+        /**
+         * Jenis Pembayaran
+         */
+        $this->paymentMethods = (clone $query)
+            ->with('payment')
+            ->get()
+            ->groupBy(fn($booking) => $booking->payment?->name ?? 'Belum Dipilih')
+            ->map(fn($items) => $items->count())
+            ->toArray();
+    }
+
+    public function refreshDashboard()
+    {
+        $this->loadStatistics();
+
+        $this->loadChart();
+
+        $this->loadPaymentChart();
+    }
+
+    protected function bookingQuery()
+    {
+        return Booking::query()
+            ->whereBetween('bookings.created_at', [
+                Carbon::parse($this->startDate)->startOfDay(),
+                Carbon::parse($this->endDate)->endOfDay(),
+            ]);
+    }
+    
+    public function loadPaymentChart()
+    {
+        $data = $this->bookingQuery()
+            ->join('payments', 'payments.id', '=', 'bookings.payment_id')
+            ->selectRaw('payments.name, COUNT(bookings.id) as total')
+            ->groupBy('payments.id', 'payments.name')
+            ->orderBy('payments.name')
+            ->get();
+
+        $this->paymentChart = [
+            'labels' => $data->pluck('name')->toArray(),
+            'series' => $data->pluck('total')->toArray(),
+        ];
+
+        $this->dispatch(
+            'refresh-payment-chart',
+            labels: $this->paymentChart['labels'],
+            series: $this->paymentChart['series']
+        );
+    }
+
+    public function loadChart()
+    {
+        $data = $this->bookingQuery()
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $this->bookingChart = [
+            'categories' => $data->pluck('date')->toArray(),
+            'series' => $data->pluck('total')->toArray(),
+        ];
+
+        $this->dispatch(
+            'refresh-chart-data',
+            categories: $this->bookingChart['categories'],
+            series: $this->bookingChart['series']
+        );
+    }
 
     public function mount()
     {
         $this->month = now()->month;
         $this->year = now()->year;
+
+        $this->startDate = today()->toDateString();
+        $this->endDate = null;
+
+        $this->refreshDashboard();
     }
 
     public function previousMonth()
@@ -48,6 +156,9 @@ class Revenues extends Component
 
         if (!$this->startDate) {
             $this->startDate = $date;
+
+            $this->refreshDashboard();
+
             return;
         }
 
@@ -62,11 +173,15 @@ class Revenues extends Component
                 $this->endDate = $date;
             }
 
+            $this->refreshDashboard();
+
             return;
         }
 
         $this->startDate = $date;
         $this->endDate = null;
+        
+        $this->refreshDashboard();
     }
 
     public function getCalendarProperty()
@@ -99,6 +214,7 @@ class Revenues extends Component
 
     public function render()
     {
+
         return view('livewire.reports.revenues');
     }
 }

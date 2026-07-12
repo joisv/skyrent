@@ -514,12 +514,21 @@ class RentIphoneWizard extends Component
     {
         $now = Carbon::now('Asia/Jakarta');
 
+        $user = auth()->user();
+
         $this->iphones = Iphones::query()
             ->with([
                 'gallery',
                 'bookings' => function ($query) {
-                $query->whereIn('status', ['pending', 'confirmed']);
-            }])
+                    $query->whereIn('status', ['pending', 'confirmed']);
+                },
+            ])
+            ->when($user->hasRole('affiliate-admin'), function ($query) use ($user) {
+                $query->where('affiliate_id', $user->affiliate_id);
+            })
+            ->when($user->hasRole('super-admin'), function ($query) {
+                $query->whereNull('affiliate_id');
+            })
             ->when($this->iphone_search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->iphone_search . '%')
@@ -538,10 +547,8 @@ class RentIphoneWizard extends Component
                         'Asia/Jakarta'
                     );
 
-                    $bookingEnd = $bookingStart->copy()
-                        ->addHours((int) $booking->duration);
+                    $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
 
-                    // booking sedang aktif sekarang
                     if ($bookingStart->lte($now) && $bookingEnd->gt($now)) {
                         $iphone->is_available = false;
                         break;
@@ -551,6 +558,7 @@ class RentIphoneWizard extends Component
                 return $iphone;
             });
     }
+
 
     // #[On('booking-time-set')]
     // public function receiveBookingTime(string $date, string $time): void

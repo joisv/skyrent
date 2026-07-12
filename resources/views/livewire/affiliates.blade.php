@@ -324,36 +324,37 @@
 
                             </div>
                         </div>
-
+                       
                         {{-- Statistik --}}
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                             <button wire:click="assignAffiliateToUser({{ $detailAffiliate?->id }})" type="button"
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">Pengguna Affiliate</p>
-                                <h2 class="text-3xl font-bold">
-                                    {{ $detailAffiliate?->users->count() }}
+                                <h2 class="text-lg font-bold">
+                                    {{ $detailAffiliate?->users->first()?->name ?? 'Belum ada pengguna' }}
                                 </h2>
                             </button>
 
                             <button type="button" wire:click="listIphones({{ $detailAffiliate?->id }})"
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">iPhone</p>
-                                <h2 class="text-3xl font-bold">
-                                    {{ $detailAffiliate?->iphones->count() }}
+                                <h2 class="text-xl font-bold">
+                                    {{ $iphones?->count() }}
                                 </h2>
                             </button>
 
-                            <div class="bg-white rounded-xl shadow p-5">
+                            <button type="button" wire:click="listBookings({{ $detailAffiliate?->id }})"
+                                class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">Booking</p>
-                                <h2 class="text-3xl font-bold">
+                                <h2 class="text-xl font-bold">
                                     {{ $detailAffiliate?->bookings->count() }}
                                 </h2>
-                            </div>
+                            </button >
 
                             <div class="bg-white rounded-xl shadow p-5">
                                 <p class="text-gray-500">Transfer iPhone</p>
-                                <h2 class="text-3xl font-bold">
+                                <h2 class="text-xl font-bold">
                                     {{ $detailAffiliate?->transferIn->count() }}
                                 </h2>
                             </div>
@@ -361,15 +362,33 @@
                         </div>
 
                         {{-- Informasi --}}
-                        <div class="bg-white rounded-xl shadow">
+                        <div class="bg-white rounded-xl shadow" x-data="{ detailAffiliate: true }">
 
-                            <div class="border-b px-6 py-4">
-                                <h2 class="font-semibold">
-                                    Informasi Affiliate
-                                </h2>
+                            <div class="border-b px-6 py-4 flex justify-between"
+                                @click="detailAffiliate = ! detailAffiliate">
+                                <div>
+                                    <h2 class="font-semibold">
+                                        Informasi Affiliate
+                                    </h2>
+                                </div>
+                                <div>
+                                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none"
+                                        class="ease-in duration-200" :class="detailAffiliate ? 'rotate-180' : ''"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                        </g>
+                                        <g id="SVGRepo_iconCarrier">
+                                            <path
+                                                d="M15 11L12.2121 13.7879C12.095 13.905 11.905 13.905 11.7879 13.7879L9 11M7 21H17C19.2091 21 21 19.2091 21 17V7C21 4.79086 19.2091 3 17 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z"
+                                                stroke="rgb(31, 41, 55)" stroke-width="2" stroke-linecap="round">
+                                            </path>
+                                        </g>
+                                    </svg>
+                                </div>
                             </div>
 
-                            <div class="grid md:grid-cols-2 gap-6 p-6">
+                            <div class="grid md:grid-cols-2 gap-6 p-6" x-show="detailAffiliate" x-collapse x-cloak >
 
                                 <div>
                                     <label class="text-gray-500 text-sm">Nama</label>
@@ -419,11 +438,8 @@
 
                     </div>
                 </x-mary-tab>
-                <x-mary-tab name="tricks-tab" label="Tricks" icon="o-sparkles">
-                    <div>Tricks</div>
-                </x-mary-tab>
-                <x-mary-tab name="musics-tab" label="Musics" icon="o-musical-note">
-                    <div>Musics</div>
+                <x-mary-tab name="Analitycs" label="Analitycs" icon="o-document-chart-bar">
+                    <div>Comings Soon</div>
                 </x-mary-tab>
             </x-mary-tabs>
 

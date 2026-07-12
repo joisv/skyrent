@@ -104,32 +104,35 @@ class Affiliates extends Component
     public function listIphones($affiliateId)
     {
         $this->dispatch('open-modal', 'list-iphones');
+    }
 
-        $user = auth()->user();
+    public function listBookings($affiliateId)
+    {
+        $this->dispatch('open-modal', 'list-bookings');
+    }
+    
+    public function DetailAffiliateuser($affiliateId)
+    {
+        $this->dispatch('open-modal', 'detail-affiliate');
+
+        $this->detailAffiliate = Affiliate::with([
+            'users.roles',
+            'iphones',
+            'bookings',
+        ])->findOrFail($affiliateId);
+
+        $user = $this->detailAffiliate->users->first();
 
         $query = Iphones::query();
 
-        if ($user->hasRole('affiliate-admin')) {
-            $query->where('affiliate_id', $user->affiliate->id);
-        } else {
+        if ($user?->hasRole('affiliate-admin')) {
+            $query->where('affiliate_id', $user->affiliate_id);
+        } elseif ($user?->hasRole('super-admin')) {
             $query->whereNull('affiliate_id');
         }
 
         $this->iphones = $query->get();
-        
-        $this->selectedAffiliateId = $affiliateId;
-    }
 
-    public function DetailAffiliateuser($affiliateId)
-    {
-        $this->dispatch('open-modal', 'detail-affiliate');
-        $this->detailAffiliate = Affiliate::with([
-            'users',
-            'iphones',
-            'bookings',
-            'transferIn',
-            'transferOut',
-        ])->findOrFail($affiliateId);
         $this->selectedAffiliateId = $affiliateId;
     }
 

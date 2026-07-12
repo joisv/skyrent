@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Affiliate;
 use App\Models\Booking;
 use App\Models\Iphones;
 use Illuminate\Support\Facades\Http;
@@ -101,20 +102,53 @@ class BookingPage extends Component
 
     public function loadStats()
     {
-        $this->iphonesAvailable = Iphones::whereDoesntHave('bookings', function ($q) {
-            $q->where('status', 'confirmed');
-        })->get();
+        $user = auth()->user();
 
-        $this->revenueToday = Revenue::whereDate('created_at', now()->toDateString())->sum('amount');
-        $this->bookingToday = Booking::whereDate('created_at', Carbon::today())->get();
+        // iPhone tersedia
+        $iphoneQuery = Iphones::whereDoesntHave('bookings', function ($q) {
+            $q->where('status', 'confirmed');
+        });
+
+        if ($user->hasRole('affiliate-admin')) {
+            $iphoneQuery->where('affiliate_id', $user->affiliate_id);
+        } else {
+            $iphoneQuery->whereNull('affiliate_id');
+        }
+
+        $this->iphonesAvailable = $iphoneQuery->get();
+
+        // Revenue hari ini
+        $revenueQuery = Revenue::whereDate('created_at', today());
+
+        if ($user->hasRole('affiliate-admin')) {
+            $revenueQuery->whereHas('booking', function ($q) use ($user) {
+                $q->where('affiliate_id', $user->affiliate_id);
+            });
+        } 
+        $this->revenueToday = $revenueQuery->sum('amount');
+
+        // Booking hari ini
+        $bookingQuery = Booking::whereDate('created_at', today());
+
+        if ($user->hasRole('affiliate-admin')) {
+            $bookingQuery->where('affiliate_id', $user->affiliate_id);
+        } 
+
+        $this->bookingToday = $bookingQuery->get();
+
         $this->getReturnToday();
     }
 
     public function getReturnToday()
     {
-        $this->returnToday = Booking::with('iphone')->where('status', 'confirmed')
-            ->whereDate('end_booking_date', '<=', Carbon::today())
-            ->get();
+        $user = auth()->user();
+
+        $this->returnToday = Booking::with('iphone')
+            ->where('status', 'confirmed')
+            ->whereDate('end_booking_date', '<=', today())
+            ->when($user->hasRole('affiliate-admin'), function ($query) use ($user) {
+                $query->where('affiliate_id', $user->affiliate_id);
+            })->get();
     }
 
     public function destroy()
@@ -199,9 +233,19 @@ class BookingPage extends Component
 
     public function getData()
     {
-        $query = Booking::query()->with(['iphone', 'user']);
+        $user = auth()->user();
 
-        // Filter status (default: confirmed)
+        $query = Booking::query()->with([
+            'iphone',
+            'user',
+            'affiliate',
+        ]);
+
+        if ($user->hasRole('affiliate-admin')) {
+            $query->where('affiliate_id', $user->affiliate_id);
+        }
+
+        // Filter status
         if ($this->filterStatus) {
             $query->where('status', $this->filterStatus);
         }

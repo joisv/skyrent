@@ -29,9 +29,9 @@ class IphonesManagements extends Component
     {
         $query = $this->getData()->paginate($this->paginate);
         $this->users = User::whereHas('roles', function ($query) {
-            $query->where('name', 'affiliate-admin');
-        })
-            ->get();
+            $query->where('name', 'super-admin')
+                ->orWhere('name', 'affiliate-admin');
+        })->get();
 
         return view('livewire.iphones-managements', [
             'iphones' => $query,

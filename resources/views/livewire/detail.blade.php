@@ -490,7 +490,7 @@ $watch('selectedMinute', () => selectedDateFormatted = formatDate(selectedDate))
                 </svg>
             </div>
         </div>
-        <div class="space-y-5" x-show="reviewsOpen" x-collapse x-cloak class="">
+        <div class="space-y-5" x-show="reviewsOpen" x-collapse x-cloak>
 
             <div class="space-y-3 mt-4">
                 <div class="flex justify-start items-center space-x-4">
