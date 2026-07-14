@@ -1,17 +1,17 @@
 <div class="w-full">
-    <x-mary-menu active-bg-color="bg-orange-500/15 ">
-        <!-- Logo -->
-        <div class="shrink-0 lg:flex items-center lg:mb-8 mb-0 hidden">
-            <a href="{{ route('dashboard') }}" wire:navigate class="w-full ">
-                @if (!empty($setting->logo_cms))
-                    <img src="{{ asset('storage/' . $setting->logo_cms) }}" alt="" srcset=""
-                        class="w-full h-28 object-contain">
-                @else
-                    <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                @endif
-            </a>
-        </div>
-        @role('super-admin|admin|staff')
+    @role('super-admin|admin|staff')
+        <x-mary-menu active-bg-color="bg-orange-500/15 ">
+            <!-- Logo -->
+            <div class="shrink-0 lg:flex items-center lg:mb-8 mb-0 hidden">
+                <a href="{{ route('dashboard') }}" wire:navigate class="w-full ">
+                    @if (!empty($setting->logo_cms))
+                        <img src="{{ asset('storage/' . $setting->logo_cms) }}" alt="" srcset=""
+                            class="w-full h-28 object-contain">
+                    @else
+                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                    @endif
+                </a>
+            </div>
             <x-mary-menu-item title="Dashboard" icon="o-home" :href="route('dashboard')" :active="request()->routeIs('dashboard')" />
 
             <x-mary-menu-sub title="Iphones Management" icon="o-device-phone-mobile">
@@ -19,6 +19,8 @@
                     :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
                 <x-mary-menu-item title="Booking Baru" icon="o-calendar-days" wire:navigate :href="route('bookings')"
                     :active="request()->routeIs('bookings')" />
+                <x-mary-menu-item title="Transfer iPhone" icon="o-arrows-right-left" :href="route('transfer')" :active="request()->routeIs('transfer')"
+                    wire:navigate />
             </x-mary-menu-sub>
             <x-mary-menu-sub title="Laporan" icon="o-chart-bar">
                 <x-mary-menu-item title="Pendapatan" :href="route('reports.revenue')" :active="request()->routeIs('reports.revenue')" icon="o-banknotes" />
@@ -47,16 +49,31 @@
                 badge-classes="badge-soft badge-error" />
 
             <x-mary-menu-separator />
-        @else
-            <x-mary-menu-item title="List iPhone" icon="o-plus-circle" wire:navigate :href="route('iphones')"
-                :active="request()->routeIs('iphones') || request()->routeIs('iphones.create')" />
-            <x-mary-menu-item title="Transfer iPhone" icon="o-arrows-right-left" :href="route('affiliate.dashboard')" :active="request()->routeIs('affiliate.dashboard')" wire:navigate/>
-            <x-mary-menu-item title="Booking Baru" icon="o-calendar-days" wire:navigate :href="route('bookings')"
-                :active="request()->routeIs('bookings')" />
-            <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('profile')" :active="request()->routeIs('profile')" />
-        @endrole
-        <!-- Navigation Links -->
-        <livewire:layout.logout />
-    </x-mary-menu>
+            <livewire:layout.logout />
+        </x-mary-menu>
+    @else
+        <x-mary-menu active-bg-color="bg-cyan-500/15 ">
+            <!-- Logo -->
+            <div class="shrink-0 lg:flex items-center lg:mb-8 mb-0 hidden">
+                <a href="{{ route('dashboard') }}" wire:navigate class="w-full ">
+                    @if (!empty($setting->logo_cms))
+                        <img src="{{ asset('storage/' . $setting->logo_cms) }}" alt="" srcset=""
+                            class="w-full h-28 object-contain">
+                    @else
+                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                    @endif
+                </a>
+            </div>
+            <x-mary-menu-item title="List iPhone" icon="o-plus-circle" wire:navigate :href="route('affiliate.iphones')"
+                :active="request()->routeIs('affiliate.iphones')" />
+            <x-mary-menu-item title="Transfer iPhone" icon="o-arrows-right-left" :href="route('affiliate.transfer')" :active="request()->routeIs('affiliate.transfer')"
+                wire:navigate />
+            <x-mary-menu-item title="Booking Baru" icon="o-calendar-days" wire:navigate :href="route('affiliate.bookings')"
+                :active="request()->routeIs('affiliate.bookings')" />
+            <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('affiliate.profile')" :active="request()->routeIs('affiliate.profile')" />
+            <livewire:layout.logout />
+        </x-mary-menu>
+    @endrole
+    <!-- Navigation Links -->
 
 </div>

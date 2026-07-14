@@ -24,8 +24,38 @@ class Revenues extends Component
     public array $bookingChart = [];
     public array $paymentChart = [];
 
+    public $revenueToday;
+    public $revenueThisMonth;
+    public $revenueTotal;
+    public $revenueLastMonth;
+    public $revenuePenalty;
+    public $revenueThisMonthPercentage;
+
     public function loadStatistics()
     {
+
+        $today = now()->toDateString();
+        $startOfThisMonth = now()->startOfMonth()->toDateString();
+        $endOfLastMonth = now()->subMonth()->endOfMonth()->toDateString();
+        $startOfLastMonth = now()->subMonth()->startOfMonth()->toDateString();
+
+        // Revenue Hari Ini
+        $this->revenueToday = Revenue::whereDate('created_at', $today)->sum('amount');
+
+        // Revenue Bulan Ini
+        $this->revenueThisMonth = Revenue::whereBetween('created_at', [$startOfThisMonth, now()])->sum('amount');
+
+        // Revenue Bulan Lalu
+        $this->revenueLastMonth = Revenue::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->sum('amount');
+        // Persentase Kenaikan/Penurunan Bulan Ini vs Bulan Lalu
+        if ($this->revenueLastMonth > 0) {
+            $growth = (($this->revenueThisMonth - $this->revenueLastMonth) / $this->revenueLastMonth) * 100;
+            $this->revenueThisMonthPercentage = round($growth, 2); // + atau - persentase
+        } else {
+            $this->revenueThisMonthPercentage = $this->revenueThisMonth > 0 ? 100 : 0;
+        }
+        // Revenue Total
+        $this->revenueTotal = Revenue::sum('amount');
         $query = $this->bookingQuery();
 
         /**
@@ -36,14 +66,11 @@ class Revenues extends Component
         /**
          * Total Pendapatan
          */
-        $this->totalIncome = Revenue::query()
-            ->whereHas('booking', function ($q) {
-                $q->whereBetween('created_at', [
-                    Carbon::parse($this->startDate)->startOfDay(),
-                    Carbon::parse($this->endDate)->endOfDay(),
-                ]);
-            })
-            ->sum('amount');
+        [$start, $end] = $this->getDateRange();
+
+        $this->totalIncome = Revenue::whereHas('booking', function ($q) use ($start, $end) {
+            $q->whereBetween('bookings.created_at', [$start, $end]);
+        })->sum('amount');
 
         /**
          * Jenis Pembayaran
@@ -67,13 +94,15 @@ class Revenues extends Component
 
     protected function bookingQuery()
     {
-        return Booking::query()
-            ->whereBetween('bookings.created_at', [
-                Carbon::parse($this->startDate)->startOfDay(),
-                Carbon::parse($this->endDate)->endOfDay(),
-            ]);
+
+        [$start, $end] = $this->getDateRange();
+
+        return Booking::whereBetween('bookings.created_at', [
+            $start,
+            $end,
+        ]);
     }
-    
+
     public function loadPaymentChart()
     {
         $data = $this->bookingQuery()
@@ -105,7 +134,6 @@ class Revenues extends Component
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-
         $this->bookingChart = [
             'categories' => $data->pluck('date')->toArray(),
             'series' => $data->pluck('total')->toArray(),
@@ -123,8 +151,8 @@ class Revenues extends Component
         $this->month = now()->month;
         $this->year = now()->year;
 
-        $this->startDate = today()->toDateString();
-        $this->endDate = null;
+        $this->startDate = now()->subDays(6)->toDateString();
+        $this->endDate = now()->toDateString();
 
         $this->refreshDashboard();
     }
@@ -151,10 +179,12 @@ class Revenues extends Component
             $this->disableFutureDates &&
             Carbon::parse($date)->isAfter(today())
         ) {
+            // dd('Tanggal tidak boleh lebih dari hari ini');
             return;
         }
 
         if (!$this->startDate) {
+            // dd('startDate kosong');
             $this->startDate = $date;
 
             $this->refreshDashboard();
@@ -163,9 +193,12 @@ class Revenues extends Component
         }
 
         if ($this->startDate && !$this->endDate) {
+            // kondisi pertama pertama
+            // dd('startDate ada, endDate kosong');
 
             if ($date < $this->startDate) {
-
+                // kondisi ke dua
+                // dd('startDate ada, endDate kosong, date < startDate');
                 $this->endDate = $this->startDate;
                 $this->startDate = $date;
             } else {
@@ -180,8 +213,24 @@ class Revenues extends Component
 
         $this->startDate = $date;
         $this->endDate = null;
-        
         $this->refreshDashboard();
+        // dd('selain itu');
+    }
+
+    public function getDetailRevenue()
+    {
+        $this->dispatch('open-modal', 'detail-revenue');
+    }
+
+    protected function getDateRange(): array
+    {
+        $start = Carbon::parse($this->startDate)->startOfDay();
+
+        $end = Carbon::parse(
+            $this->endDate ?: $this->startDate
+        )->endOfDay();
+
+        return [$start, $end];
     }
 
     public function getCalendarProperty()

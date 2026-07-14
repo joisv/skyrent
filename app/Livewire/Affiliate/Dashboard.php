@@ -22,6 +22,16 @@ class Dashboard extends Component
     public function acceptTransferIphone($transferId)
     {
         $transfer = IphoneTransfer::find($transferId);
+        if ($transfer->status == 'received') {
+            LivewireAlert::title('Gagal Menerima iPhone')
+                ->position('top-end')
+                ->toast()
+                ->text('iPhone sudah diterima')
+                ->timer(5000)
+                ->error()
+                ->show();
+            return;
+        }
         $transfer->update([
             'status' => 'received',
             'received_by' => auth()->id(),

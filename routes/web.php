@@ -64,13 +64,26 @@ Route::middleware(['auth', 'role:super-admin|admin|staff|affiliate-admin'])->pre
             ->name('affiliates');
 
         Route::view('roles-permissions', 'roles-permissions')->name('roles-permissions');
+
+        Route::get('transfer-iphone', function () {
+            return view('affiliate.transfer-iphone');
+        })->name('transfer');
     });
 
 Route::middleware(['auth', 'role:admin|super-admin|affiliate-admin|affiliate'])->prefix('affiliate')
     ->group(function () {
-        Route::get('dashboard', function () {
-            return view('affiliate.dashboard');
-        })->name('affiliate.dashboard');
+        Route::view('iphones', 'iphones')
+            ->name('affiliate.iphones');
+
+        Route::get('transfer-iphone', function () {
+            return view('affiliate.transfer-iphone');
+        })->name('affiliate.transfer');
+
+        Route::view('bookings', 'bookings')
+            ->name('affiliate.bookings');
+
+        Route::view('profile', 'profile')
+            ->name('affiliate.profile');
     });
 
 // vcf export

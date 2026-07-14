@@ -4,7 +4,9 @@ namespace App\Livewire;
 
 use Illuminate\Support\Str;
 use App\Models\Affiliate;
+use App\Models\Booking;
 use App\Models\Iphones;
+use App\Models\Revenue;
 use App\Models\User;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -50,6 +52,8 @@ class Affiliates extends Component
     public $detailAffiliate;
     public $selectedTab = 'users-tab';
     public $iphones;
+    public $revenues;
+    public $bookingsToday;
 
     protected function rules(): array
     {
@@ -110,7 +114,7 @@ class Affiliates extends Component
     {
         $this->dispatch('open-modal', 'list-bookings');
     }
-    
+
     public function DetailAffiliateuser($affiliateId)
     {
         $this->dispatch('open-modal', 'detail-affiliate');
@@ -119,7 +123,18 @@ class Affiliates extends Component
             'users.roles',
             'iphones',
             'bookings',
+            'bookings.revenue'
         ])->findOrFail($affiliateId);
+
+        $this->revenues = Revenue::whereDate('created_at', today())
+            ->whereHas('booking', function ($query) use ($affiliateId) {
+                $query->where('affiliate_id', $affiliateId);
+            })->with(['booking', 'booking.iphone'])->get();
+
+        $this->bookingsToday = Booking::where('affiliate_id', $affiliateId)
+            ->whereDate('created_at', today())
+            ->with('revenue')
+            ->get();
 
         $user = $this->detailAffiliate->users->first();
 

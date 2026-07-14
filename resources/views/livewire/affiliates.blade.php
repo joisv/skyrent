@@ -324,7 +324,7 @@
 
                             </div>
                         </div>
-                       
+
                         {{-- Statistik --}}
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
@@ -350,14 +350,23 @@
                                 <h2 class="text-xl font-bold">
                                     {{ $detailAffiliate?->bookings->count() }}
                                 </h2>
-                            </button >
-
-                            <div class="bg-white rounded-xl shadow p-5">
+                            </button>
+                            {{-- Transfer iPhone --}}
+                            {{-- <div class="bg-white rounded-xl shadow p-5">
                                 <p class="text-gray-500">Transfer iPhone</p>
                                 <h2 class="text-xl font-bold">
                                     {{ $detailAffiliate?->transferIn->count() }}
                                 </h2>
-                            </div>
+                            </div> --}}
+                            <button @click="$dispatch('open-modal', 'revenue')" type="button"
+                                class="bg-white rounded-xl shadow p-5">
+                                <p class="text-gray-500">Pendapatan</p>
+                                <h2 class="text-xl font-bold">
+                                    Rp
+                                    {{ number_format($revenues?->sum('amount'), 0, ',', '.') }}
+                                </h2>
+                            </button>
+
 
                         </div>
 
@@ -388,7 +397,7 @@
                                 </div>
                             </div>
 
-                            <div class="grid md:grid-cols-2 gap-6 p-6" x-show="detailAffiliate" x-collapse x-cloak >
+                            <div class="grid md:grid-cols-2 gap-6 p-6" x-show="detailAffiliate" x-collapse x-cloak>
 
                                 <div>
                                     <label class="text-gray-500 text-sm">Nama</label>
@@ -444,6 +453,101 @@
             </x-mary-tabs>
 
 
+
+        </div>
+    </x-modal>
+    <x-modal name="revenue" :show="$errors->isNotEmpty()" maxWidth="4xl">
+        <div class="space-y-6 p-4">
+
+            {{-- Ringkasan --}}
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+                <div class="bg-white border rounded-xl p-6">
+                    <p class="text-sm text-gray-500">Pendapatan Hari ini</p>
+
+                    <h2 class="mt-2 text-xl font-bold text-green-600">
+                        Rp
+                        {{ number_format($revenues?->sum('amount'), 0, ',', '.') }}
+                    </h2>
+                </div>
+                <div class="bg-white border rounded-xl p-6">
+                    <p class="text-sm text-gray-500">Total Pendapatan</p>
+
+                    <h2 class="mt-2 text-xl font-bold text-green-600">
+                        Rp
+                        {{ number_format($detailAffiliate?->bookings->sum(fn($booking) => $booking->revenue?->amount ?? 0), 0, ',', '.') }}
+                    </h2>
+                </div>
+
+                <div class="bg-white border rounded-xl p-6">
+                    <p class="text-sm text-gray-500">Booking Hari ini</p>
+
+                    <h2 class="mt-2 text-xl font-bold text-orange-500">
+                        {{ $bookingsToday?->count() }}
+                    </h2>
+                </div>
+
+            </div>
+
+            {{-- Riwayat Pendapatan --}}
+            <div class="bg-white border rounded-xl overflow-hidden">
+
+                <div class="px-6 py-5 border-b">
+                    <h2 class="text-lg font-semibold">
+                        Riwayat Pendapatan Hari ini
+                    </h2>
+
+                    <p class="text-sm text-gray-500 mt-1">
+                        Pendapatan yang diterima dari setiap booking.
+                    </p>
+                </div>
+                @if (!empty($revenues))
+                    @forelse ($revenues as $revenue)
+                        @if ($revenue->booking)
+                            <div
+                                class="flex items-center justify-between px-6 py-5 border-b last:border-b-0 hover:bg-gray-50">
+
+                                <div>
+
+                                    <h3 class="font-semibold text-gray-800">
+                                        {{ $revenue->booking->iphone->name }}
+                                    </h3>
+
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        {{ $revenue->booking->iphone->serial_number }}
+                                    </p>
+                                    <p class="text-sm text-gray-400">
+                                        {{ \Carbon\Carbon::parse($revenue->created)->translatedFormat('d F Y • H:i') }}
+                                    </p>
+
+                                </div>
+
+                                <div class="text-right">
+
+                                    <p class="text-xl font-bold text-green-600">
+                                        Rp {{ number_format($revenue->amount, 0, ',', '.') }}
+                                    </p>
+
+                                    <span
+                                        class="inline-flex px-2 py-1 mt-2 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
+                                        {{ ucfirst($revenue->type) }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        @endif
+
+                    @empty
+
+                        <div class="py-16 text-center text-gray-500">
+                            Belum ada pendapatan.
+                        </div>
+                    @endforelse
+
+                @endif
+
+            </div>
 
         </div>
     </x-modal>

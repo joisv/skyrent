@@ -548,8 +548,7 @@ class RentIphoneWizard extends Component
                     );
 
                     $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
-
-                    if ($bookingStart->lte($now) && $bookingEnd->gt($now)) {
+                    if (in_array($booking->status, ['pending', 'confirmed'])) {
                         $iphone->is_available = false;
                         break;
                     }
