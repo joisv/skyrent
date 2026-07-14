@@ -360,7 +360,7 @@
                             </div> --}}
                             <button @click="$dispatch('open-modal', 'revenue')" type="button"
                                 class="bg-white rounded-xl shadow p-5">
-                                <p class="text-gray-500">Pendapatan</p>
+                                <p class="text-gray-500">Pendapatan hari ini</p>
                                 <h2 class="text-xl font-bold">
                                     Rp
                                     {{ number_format($revenues?->sum('amount'), 0, ',', '.') }}
@@ -474,8 +474,7 @@
                     <p class="text-sm text-gray-500">Total Pendapatan</p>
 
                     <h2 class="mt-2 text-xl font-bold text-green-600">
-                        Rp
-                        {{ number_format($detailAffiliate?->bookings->sum(fn($booking) => $booking->revenue?->amount ?? 0), 0, ',', '.') }}
+                        Rp {{ number_format($totalRevenue?->sum('amount'), 0, ',', '.') }}
                     </h2>
                 </div>
 

@@ -55,6 +55,7 @@ class Affiliates extends Component
     public $revenues;
     public $bookingsToday;
     public $allBookings;
+    public $totalRevenue;
 
     protected function rules(): array
     {
@@ -161,7 +162,20 @@ class Affiliates extends Component
             })
             ->with(['booking', 'booking.iphone'])
             ->get();
-
+        $this->totalRevenue = Revenue::whereHas('booking', function ($query) use ($user) {
+            $query->where(function ($q) use ($user) {
+                $q->where('affiliate_id', $user->affiliate_id)
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->whereNull('affiliate_id')
+                            ->where('user_id', $user->id);
+                    });
+            });
+        })
+            ->with([
+                'booking',
+                'booking.iphone',
+            ])
+            ->get();
         $this->allBookings = Booking::where(function ($query) use ($user) {
             $query->where('affiliate_id', $this->detailAffiliate->id)
                 ->orWhere(function ($q) use ($user) {
