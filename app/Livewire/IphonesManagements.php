@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Affiliate;
 use App\Models\Iphones;
 use App\Models\IphoneTransfer;
 use App\Models\User;
@@ -19,19 +20,16 @@ class IphonesManagements extends Component
     public $selectedAll = false;
 
     public bool $showDrawer2 = false;
-    public $users;
+    public $affiliates;
     public $iphone;
-    public $receiver_id;
+    public $selected_affiliate_id;
     public $notes;
     public $to_affiliate_id;
 
     public function render()
     {
         $query = $this->getData()->paginate($this->paginate);
-        $this->users = User::whereHas('roles', function ($query) {
-            $query->where('name', 'super-admin')
-                ->orWhere('name', 'affiliate-admin');
-        })->get();
+        $this->affiliates = Affiliate::all();
 
         return view('livewire.iphones-managements', [
             'iphones' => $query,
@@ -47,36 +45,37 @@ class IphonesManagements extends Component
     public function transfer()
     {
         // $this->validate([
-        //     'receiver_id' => 'required|exists:users,id',
+        //     'selected_affiliate_id' => 'required|exists:users,id',
         //     'notes' => 'nullable|string|max:500',
         //     'to_affiliate_id' => 'required',
         //     'from_affiliate_id' => 'required',
         // ]);
 
-        $receiver = User::with('affiliate')->findOrFail($this->receiver_id);
-
-        if (!$receiver->affiliate) {
-            $this->addError('receiver_id', 'User tujuan belum memiliki affiliate.');
-
+        $receiver = Affiliate::where('id', $this->selected_affiliate_id)->with('users')->first();
+        if (!$receiver->users->first()) {
+            $this->addError('selected_affiliate_id', 'Affiliate tidak mempunyai user');
             return;
         }
 
         $iphone = Iphones::findOrFail($this->iphone->id);
-        IphoneTransfer::create([
+        
+        $add = IphoneTransfer::create([
             'iphone_id'         => $iphone->id,
-            'from_affiliate_id' => User::find($this->receiver_id)->affiliate?->id,
-            'to_affiliate_id'   => User::find($this->receiver_id)->affiliate?->id,
+            'from_affiliate_id' => $iphone->affiliate_id ? $iphone->affiliate_id : $this->selected_affiliate_id,
+            'to_affiliate_id'   => $this->selected_affiliate_id,
             'sent_by'           => auth()->id(),
             'status'            => 'in_transit',
             'notes'             => $this->notes,
             'sent_at'           => now(),
         ]);
+
         $iphone->update([
             'status' => 'transferred',
+            'affiliate_id' => $this->selected_affiliate_id
         ]);
 
         $this->showDrawer2 = false;
-        $this->reset(['receiver_id', 'notes', 'to_affiliate_id']);
+        $this->reset(['selected_affiliate_id', 'notes', 'to_affiliate_id']);
 
         LivewireAlert::title('Transfer berhasil')
             ->position('top-end')

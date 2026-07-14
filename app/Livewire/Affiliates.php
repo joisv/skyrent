@@ -54,6 +54,7 @@ class Affiliates extends Component
     public $iphones;
     public $revenues;
     public $bookingsToday;
+    public $allBookings;
 
     protected function rules(): array
     {
@@ -95,7 +96,15 @@ class Affiliates extends Component
     public function assignUser($userId)
     {
         $this->selectedUser = User::findOrFail($userId);
-        $this->selectedUser->update(['affiliate_id' => $this->selectedAffiliateId]);
+        User::where('affiliate_id', $this->selectedAffiliateId)
+            ->where('id', '!=', $this->selectedUser->id)
+            ->update([
+                'affiliate_id' => null,
+            ]);
+
+        $this->selectedUser->update([
+            'affiliate_id' => $this->selectedAffiliateId,
+        ]);
         $this->dispatch('close-modal-detail-affiliate');
         LivewireAlert::title('Berhasil menambahkan user ke affiliate')
             ->text('User berhasil ditambahkan.')
@@ -122,21 +131,55 @@ class Affiliates extends Component
         $this->detailAffiliate = Affiliate::with([
             'users.roles',
             'iphones',
-            'bookings',
-            'bookings.revenue'
+            'bookings' => function ($query) use ($affiliateId) {
+                $query->where(function ($q) use ($affiliateId) {
+                    $q->where('affiliate_id', $affiliateId)
+                        ->orWhere(function ($sub) use ($affiliateId) {
+                            $affiliate = Affiliate::with('users')->find($affiliateId);
+
+                            if ($user = $affiliate?->users->first()) {
+                                $sub->whereNull('affiliate_id')
+                                    ->where('user_id', $user->id);
+                            }
+                        });
+                });
+            },
+            'bookings.revenue',
         ])->findOrFail($affiliateId);
 
-        $this->revenues = Revenue::whereDate('created_at', today())
-            ->whereHas('booking', function ($query) use ($affiliateId) {
-                $query->where('affiliate_id', $affiliateId);
-            })->with(['booking', 'booking.iphone'])->get();
+        $user = $this->detailAffiliate->users->first();
 
-        $this->bookingsToday = Booking::where('affiliate_id', $affiliateId)
-            ->whereDate('created_at', today())
-            ->with('revenue')
+        $this->revenues = Revenue::whereDate('created_at', today())
+            ->whereHas('booking', function ($query) use ($user) {
+                $query->where(function ($q) use ($user) {
+                    $q->where('affiliate_id', $user->affiliate_id)
+                        ->orWhere(function ($sub) use ($user) {
+                            $sub->whereNull('affiliate_id')
+                                ->where('user_id', $user->id);
+                        });
+                });
+            })
+            ->with(['booking', 'booking.iphone'])
             ->get();
 
-        $user = $this->detailAffiliate->users->first();
+        $this->allBookings = Booking::where(function ($query) use ($user) {
+            $query->where('affiliate_id', $this->detailAffiliate->id)
+                ->orWhere(function ($q) use ($user) {
+                    $q->whereNull('affiliate_id')
+                        ->where('user_id', $user->id);
+                });
+        })->with(['iphone', 'revenue'])->get();
+
+        $this->bookingsToday = Booking::whereDate('created_at', today())
+            ->where(function ($query) use ($user) {
+                $query->where('affiliate_id', $user->affiliate_id)
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->whereNull('affiliate_id')
+                            ->where('user_id', $user->id);
+                    });
+            })
+            ->with(['revenue', 'iphone'])
+            ->get();
 
         $query = Iphones::query();
 
@@ -361,7 +404,7 @@ class Affiliates extends Component
                         ->success()
                         ->show();
                 } catch (\Throwable $th) {
-                    LivewireAlert::title('Affiliate tidak ditemukan 1')
+                    LivewireAlert::title('Affiliate tidak ditemukan')
                         ->position('top-end')
                         ->toast()
                         ->text('tidak dapat menghapus data')

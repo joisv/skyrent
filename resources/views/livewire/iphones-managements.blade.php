@@ -63,7 +63,7 @@
                 <x-mary-input label="Dari" value="Super Admin" readonly />
 
                 {{-- Tujuan --}}
-                <x-mary-select label="Transfer Ke" wire:model="receiver_id" :options="$users" option-label="name"
+                <x-mary-select label="Transfer Ke" wire:model="selected_affiliate_id" :options="$affiliates" option-label="name"
                     option-value="id" placeholder="Pilih Penerima" />
 
                 {{-- Catatan --}}
@@ -195,7 +195,7 @@
                     </x-tables.td>
                     @role('super-admin')
                         <x-tables.td>
-                            {{ $iphone->affiliate?->users->first()?->name ?? '-' }}
+                            {{ $iphone->affiliate?->name ?? '-' }}
                         </x-tables.td>
                     @endrole
                     <x-tables.td>

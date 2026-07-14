@@ -348,7 +348,7 @@
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">Booking</p>
                                 <h2 class="text-xl font-bold">
-                                    {{ $detailAffiliate?->bookings->count() }}
+                                    {{ $allBookings?->count() }}
                                 </h2>
                             </button>
                             {{-- Transfer iPhone --}}
@@ -501,47 +501,48 @@
                         Pendapatan yang diterima dari setiap booking.
                     </p>
                 </div>
-                @if (!empty($revenues))
-                    @forelse ($revenues as $revenue)
-                        @if ($revenue->booking)
-                            <div
-                                class="flex items-center justify-between px-6 py-5 border-b last:border-b-0 hover:bg-gray-50">
+                @if (!empty($bookingsToday))
+                    @forelse ($bookingsToday as $booking)
+                        <div
+                            class="flex items-center justify-between px-6 py-5 border-b last:border-b-0 hover:bg-gray-50">
 
-                                <div>
+                            <div>
 
-                                    <h3 class="font-semibold text-gray-800">
-                                        {{ $revenue->booking->iphone->name }}
-                                    </h3>
+                                <h3 class="font-semibold text-gray-800">
+                                    {{ $booking->iphone?->name }}
+                                </h3>
 
-                                    <p class="text-sm text-gray-500 mt-1">
-                                        {{ $revenue->booking->iphone->serial_number }}
-                                    </p>
-                                    <p class="text-sm text-gray-400">
-                                        {{ \Carbon\Carbon::parse($revenue->created)->translatedFormat('d F Y • H:i') }}
-                                    </p>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    {{ $booking->iphone?->serial_number }}
+                                </p>
 
-                                </div>
-
-                                <div class="text-right">
-
-                                    <p class="text-xl font-bold text-green-600">
-                                        Rp {{ number_format($revenue->amount, 0, ',', '.') }}
-                                    </p>
-
-                                    <span
-                                        class="inline-flex px-2 py-1 mt-2 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
-                                        {{ ucfirst($revenue->type) }}
-                                    </span>
-
-                                </div>
+                                <p class="text-sm text-gray-400">
+                                    {{ \Carbon\Carbon::parse($booking->created_at)->translatedFormat('d F Y • H:i') }}
+                                </p>
 
                             </div>
-                        @endif
+
+                            <div class="text-right">
+
+                                <p class="text-xl font-bold text-green-600">
+                                    Rp {{ number_format($booking->revenue?->amount ?? 0, 0, ',', '.') }}
+                                </p>
+
+                                @if ($booking->revenue)
+                                    <span
+                                        class="inline-flex px-2 py-1 mt-2 rounded-full bg-orange-100 text-orange-600 text-xs font-medium">
+                                        {{ ucfirst($booking->revenue->type) }}
+                                    </span>
+                                @endif
+
+                            </div>
+
+                        </div>
 
                     @empty
 
                         <div class="py-16 text-center text-gray-500">
-                            Belum ada pendapatan.
+                            Belum ada booking hari ini.
                         </div>
                     @endforelse
 
