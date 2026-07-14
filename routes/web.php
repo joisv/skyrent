@@ -70,6 +70,7 @@ Route::middleware(['auth', 'role:super-admin|admin|staff|affiliate-admin'])->pre
         })->name('transfer');
     });
 
+// Affiliate
 Route::middleware(['auth', 'role:admin|super-admin|affiliate-admin|affiliate'])->prefix('affiliate')
     ->group(function () {
         Route::view('iphones', 'iphones')

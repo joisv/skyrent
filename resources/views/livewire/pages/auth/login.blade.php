@@ -22,7 +22,7 @@ new #[Layout('layouts.guest')] class extends Component {
         $user = Auth::user();
 
         if ($user->hasRole('affiliate-admin')) {
-            $this->redirectRoute('affiliate.dashboard', navigate: true);
+            $this->redirectRoute('affiliate.iphones', navigate: true);
             return;
         }
 
