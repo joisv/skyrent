@@ -68,6 +68,7 @@
                 :active="request()->routeIs('affiliate.iphones')" />
             <x-mary-menu-item title="Transfer iPhone" icon="o-arrows-right-left" :href="route('affiliate.transfer')" :active="request()->routeIs('affiliate.transfer')"
                 wire:navigate />
+            <x-mary-menu-item title="Pendapatan" :href="route('affiliate.revenue')" :active="request()->routeIs('affiliate.revenue')" icon="o-banknotes" wire:navigate/>
             <x-mary-menu-item title="Booking Baru" icon="o-calendar-days" wire:navigate :href="route('affiliate.bookings')"
                 :active="request()->routeIs('affiliate.bookings')" />
             <x-mary-menu-item title="Profile" icon="o-user" wire:navigate :href="route('affiliate.profile')" :active="request()->routeIs('affiliate.profile')" />

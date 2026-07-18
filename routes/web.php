@@ -80,6 +80,10 @@ Route::middleware(['auth', 'role:admin|super-admin|affiliate-admin|affiliate'])-
             return view('affiliate.transfer-iphone');
         })->name('affiliate.transfer');
 
+        Route::get('revenue', function () {
+            return view('affiliate.revenue');
+        })->name('affiliate.revenue');
+
         Route::view('bookings', 'bookings')
             ->name('affiliate.bookings');
 
