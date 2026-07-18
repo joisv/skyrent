@@ -526,9 +526,9 @@ class RentIphoneWizard extends Component
             ->when($user->hasRole('affiliate-admin'), function ($query) use ($user) {
                 $query->where('affiliate_id', $user->affiliate_id);
             })
-            ->when($user->hasRole('super-admin'), function ($query) {
-                $query->whereNull('affiliate_id');
-            })
+            // ->when($user->hasRole('super-admin'), function ($query) {
+            //     $query->whereNull('affiliate_id');
+            // })
             ->when($this->iphone_search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%' . $this->iphone_search . '%')
