@@ -340,7 +340,7 @@
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">iPhone</p>
                                 <h2 class="text-xl font-bold">
-                                    {{ $iphones?->count() }}
+                                    {{ $iphones?->count() ?? 'Belum ada pengguna' }}
                                 </h2>
                             </button>
 
@@ -348,7 +348,7 @@
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">Booking</p>
                                 <h2 class="text-xl font-bold">
-                                    {{ $allBookings?->count() }}
+                                    {{ $allBookings?->count() ?? "Belum ada pengguna" }}
                                 </h2>
                             </button>
                             {{-- Transfer iPhone --}}
@@ -363,7 +363,7 @@
                                 <p class="text-gray-500">Pendapatan hari ini</p>
                                 <h2 class="text-xl font-bold">
                                     Rp
-                                    {{ number_format($revenues?->sum('amount'), 0, ',', '.') }}
+                                    {{ number_format($revenues?->sum('amount'), 0, ',', '.') ?? "Belum ada pengguna" }}
                                 </h2>
                             </button>
 

@@ -150,8 +150,21 @@ class Affiliates extends Component
 
         $user = $this->detailAffiliate->users->first();
 
-        $this->revenues = Revenue::whereDate('created_at', today())
-            ->whereHas('booking', function ($query) use ($user) {
+        if (!empty($user)) {
+            # code...
+            $this->revenues = Revenue::whereDate('created_at', today())
+                ->whereHas('booking', function ($query) use ($user) {
+                    $query->where(function ($q) use ($user) {
+                        $q->where('affiliate_id', $user->affiliate_id)
+                            ->orWhere(function ($sub) use ($user) {
+                                $sub->whereNull('affiliate_id')
+                                    ->where('user_id', $user->id);
+                            });
+                    });
+                })
+                ->with(['booking', 'booking.iphone'])
+                ->get();
+            $this->totalRevenue = Revenue::whereHas('booking', function ($query) use ($user) {
                 $query->where(function ($q) use ($user) {
                     $q->where('affiliate_id', $user->affiliate_id)
                         ->orWhere(function ($sub) use ($user) {
@@ -160,50 +173,40 @@ class Affiliates extends Component
                         });
                 });
             })
-            ->with(['booking', 'booking.iphone'])
-            ->get();
-        $this->totalRevenue = Revenue::whereHas('booking', function ($query) use ($user) {
-            $query->where(function ($q) use ($user) {
-                $q->where('affiliate_id', $user->affiliate_id)
-                    ->orWhere(function ($sub) use ($user) {
-                        $sub->whereNull('affiliate_id')
+                ->with([
+                    'booking',
+                    'booking.iphone',
+                ])
+                ->get();
+            $this->allBookings = Booking::where(function ($query) use ($user) {
+                $query->where('affiliate_id', $this->detailAffiliate->id)
+                    ->orWhere(function ($q) use ($user) {
+                        $q->whereNull('affiliate_id')
                             ->where('user_id', $user->id);
                     });
-            });
-        })
-            ->with([
-                'booking',
-                'booking.iphone',
-            ])
-            ->get();
-        $this->allBookings = Booking::where(function ($query) use ($user) {
-            $query->where('affiliate_id', $this->detailAffiliate->id)
-                ->orWhere(function ($q) use ($user) {
-                    $q->whereNull('affiliate_id')
-                        ->where('user_id', $user->id);
-                });
-        })->with(['iphone', 'revenue'])->get();
-
-        $this->bookingsToday = Booking::whereDate('created_at', today())
-            ->where(function ($query) use ($user) {
-                $query->where('affiliate_id', $user->affiliate_id)
-                    ->orWhere(function ($sub) use ($user) {
-                        $sub->whereNull('affiliate_id')
-                            ->where('user_id', $user->id);
-                    });
-            })
-            ->with(['revenue', 'iphone'])
-            ->get();
-
-        $query = Iphones::query();
-
-        if ($user?->hasRole('affiliate-admin')) {
-            $query->where('affiliate_id', $user->affiliate_id);
-        } elseif ($user?->hasRole('super-admin')) {
-            $query->whereNull('affiliate_id');
+            })->with(['iphone', 'revenue'])->get();
+    
+            $this->bookingsToday = Booking::whereDate('created_at', today())
+                ->where(function ($query) use ($user) {
+                    $query->where('affiliate_id', $user->affiliate_id)
+                        ->orWhere(function ($sub) use ($user) {
+                            $sub->whereNull('affiliate_id')
+                                ->where('user_id', $user->id);
+                        });
+                })
+                ->with(['revenue', 'iphone'])
+                ->get();
+    
+            $query = Iphones::query();
+    
+            if ($user?->hasRole('affiliate-admin')) {
+                $query->where('affiliate_id', $user->affiliate_id);
+            } elseif ($user?->hasRole('super-admin')) {
+                $query->whereNull('affiliate_id');
+            }
+    
+            $this->iphones = $query->get();
         }
-
-        $this->iphones = $query->get();
 
         $this->selectedAffiliateId = $affiliateId;
     }
