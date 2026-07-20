@@ -27,15 +27,15 @@ class BookingObserver
 
                 $booking->saveQuietly();
             }
-            if (!$booking->revenue && $booking->status !== 'cancelled') {
+            // if (!$booking->revenue && $booking->status !== 'cancelled') {
 
-                Revenue::create([
-                    'booking_id' => $booking->id,
-                    'amount' => $booking->price,
-                    'type' =>  'booking',
-                    'created' => now('Asia/Jakarta'),
-                ]);
-            }
+            //     Revenue::create([
+            //         'booking_id' => $booking->id,
+            //         'amount' => $booking->price,
+            //         'type' =>  'booking',
+            //         'created' => now('Asia/Jakarta'),
+            //     ]);
+            // }
         }
     }
 
@@ -57,15 +57,15 @@ class BookingObserver
             $booking->saveQuietly(); // agar tidak loop observer
         }
 
-        if (!$booking->revenue && $booking->status !== 'cancelled') {
+        // if (!$booking->revenue && $booking->status !== 'cancelled') {
 
-            Revenue::create([
-                'booking_id' => $booking->id,
-                'amount' => $booking->price,
-                'type' =>  'booking',
-                'created' => now('Asia/Jakarta'),
-            ]);
-        }
+        //     Revenue::create([
+        //         'booking_id' => $booking->id,
+        //         'amount' => $booking->price,
+        //         'type' =>  'booking',
+        //         'created' => now('Asia/Jakarta'),
+        //     ]);
+        // }
     }
 
     /**

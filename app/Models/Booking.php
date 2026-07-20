@@ -37,6 +37,7 @@ class Booking extends Model
         'kia',
         'user_id',
         'affiliate_id',
+        'payment_status',
     ];
 
     public function user()
@@ -138,5 +139,20 @@ class Booking extends Model
     public function affiliate()
     {
         return $this->belongsTo(Affiliate::class);
+    }
+
+    public function paymentTransactions()
+    {
+        return $this->hasMany(BookingPayment::class);
+    }
+
+    public function getTotalPaidAttribute()
+    {
+        return $this->paymentTransactions()->sum('amount');
+    }
+
+    public function getRemainingPaymentAttribute()
+    {
+        return $this->price - $this->total_paid;
     }
 }
