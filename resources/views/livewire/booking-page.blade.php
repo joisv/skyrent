@@ -21,7 +21,8 @@
             $wire.getReturnToday()   
         }"
             class="shadow-2xl">
-            <x-mary-stat title="iPhone Belum Kembali" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left" color="text-purple-600" />
+            <x-mary-stat title="iPhone Belum Kembali" :value="$returnToday->count() . ' Unit'" icon="o-arrow-uturn-left"
+                color="text-purple-600" />
         </button>
         <button @click="() => { $dispatch('open-modal', 'booking-today') }" class="shadow-2xl">
             <x-mary-stat title="Booking Hari Ini" :value="$bookingToday->count() . ' Booking'" icon="o-clipboard-document-list"
@@ -83,7 +84,8 @@
                     wire:model.live="selectedAll">
             </x-tables.th>
             <x-tables.th>Serial Number</x-tables.th>
-            <x-tables.th>Nama</x-tables.th>
+            <x-tables.th>Status Pembayaran</x-tables.th>
+            {{-- <x-tables.th>Nama</x-tables.th> --}}
             <x-tables.th>Tanggal & Waktu Mulai</x-tables.th>
             <x-tables.th>Dibuat Oleh</x-tables.th>
             <x-tables.th>Aksi</x-tables.th>
@@ -106,6 +108,27 @@
                         </p>
                     </x-tables.td>
                     <x-tables.td>
+                        <p class="pb-2">{{ $booking->customer_name }}</p>
+                        @switch($booking->payment_status)
+                            @case('partial')
+                                <span class="px-2 py-1 rounded bg-yellow-500 text-white font-medium text-sm">
+                                    sebagian
+                                </span>
+                            @break
+
+                            @case('paid')
+                                <span class="px-2 py-1 rounded bg-green-500 text-white font-medium text-sm">
+                                    lunas
+                                </span>
+                            @break
+
+                            @default
+                                <span class="px-2 py-1 rounded bg-red-500 text-white font-medium text-sm">
+                                    belum dibayar
+                                </span>
+                        @endswitch
+                    </x-tables.td>
+                    {{-- <x-tables.td>
                         <p class="pb-2">{{ $booking->customer_name }}</p>
                         @switch($booking->status)
                             @case('pending')
@@ -137,7 +160,7 @@
                                     {{ ucfirst($booking->status) }}
                                 </span>
                         @endswitch
-                    </x-tables.td>
+                    </x-tables.td> --}}
 
                     {{-- <x-tables.td>
                         {{ $booking->requested_booking_date ? \Carbon\Carbon::parse($booking->requested_booking_date)->format('d M Y') . ' ' . $booking->requested_time : '-' }}
@@ -145,7 +168,8 @@
 
                     <x-tables.td>
                         <p>{{ $booking->duration }} jam</p>
-                       <p> {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') . ' ' . $booking->start_time : '-' }}</p>
+                        <p> {{ $booking->start_booking_date ? \Carbon\Carbon::parse($booking->start_booking_date)->format('d M Y') . ' ' . $booking->start_time : '-' }}
+                        </p>
                     </x-tables.td>
                     <x-tables.td>
                         {{ $booking->user?->name ?? '-' }}
@@ -159,6 +183,8 @@
                             }">detail</x-primary-button>
                         <x-danger-button type="button"
                             wire:click="destroyAlert({{ $booking->id }}, 'delete')">delete</x-danger-button>
+                        <x-mary-button label="Tambah Pembayaran" icon="o-banknotes"
+                            wire:click="openModalPaymentBooking({{ $booking->id }})" class="btn-primary" />
                     </x-tables.td>
                 </tr>
             @endforeach
@@ -168,6 +194,106 @@
     <div class="w-full mt-5">
         {{-- {{ $iphones->links() }} --}}
     </div>
+
+    <x-mary-modal wire:model="showPaymentModal" title="Tambah Pembayaran" separator class="backdrop-blur">
+
+        <div class="space-y-5">
+
+            {{-- Sisa Tagihan --}}
+            <x-mary-stat title="Sisa Tagihan" :value="'Rp ' . number_format($amount, 0, ',', '.')" icon="o-banknotes" />
+
+            {{-- Metode --}}
+            <x-mary-select label="Metode Pembayaran" wire:model.live="payment_method_id" :options="$payments"
+                option-value="id" option-label="name" />
+
+            {{-- Jenis --}}
+            <x-mary-select label="Jenis Pembayaran" wire:model="payment_type" :options="[
+                ['id' => 'dp', 'name' => 'DP'],
+                ['id' => 'payment', 'name' => 'Pelunasan'],
+                ['id' => 'penalty', 'name' => 'Penalty'],
+                ['id' => 'extend', 'name' => 'Extend'],
+            ]" option-value="id"
+                option-label="name" />
+
+            {{-- Nominal --}}
+            <div class="mb-6" x-data="{
+                raw: @entangle('amount').live,
+            
+                formatRupiah(value) {
+                    if (!value) return 'Rp 0';
+                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(value);
+                },
+            
+                parseNumber(value) {
+                    return value.replace(/[^0-9]/g, '');
+                }
+            }">
+                <label class="text-sm text-gray-500 mb-1 block">
+                    Nominal (Rp)
+                </label>
+                <input type="text" placeholder="Masukkan nominal" :value="formatRupiah(raw)"
+                    @input="raw = parseNumber($event.target.value)" @focus="$event.target.select()"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+
+            {{-- Cash Suggestion --}}
+            @if ($booking?->payment->name == 'cash')
+
+                <div>
+
+                    <div class="font-semibold mb-2">
+                        Saran Nominal
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        @dump($booking?->payment->name)
+                        @foreach ($cashSuggestions as $cash)
+                            <x-mary-button class="btn-outline" wire:click="$set('pay', {{ $cash['pay'] }})">
+
+                                <div class="text-left">
+
+                                    <div class="font-bold">
+                                        Rp {{ number_format($cash['pay'], 0, ',', '.') }}
+                                    </div>
+
+                                    <div class="text-xs opacity-70">
+                                        Kembali
+                                        Rp {{ number_format($cash['change'], 0, ',', '.') }}
+                                    </div>
+
+                                </div>
+
+                            </x-mary-button>
+                        @endforeach
+
+                    </div>
+
+                </div>
+
+            @endif
+
+            {{-- Uang Customer --}}
+            @if ($payment_id == 1)
+                <x-mary-input label="Uang Diterima" wire:model.live="pay" prefix="Rp" type="number" />
+
+                <x-mary-stat title="Kembalian" :value="'Rp ' . number_format($change, 0, ',', '.')" icon="o-arrow-uturn-left" />
+            @endif
+
+            {{-- Catatan --}}
+            <x-mary-textarea wire:model="note" label="Catatan" rows="3" />
+
+        </div>
+
+        <x-slot:actions>
+
+            <x-mary-button label="Batal" @click="$wire.showPaymentModal=false" />
+
+            <x-mary-button label="Simpan" icon="o-check" class="btn-primary" wire:click="savePayment"
+                spinner="savePayment" />
+
+        </x-slot:actions>
+
+    </x-mary-modal>
     <x-modal name="iphone-wizard" :show="$errors->isNotEmpty()" maxWidth="4xl" minh="min-h-screen overflow-scroll">
         <livewire:rent-iphone-wizard />
     </x-modal>

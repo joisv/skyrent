@@ -20,7 +20,8 @@ return new class extends Migration
             $table->foreignId('payment_id')->constrained()->cascadeOnDelete();
 
             $table->decimal('amount', 15, 2);
-
+            $table->decimal('pay', 15, 2);     
+            $table->decimal('change', 15, 2);
             // dp, pelunasan, extend, penalty, refund
             $table->enum('type', [
                 'dp',

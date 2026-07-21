@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Helpers\CashSuggestion;
 use App\Models\Affiliate;
 use App\Models\Booking;
+use App\Models\BookingPayment;
 use App\Models\Iphones;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Http;
 use App\Models\Revenue;
 use Carbon\Carbon;
@@ -31,6 +34,104 @@ class BookingPage extends Component
     public string $message = '';
     public bool $isLate = false;
     public int $reminderId;
+
+    // revenue baru
+    public bool $showPaymentModal = false;
+    public $amount = 0;
+
+    public $payment_id;
+
+    public $payment_type = 'payment';
+
+    public $note = '';
+    public $payments = [];
+    public $booking_id;
+
+    public $cashSuggestions = [];
+    public $pay = 0;
+
+    public $change = 0;
+    public Booking $booking;
+
+
+    public function openModalPaymentBooking($booking_id)
+    {
+        $this->booking = Booking::find($booking_id);
+        $this->amount  = $this->booking->price;
+        $this->cashSuggestions = CashSuggestion::generate($this->amount);
+        $this->booking_id = $booking_id;
+        $this->showPaymentModal = true;
+    }
+
+    public function updatedPay()
+    {
+        $this->change = max(0, $this->pay - $this->amount);
+    }
+
+    public function updatedPaymentMethodId($value)
+    {
+        if ($value == 'cash') {
+
+            $this->pay = $this->amount;
+
+            $this->change = 0;
+        }
+    }
+
+    protected function rules()
+    {
+        return [
+            'amount' => ['required', 'numeric', 'min:1'],
+            'payment_id' => ['required', 'exists:payments,id'],
+            'payment_type' => ['required'],
+            'note' => ['nullable', 'string'],
+        ];
+    }
+
+    public function savePayment()
+    {
+        $this->validate();
+
+        BookingPayment::create([
+            'booking_id' => $this->booking->id,
+            'payment_id' => $this->payment_id,
+            'amount' => $this->amount,
+            'type' => $this->payment_type,
+            'paid_at' => now(),
+            'user_id' => auth()->id(),
+            'note' => $this->note,
+        ]);
+
+        $totalPaid = $this->booking
+            ->paymentTransactions()
+            ->sum('amount');
+
+        if ($totalPaid <= 0) {
+            $status = 'unpaid';
+        } elseif ($totalPaid < $this->booking->price) {
+            $status = 'partial';
+        } else {
+            $status = 'paid';
+        }
+
+        $this->booking->update([
+            'payment_status' => $status,
+        ]);
+
+        $this->reset([
+            'amount',
+            'payment_id',
+            'payment_type',
+            'note',
+        ]);
+
+        $this->payment_type = 'payment';
+
+        $this->showPaymentModal = false;
+
+        $this->dispatch('payment-added');
+    }
+
 
     public function sendReminder()
     {
@@ -98,6 +199,7 @@ class BookingPage extends Component
     public function mount()
     {
         $this->loadStats();
+        $this->payments = Payment::all();
     }
 
     public function loadStats()
