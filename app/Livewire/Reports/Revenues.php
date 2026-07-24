@@ -3,6 +3,7 @@
 namespace App\Livewire\Reports;
 
 use App\Models\Booking;
+use App\Models\BookingPayment;
 use App\Models\Revenue;
 use Livewire\Component;
 use Carbon\Carbon;
@@ -10,6 +11,16 @@ use Illuminate\Support\Facades\DB;
 
 class Revenues extends Component
 {
+
+    public $search = '';
+    public $sortField = 'created_at';
+    public $sortDirection = 'desc';
+    public $paginate = 10;
+
+    public $mySelected = [];
+    public $selectedAll = false;
+
+    public $paymentsList;
 
     public int $month;
     public int $year;
@@ -40,13 +51,19 @@ class Revenues extends Component
         $startOfLastMonth = now()->subMonth()->startOfMonth()->toDateString();
 
         // Revenue Hari Ini
-        $this->revenueToday = Revenue::whereDate('created_at', $today)->sum('amount');
+        $this->revenueToday = BookingPayment::query()
+            ->whereDate('paid_at', $today)
+            ->sum('amount');
 
         // Revenue Bulan Ini
-        $this->revenueThisMonth = Revenue::whereBetween('created_at', [$startOfThisMonth, now()])->sum('amount');
+        $this->revenueThisMonth = BookingPayment::query()
+            ->whereBetween('paid_at', [$startOfThisMonth, now()])
+            ->sum('amount');
 
         // Revenue Bulan Lalu
-        $this->revenueLastMonth = Revenue::whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])->sum('amount');
+        $this->revenueLastMonth = BookingPayment::query()
+            ->whereBetween('paid_at', [$startOfLastMonth, $endOfLastMonth])
+            ->sum('amount');
         // Persentase Kenaikan/Penurunan Bulan Ini vs Bulan Lalu
         if ($this->revenueLastMonth > 0) {
             $growth = (($this->revenueThisMonth - $this->revenueLastMonth) / $this->revenueLastMonth) * 100;
@@ -55,7 +72,7 @@ class Revenues extends Component
             $this->revenueThisMonthPercentage = $this->revenueThisMonth > 0 ? 100 : 0;
         }
         // Revenue Total
-        $this->revenueTotal = Revenue::sum('amount');
+        $this->revenueTotal = BookingPayment::sum('amount');
         $query = $this->bookingQuery();
 
         /**
@@ -68,17 +85,18 @@ class Revenues extends Component
          */
         [$start, $end] = $this->getDateRange();
 
-        $this->totalIncome = Revenue::whereHas('booking', function ($q) use ($start, $end) {
+        $this->totalIncome = BookingPayment::whereHas('booking', function ($q) use ($start, $end) {
             $q->whereBetween('bookings.created_at', [$start, $end]);
         })->sum('amount');
 
         /**
          * Jenis Pembayaran
          */
-        $this->paymentMethods = (clone $query)
+        $this->paymentMethods = BookingPayment::query()
             ->with('payment')
+            ->whereBetween('paid_at', [$start, $end])
             ->get()
-            ->groupBy(fn($booking) => $booking->payment?->name ?? 'Belum Dipilih')
+            ->groupBy(fn($payment) => $payment->payment?->name ?? 'Belum Dipilih')
             ->map(fn($items) => $items->count())
             ->toArray();
     }
@@ -86,10 +104,9 @@ class Revenues extends Component
     public function refreshDashboard()
     {
         $this->loadStatistics();
-
         $this->loadChart();
-
         $this->loadPaymentChart();
+        $this->getPaymentList();
     }
 
     protected function bookingQuery()
@@ -103,11 +120,46 @@ class Revenues extends Component
         ]);
     }
 
+    public function getPaymentList()
+    {
+        [$start, $end] = $this->getDateRange();
+
+        $query = BookingPayment::query()
+            ->whereBetween('paid_at', [$start, $end]);
+
+        $user = auth()->user();
+
+        if ($user->hasRole('affiliate-admin')) {
+            $query->whereHas('booking', function ($q) use ($user) {
+                $q->where(function ($query) use ($user) {
+                    $query->where('affiliate_id', $user->affiliate_id)
+                        ->orWhere(function ($sub) use ($user) {
+                            $sub->whereNull('affiliate_id')
+                                ->where('user_id', $user->id);
+                        });
+                });
+            });
+        }
+
+        $this->paymentsList = $query
+            ->with([
+                'booking.iphone',
+                'booking.affiliate',
+                'payment',
+                'user',
+            ])
+            ->latest('paid_at')
+            ->get();
+    }
+
     public function loadPaymentChart()
     {
-        $data = $this->bookingQuery()
-            ->join('payments', 'payments.id', '=', 'bookings.payment_id')
-            ->selectRaw('payments.name, COUNT(bookings.id) as total')
+        [$start, $end] = $this->getDateRange();
+
+        $data = BookingPayment::query()
+            ->join('payments', 'payments.id', '=', 'booking_payments.payment_id')
+            ->whereBetween('booking_payments.paid_at', [$start, $end])
+            ->selectRaw('payments.name, COUNT(booking_payments.id) as total')
             ->groupBy('payments.id', 'payments.name')
             ->orderBy('payments.name')
             ->get();

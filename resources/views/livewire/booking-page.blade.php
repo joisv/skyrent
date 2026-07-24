@@ -8,6 +8,7 @@
             $dispatch('reload-iphone')
         }
 }">
+
     {{-- @dump($returnToday) --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <button @click="() => {
@@ -196,24 +197,44 @@
     </div>
 
     <x-mary-modal wire:model="showPaymentModal" title="Tambah Pembayaran" separator class="backdrop-blur">
+        @if ($errors->any())
+            <div>
+                <div class="flex items-start gap-3">
+                    <!-- Icon Error -->
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01M12 5a7 7 0 100 14a7 7 0 000-14z" />
+                        </svg>
+                    </div>
+                    <!-- Text -->
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900 dark:text-gray-100">
+                            Error
+                        </p>
+                        <ul class="mt-1 text-sm list-disc list-inside text-gray-700 dark:text-gray-300">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <!-- Close button -->
+                    <button @click="show = false"
+                        class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        @endif
 
         <div class="space-y-5">
 
             {{-- Sisa Tagihan --}}
-            <x-mary-stat title="Sisa Tagihan" :value="'Rp ' . number_format($amount, 0, ',', '.')" icon="o-banknotes" />
-
-            {{-- Metode --}}
-            <x-mary-select label="Metode Pembayaran" wire:model.live="payment_method_id" :options="$payments"
-                option-value="id" option-label="name" />
-
-            {{-- Jenis --}}
-            <x-mary-select label="Jenis Pembayaran" wire:model="payment_type" :options="[
-                ['id' => 'dp', 'name' => 'DP'],
-                ['id' => 'payment', 'name' => 'Pelunasan'],
-                ['id' => 'penalty', 'name' => 'Penalty'],
-                ['id' => 'extend', 'name' => 'Extend'],
-            ]" option-value="id"
-                option-label="name" />
+            <x-mary-stat title="Sisa Tagihan" :value="'Rp ' . number_format((float) $sisa_tagihan, 0, ',', '.')" icon="o-banknotes" />
 
             {{-- Nominal --}}
             <div class="mb-6" x-data="{
@@ -236,21 +257,33 @@
                     class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
             </div>
 
+            {{-- Metode --}}
+            <x-mary-select label="Metode Pembayaran" wire:model.live="payment_id" :options="$payments" option-value="id"
+                option-label="name" />
+
+            {{-- Jenis --}}
+            <x-mary-select label="Jenis Pembayaran" wire:model.live="payment_type" :options="[
+                ['id' => 'dp', 'name' => 'DP'],
+                ['id' => 'payment', 'name' => 'Pelunasan'],
+                ['id' => 'penalty', 'name' => 'Penalty'],
+                ['id' => 'extend', 'name' => 'Extend'],
+            ]"
+                option-value="id" option-label="name" />
+
             {{-- Cash Suggestion --}}
-            @if ($booking?->payment->name == 'cash')
+            <div>
 
-                <div>
-
-                    <div class="font-semibold mb-2">
-                        Saran Nominal
-                    </div>
-
+                <div class="font-semibold mb-2">
+                    Saran Nominal
+                </div>
+                @if ($this->isCash)
                     <div class="grid grid-cols-2 gap-2">
-                        @dump($booking?->payment->name)
                         @foreach ($cashSuggestions as $cash)
-                            <x-mary-button class="btn-outline" wire:click="$set('pay', {{ $cash['pay'] }})">
+                            <button type="button"
+                                class="ease-in rounded-sm {{ $pay == $cash['pay'] ? 'bg-orange-500 text-white ring-1 ring-gray-300' : 'text-center ring-1 ring-black hover:ring-orange-300' }}"
+                                wire:click="$set('pay', {{ $cash['pay'] }})">
 
-                                <div class="text-left">
+                                <div class="p-1">
 
                                     <div class="font-bold">
                                         Rp {{ number_format($cash['pay'], 0, ',', '.') }}
@@ -263,24 +296,25 @@
 
                                 </div>
 
-                            </x-mary-button>
+                            </button>
                         @endforeach
 
                     </div>
-
-                </div>
-
-            @endif
+                    @error('pay')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                @endif
+            </div>
 
             {{-- Uang Customer --}}
-            @if ($payment_id == 1)
+            {{-- @if ($payment_id == 1)
                 <x-mary-input label="Uang Diterima" wire:model.live="pay" prefix="Rp" type="number" />
 
                 <x-mary-stat title="Kembalian" :value="'Rp ' . number_format($change, 0, ',', '.')" icon="o-arrow-uturn-left" />
-            @endif
+            @endif --}}
 
             {{-- Catatan --}}
-            <x-mary-textarea wire:model="note" label="Catatan" rows="3" />
+            {{-- <x-mary-textarea wire:model="note" label="Catatan" rows="3" /> --}}
 
         </div>
 
@@ -288,7 +322,7 @@
 
             <x-mary-button label="Batal" @click="$wire.showPaymentModal=false" />
 
-            <x-mary-button label="Simpan" icon="o-check" class="btn-primary" wire:click="savePayment"
+            <x-mary-button label="Simpan" icon="o-check" class="bg-orange-500 text-white" wire:click="savePayment"
                 spinner="savePayment" />
 
         </x-slot:actions>

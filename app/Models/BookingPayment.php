@@ -14,6 +14,8 @@ class BookingPayment extends Model
         'paid_at',
         'user_id',
         'note',
+        'pay',
+        'change'
     ];
 
     protected $casts = [

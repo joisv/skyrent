@@ -85,6 +85,11 @@ class RentIphoneWizard extends Component
         $this->dispatch('display-duration-options');
     }
 
+    public function testDispatchEvent()
+    {
+        $this->dispatch('test-event');
+    }
+    
     protected function rules(): array
     {
         return match ($this->step) {
@@ -424,6 +429,7 @@ class RentIphoneWizard extends Component
         }
 
         // Reset
+        $this->dispatch('open-payment-modal', booking_id: $booking->id);
         $this->dispatch('close-modal');
         $this->reset([
             'selectedDuration',
@@ -444,13 +450,12 @@ class RentIphoneWizard extends Component
             Carbon::today('Asia/Jakarta')->format('Y-m-d');
         $this->requested_time = Carbon::now('Asia/Jakarta')->format('H:i');
         $this->loadIphones();
-
-        LivewireAlert::title('Success!')
-            ->text('Booking berhasil disimpan.')
-            ->success()
-            ->toast()
-            ->position('top-end')
-            ->show();
+        // LivewireAlert::title('Success!')
+        //     ->text('Booking berhasil disimpan.')
+        //     ->success()
+        //     ->toast()
+        //     ->position('top-end')
+        //     ->show();
     }
 
     public function selectIphone(int $iphoneId, string $name, $serial_number)

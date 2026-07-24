@@ -148,11 +148,27 @@ class Booking extends Model
 
     public function getTotalPaidAttribute()
     {
-        return $this->paymentTransactions()->sum('amount');
+        return $this->paymentTransactions()->whereIn('type', ['dp', 'payment'])->sum('amount');
     }
 
     public function getRemainingPaymentAttribute()
     {
         return $this->price - $this->total_paid;
+    }
+    public function updatePaymentStatus(): void
+    {
+        $totalPaid = $this->total_paid;
+
+        if ($totalPaid <= 0) {
+            $status = 'unpaid';
+        } elseif ($totalPaid < $this->price) {
+            $status = 'partial';
+        } else {
+            $status = 'paid';
+        }
+
+        $this->update([
+            'payment_status' => $status,
+        ]);
     }
 }

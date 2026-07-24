@@ -2,7 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Helpers\CashSuggestion;
 use App\Models\Booking;
+use App\Models\BookingPayment;
+use App\Models\Payment;
 use App\Models\ReturnIphone;
 use App\Models\Revenue;
 use Carbon\Carbon;
@@ -38,6 +41,18 @@ class DetailBooking extends Component
     public $customer_phone;
     public $countryCode = '+62';
 
+    public string $payment_method_id = '';
+
+    public $pay = 0;
+
+    public $change = 0;
+
+    public $note = '';
+
+    public $showPenaltyModal = false;
+    public $cashSuggestions = [];
+    public $payments;
+
     public function updateDetailBooking()
     {
         $this->validate([
@@ -65,15 +80,18 @@ class DetailBooking extends Component
         $telegramToken = config('services.telegram.bot_token');
         $chatId = config('services.telegram.chat_id');
         $whatsappToken = config('services.fonnte.token');
-        $groupId = config('services.fonnte.group_id');
 
-        $booking = Booking::find($this->detailBookingIphones->id);
-        $booking->update(['status' => $status]);
+        $booking = Booking::where('id', $this->bookingId)->with(['iphone', 'iphone.durations'])->first();
+
+        $booking->update([
+            'status' => $status,
+        ]);
+
         ReturnIphone::create([
-            'booking_id' => $this->bookingId,
-            'penalty_fee' => $this->is_late ? $this->penaltyFee : 0,
-            'returned_at' => now('Asia/Jakarta'),
-            'condition'   => 'Pengembalian berhasil.',
+            'booking_id' => $booking->id,
+            'returned_at' => now(),
+            'penalty_fee' => $this->penaltyFee, // hanya informasi
+            'condition' => 'Pengembalian berhasil.',
         ]);
 
         $message = "Halo {$this->booking->customer_name},\n\n"
@@ -129,46 +147,136 @@ class DetailBooking extends Component
 
         $this->dispatch('success-save');
         $this->dispatch('close-modal');
+
         $this->reset([
             'penaltyFee',
             'is_late',
-            'diff_hours'
+            'diff_hours',
+            'pay',
+            'change',
+            'note',
         ]);
+
         LivewireAlert::title('Status berhasil diubah')
-            ->position('top-end')
-            ->text('Status booking telah diperbarui')
-            ->toast()
+            ->text('iPhone berhasil dikembalikan')
             ->success()
+            ->toast()
             ->show();
     }
 
-    public function savePenaltyFee()
+    public function updatedPay()
     {
-        Revenue::create([
-            'booking_id' => $this->bookingId,
-            'amount'     => $this->penaltyFee,
-            'type'       => 'penalty',
-            'created'    => now(),
+        $payment = Payment::find($this->payment_method_id);
+
+        if (!$payment) {
+            return;
+        }
+
+        if ($payment->slug === 'cash') {
+            $this->change = max(0, $this->pay - $this->penaltyFee);
+        } else {
+            $this->pay = $this->penaltyFee;
+            $this->change = 0;
+        }
+    }
+
+    public function savePenaltyPayment()
+    {
+        $this->validate([
+            'payment_method_id' => 'required|exists:payments,id',
+            'pay' => 'required|numeric|min:' . $this->penaltyFee,
         ]);
+
+        $payment = Payment::findOrFail($this->payment_method_id);
+
+        if ($payment->slug == 'cash') {
+
+            $change = $this->pay - $this->penaltyFee;
+        } else {
+
+            $this->pay = $this->penaltyFee;
+
+            $change = 0;
+        }
+
+        BookingPayment::create([
+            'booking_id' => $this->bookingId,
+            'payment_id' => $payment->id,
+            'amount' => $this->penaltyFee,
+            'pay' => $this->pay,
+            'change' => $change,
+            'type' => 'penalty',
+            'paid_at' => now(),
+            'user_id' => auth()->id(),
+            'note' => $this->note,
+        ]);
+
         $this->updateStatusIphone();
     }
 
     public function returnIphone()
     {
-        if ($this->is_late && $this->detailBookingIphones->status == 'confirmed') {
-            $this->dispatch('open-modal', 'tambah-denda');
-        } elseif ($this->detailBookingIphones->status == 'confirmed') {
-            $this->updateStatusIphone();
-        } elseif ($this->is_late) {
-            $this->updateStatusIphone();
-        } else {
-            LivewireAlert::title('Tidak bisa merubah status iPhone')
-                ->text('Status iPhone tidak dapat diubah.')
-                ->position('top-end')
+
+        $this->payments = Payment::where('is_active', true)->get();
+        $this->payment_method_id = $this->booking->payment_id;
+
+        $this->pay = $this->penaltyFee;
+
+        $this->change = 0;
+
+        $this->dispatch('open-modal', 'tambah-denda');
+
+        if ($this->detailBookingIphones->status !== 'confirmed') {
+
+            LivewireAlert::title('Tidak bisa mengembalikan')
+                ->text('Booking sudah tidak berstatus Confirmed.')
                 ->toast()
+                ->position('top-end')
                 ->error()
                 ->show();
+
+            return;
         }
+
+        // Tidak terlambat
+        if (!$this->is_late) {
+            $this->updateStatusIphone();
+            return;
+        }
+
+        // Terlambat tetapi tidak ada denda
+        // if ($this->penaltyFee <= 0) {
+        //     dd('terlambat tapi tidak ada denda');
+        //     $this->updateStatusIphone();
+        //     return;
+        // }
+
+        // Terlambat dan ada denda
+        $this->dispatch('open-modal', 'tambah-denda');
+        $this->suggestionPenalty();
+    }
+
+    public function suggestionPenalty()
+    {
+        $lateHours = ceil($this->diff_hours);
+        $package = $this->booking->iphone
+            ->durations()
+            ->where('hours', '<=', $lateHours)
+            ->orderByDesc('hours')
+            ->first();
+
+        if ($package) {
+
+            $remainingHours = $lateHours - $package->hours;
+
+            $penalty = $package->pivot->price + ($remainingHours * 5000);
+        } else {
+
+            // Belum mencapai paket pertama
+            $penalty = $lateHours * 5000;
+        }
+        $this->penaltyFee = $penalty;
+        $this->cashSuggestions = CashSuggestion::generate($penalty);
     }
 
     public function validateReturnTime($endDate, $endTime)
@@ -211,10 +319,8 @@ class DetailBooking extends Component
 
         $returnStatus = $this->validateReturnTime($this->detailBookingIphones->end_booking_date, $this->detailBookingIphones->end_time);
         $nonLateStatuses = ['returned', 'canceled', 'pending'];
+        $this->is_late = $returnStatus['is_late'];
 
-        $this->is_late = in_array($this->detailBookingIphones->status, $nonLateStatuses)
-            ? false
-            : $returnStatus['is_late'];
         $this->diff_hours = $returnStatus['diff_hours'];
 
         $this->bookingId = $this->detailBookingIphones->id;

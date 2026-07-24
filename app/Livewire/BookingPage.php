@@ -10,7 +10,7 @@ use App\Models\Iphones;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Http;
 use App\Models\Revenue;
-use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -39,40 +39,73 @@ class BookingPage extends Component
     public bool $showPaymentModal = false;
     public $amount = 0;
 
+    public $nominal_bayar = 0;
+
     public $payment_id;
 
     public $payment_type = 'payment';
 
     public $note = '';
-    public $payments = [];
+    public $payments;
     public $booking_id;
+
+    // public $payment_name;
 
     public $cashSuggestions = [];
     public $pay = 0;
-
     public $change = 0;
     public Booking $booking;
 
+    public $sisa_tagihan;
 
+
+    public function testEvent()
+    {
+        $this->showPaymentModal = true;
+    }
+
+    #[On('open-payment-modal')]
     public function openModalPaymentBooking($booking_id)
     {
-        $this->booking = Booking::find($booking_id);
-        $this->amount  = $this->booking->price;
+        $this->booking = Booking::findOrFail($booking_id);
+        $this->payment_id = $this->booking->payment_id;
+        $this->amount = $this->booking->remaining_payment;
+        $this->sisa_tagihan = $this->booking->remaining_payment;
+        $this->pay = $this->sisa_tagihan;
+        $this->change = 0;
         $this->cashSuggestions = CashSuggestion::generate($this->amount);
         $this->booking_id = $booking_id;
         $this->showPaymentModal = true;
     }
 
-    public function updatedPay()
+    public function updatedAmount()
     {
-        $this->change = max(0, $this->pay - $this->amount);
+        $this->cashSuggestions = CashSuggestion::generate((int) $this->amount);
+
+        if (! $this->isCash) {
+            $this->pay = $this->amount;
+            $this->change = 0;
+        }
     }
 
-    public function updatedPaymentMethodId($value)
+    public function updatedPay()
     {
-        if ($value == 'cash') {
+        $this->change = max(
+            0,
+            (float)$this->pay - (float)$this->amount
+        );
+    }
+
+    public function updatedPaymentId()
+    {
+        if (! $this->isCash) {
 
             $this->pay = $this->amount;
+
+            $this->change = 0;
+        } else {
+
+            $this->pay = 0;
 
             $this->change = 0;
         }
@@ -81,47 +114,81 @@ class BookingPage extends Component
     protected function rules()
     {
         return [
-            'amount' => ['required', 'numeric', 'min:1'],
-            'payment_id' => ['required', 'exists:payments,id'],
-            'payment_type' => ['required'],
-            'note' => ['nullable', 'string'],
+
+            'amount' => [
+                'required',
+                'numeric',
+                'gt:0',
+            ],
+
+            'payment_id' => [
+                'required',
+                'exists:payments,id',
+            ],
+
+            'payment_type' => [
+                'required',
+            ],
+
+            'note' => [
+                'nullable',
+            ],
+
+            'pay' => [
+                Rule::requiredIf($this->isCash),
+                'nullable',
+                'numeric',
+                'gte:amount',
+            ],
+
+            'change' => [
+                'nullable',
+                'numeric',
+                'gte:0',
+            ],
+
         ];
+    }
+
+    public function getIsCashProperty(): bool
+    {
+        return strtolower(
+            $this->payments
+                ->firstWhere('id', $this->payment_id)
+                ?->name
+        ) === 'cash';
     }
 
     public function savePayment()
     {
         $this->validate();
 
+        if (! $this->isCash) {
+
+            $this->pay = $this->amount;
+
+            $this->change = 0;
+        }
+
         BookingPayment::create([
             'booking_id' => $this->booking->id,
             'payment_id' => $this->payment_id,
             'amount' => $this->amount,
+            'pay' => $this->pay,
+            'change' => $this->change,
             'type' => $this->payment_type,
             'paid_at' => now(),
             'user_id' => auth()->id(),
             'note' => $this->note,
         ]);
 
-        $totalPaid = $this->booking
-            ->paymentTransactions()
-            ->sum('amount');
-
-        if ($totalPaid <= 0) {
-            $status = 'unpaid';
-        } elseif ($totalPaid < $this->booking->price) {
-            $status = 'partial';
-        } else {
-            $status = 'paid';
-        }
-
-        $this->booking->update([
-            'payment_status' => $status,
-        ]);
+        $this->booking->updatePaymentStatus();
 
         $this->reset([
             'amount',
+            'pay',
+            'change',
             'payment_id',
-            'payment_type',
             'note',
         ]);
 
@@ -199,7 +266,8 @@ class BookingPage extends Component
     public function mount()
     {
         $this->loadStats();
-        $this->payments = Payment::all();
+        $this->payments = Payment::where('is_active', true)->get();
+        // $this->payment_name = $this->payments[0]?->name;
     }
 
     public function loadStats()
@@ -220,7 +288,7 @@ class BookingPage extends Component
         $this->iphonesAvailable = $iphoneQuery->get();
 
         // Revenue hari ini
-        $revenueQuery = Revenue::whereDate('created_at', today());
+        $revenueQuery = BookingPayment::whereDate('paid_at', today());
 
         if ($user->hasRole('affiliate-admin')) {
             $revenueQuery->whereHas('booking', function ($q) use ($user) {

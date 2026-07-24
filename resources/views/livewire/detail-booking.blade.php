@@ -363,8 +363,41 @@
 
         </div>
     </x-modal>
-    <x-modal name="tambah-denda" :show="$errors->IsNotEmpty()" maxWidth="sm">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-4" @success-save.window="show = false">
+    <x-modal name="tambah-denda" :show="$errors->IsNotEmpty()" maxWidth="lg">
+        @if ($errors->any())
+            <div>
+                <div class="flex items-start gap-3">
+                    <!-- Icon Error -->
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-red-500 dark:text-red-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01M12 5a7 7 0 100 14a7 7 0 000-14z" />
+                        </svg>
+                    </div>
+                    <!-- Text -->
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-900 dark:text-gray-100">
+                            Error
+                        </p>
+                        <ul class="mt-1 text-sm list-disc list-inside text-gray-700 dark:text-gray-300">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <!-- Close button -->
+                    <button @click="show = false"
+                        class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        @endif
+        <div class="bg-white w-full rounded-sm shadow-xl p-5" @success-save.window="show = false">
             <!-- Header -->
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-800">
@@ -429,6 +462,93 @@
                     class="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
             </div>
 
+            <div class="mb-4">
+
+                <label class="text-sm text-gray-500">
+                    Metode Pembayaran
+                </label>
+                @if (!empty($payments))
+                    <x-mary-select wire:model.live="payment_method_id" :options="$payments"
+                        placeholder="Metode pembayaran" placeholder-value="1" option-value="id"
+                        option-label="name" />
+                @endif
+
+            </div>
+            @if (!empty($payments))
+
+                @if (optional($payments->firstWhere('id', $payment_method_id))->slug == 'cash')
+                    <div class="mb-4">
+
+                        <label class="font-semibold mb-2">
+                            Saran Pembayaran
+                        </label>
+
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+
+                            @foreach ($cashSuggestions as $cash)
+                                <button type="button" wire:click="$set('pay', {{ $cash['pay'] }})"
+                                    class="p-1 ease-in rounded-sm {{ $pay == $cash['pay'] ? 'bg-orange-500 text-white ring-1 ring-gray-300' : 'text-center ring-1 ring-black hover:ring-orange-300' }}">
+
+                                    <div class="font-bold">
+                                        Rp {{ number_format($cash['pay'], 0, ',', '.') }}
+                                    </div>
+
+                                    <div class="text-xs opacity-70">
+
+                                        Kembali
+                                        Rp {{ number_format($cash['change'], 0, ',', '.') }}
+
+                                    </div>
+
+                                </button>
+                            @endforeach
+
+                        </div>
+
+                    </div>
+
+
+                @endif
+
+                {{-- @if (optional($payments->firstWhere('id', $payment_method_id))->slug == 'cash')
+                    <div class="mb-4">
+
+                        <label class="text-sm text-gray-500">
+                            Uang Diterima
+                        </label>
+
+                        <input type="number" wire:model.live="pay" class="w-full border rounded-lg p-2">
+
+                    </div>
+                @endif
+
+                @if (optional($payments->firstWhere('id', $payment_method_id))->slug == 'cash')
+                    <div class="mb-4">
+
+                        <label class="text-sm text-gray-500">
+                            Kembalian
+                        </label>
+
+                        <div class="text-lg font-bold text-green-600">
+
+                            Rp {{ number_format($change, 0, ',', '.') }}
+
+                        </div>
+
+                    </div>
+                @endif --}}
+            @endif
+            {{-- Catatan --}}
+            {{-- <div class="mb-4">
+
+                <label class="text-sm text-gray-500">
+                    Catatan
+                </label>
+
+                <textarea wire:model="note" rows="3" class="w-full border rounded-lg"></textarea>
+
+            </div> --}}
+
             <!-- Action -->
             <div class="flex justify-end gap-2">
                 <button class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100" @click="show = false">
@@ -437,7 +557,7 @@
 
                 <button
                     class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition disabled:opacity-50"
-                    wire:click="savePenaltyFee" wire:loading.attr="disabled">
+                    wire:click="savePenaltyPayment" wire:loading.attr="disabled">
                     Simpan
                 </button>
             </div>

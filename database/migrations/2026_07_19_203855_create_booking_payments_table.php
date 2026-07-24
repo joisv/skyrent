@@ -33,7 +33,7 @@ return new class extends Migration
 
             $table->timestamp('paid_at');
 
-            $table->foreignUlid('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained()->nullOnDelete();
 
             $table->text('note')->nullable();
             $table->timestamps();
