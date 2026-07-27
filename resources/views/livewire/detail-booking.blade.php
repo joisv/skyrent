@@ -11,11 +11,7 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-                <div>
-                    <button
-                        class="px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500 text-white hover:bg-white hover:text-black hover:border-black border-2 ease-in duration-100"
-                        @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
-                </div>
+
                 <x-mary-dropdown>
                     <x-slot:trigger>
                         <button
@@ -218,13 +214,20 @@
             $nonLateStatuses = ['returned', 'canceled', 'pending'];
         @endphp
 
-        <button
-            class="w-full py-2.5 rounded-lg font-semibold text-sm
-           bg-orange-500 text-white
-           disabled:bg-orange-300 disabled:text-gray-500 disabled:cursor-not-allowed"
-            wire:click="returnIphone" wire:loading.attr="disabled" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
-            Tandai Selesai
-        </button>
+        <div class="flex space-x-2">
+            <button
+                class="w-full py-2.5 rounded-lg font-semibold text-sm
+               hover:bg-orange-500 hover:text-white border-orange-400 border ease-in duration-100
+               disabled:bg-orange-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                @click="$dispatch('open-modal', 'tambah-durasi')">Tambah Durasi</button>
+            <button
+                class="w-full py-2.5 rounded-lg font-semibold text-sm
+               hover:bg-orange-500 hover:text-white border-orange-400 border ease-in duration-100
+               disabled:bg-orange-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                wire:click="returnIphone" wire:loading.attr="disabled" @disabled(in_array($detailBookingIphones?->status, $nonLateStatuses))>
+                Tandai Selesai
+            </button>
+        </div>
 
         @forelse($returns ?? [] as $return)
             <div class="p-4 bg-gray-50 rounded-lg text-sm space-y-1">

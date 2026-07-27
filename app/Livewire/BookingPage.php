@@ -225,7 +225,7 @@ class BookingPage extends Component
             'user_id' => auth()->id(),
             'note' => $this->note,
         ]);
-
+        $this->booking->updatePaymentStatus();
         if ($this->payment_type == 'extend') {
 
             // karena property pada fn extendBooking ada pada detailBooking sementara dispatch untuk menjalankan extendBooking

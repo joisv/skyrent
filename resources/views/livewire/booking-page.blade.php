@@ -85,6 +85,7 @@
                     wire:model.live="selectedAll">
             </x-tables.th>
             <x-tables.th>Serial Number</x-tables.th>
+            <x-tables.th>Status</x-tables.th>
             <x-tables.th>Status Pembayaran</x-tables.th>
             {{-- <x-tables.th>Nama</x-tables.th> --}}
             <x-tables.th>Tanggal & Waktu Mulai</x-tables.th>
@@ -110,6 +111,39 @@
                     </x-tables.td>
                     <x-tables.td>
                         <p class="pb-2">{{ $booking->customer_name }}</p>
+
+                        @switch($booking->status)
+                            @case('pending')
+                                <span class="px-2 py-1 rounded bg-yellow-500 text-white font-medium text-sm">
+                                    Menunggu Pembayaran
+                                </span>
+                            @break
+
+                            @case('confirmed')
+                                <span class="px-2 py-1 rounded bg-green-500 text-white font-medium text-sm">
+                                    Dikonfirmasi
+                                </span>
+                            @break
+
+                            @case('returned')
+                                <span class="px-2 py-1 rounded bg-blue-500 text-white font-medium text-sm">
+                                    Dikembalikan
+                                </span>
+                            @break
+
+                            @case('cancelled')
+                                <span class="px-2 py-1 rounded bg-red-500 text-white font-medium text-sm">
+                                    Dibatalkan
+                                </span>
+                            @break
+
+                            @default
+                                <span class="px-2 py-1 rounded bg-gray-400 text-white font-medium text-sm">
+                                    {{ ucfirst($booking->status) }}
+                                </span>
+                        @endswitch
+                    </x-tables.td>
+                    <x-tables.td>
                         @switch($booking->payment_status)
                             @case('partial')
                                 <span class="px-2 py-1 rounded bg-yellow-500 text-white font-medium text-sm">
@@ -182,10 +216,11 @@
                                 $dispatch('get-detail', { id : {{ $booking->id }} })
                                 $dispatch('open-modal', 'detail')
                             }">detail</x-primary-button>
+                        <x-primary-button wire:click="openModalPaymentBooking({{ $booking->id }})"
+                            class="btn-primary">Tambah Pembayaran</x-primary-button>
                         <x-danger-button type="button"
                             wire:click="destroyAlert({{ $booking->id }}, 'delete')">delete</x-danger-button>
-                        <x-mary-button label="Tambah Pembayaran" icon="o-banknotes"
-                            wire:click="openModalPaymentBooking({{ $booking->id }})" class="btn-primary" />
+
                     </x-tables.td>
                 </tr>
             @endforeach
