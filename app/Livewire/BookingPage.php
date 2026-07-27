@@ -65,18 +65,53 @@ class BookingPage extends Component
     }
 
     #[On('open-payment-modal')]
-    public function openModalPaymentBooking($booking_id)
-    {
+    public function openModalPaymentBooking(
+        $booking_id,
+        $type = 'payment',
+        $amount = null
+    ) {
         $this->booking = Booking::findOrFail($booking_id);
-        $this->payment_id = $this->booking->payment_id;
-        $this->amount = $this->booking->remaining_payment;
-        $this->sisa_tagihan = $this->booking->remaining_payment;
-        $this->pay = $this->sisa_tagihan;
-        $this->change = 0;
-        $this->cashSuggestions = CashSuggestion::generate($this->amount);
+
         $this->booking_id = $booking_id;
+
+        $this->payment_type = $type;
+
+        $this->payment_id = $this->booking->payment_id;
+
+        if ($amount == null) {
+            $amount = $this->booking->remaining_payment;
+        }
+
+        $this->amount = $amount;
+
+        $this->sisa_tagihan = $amount;
+
+        $this->pay = $amount;
+
+        $this->change = 0;
+
+        $this->cashSuggestions = CashSuggestion::generate($amount);
+
         $this->showPaymentModal = true;
     }
+    // old
+    // #[On('open-payment-modal')]
+    // public function openModalPaymentBooking(
+    //     $booking_id,
+    //     $type = 'payment',
+    //     $amount = null
+    // ) {
+    //     $this->booking = Booking::findOrFail($booking_id);
+    //     $this->payment_id = $this->booking->payment_id;
+    //     $this->amount = $this->booking->remaining_payment;
+    //     $this->sisa_tagihan = $this->booking->remaining_payment;
+    //     $this->pay = $this->sisa_tagihan;
+    //     $this->payment_type = $type;
+    //     $this->change = 0;
+    //     $this->cashSuggestions = CashSuggestion::generate($this->amount);
+    //     $this->booking_id = $booking_id;
+    //     $this->showPaymentModal = true;
+    // }
 
     public function updatedAmount()
     {
@@ -161,9 +196,18 @@ class BookingPage extends Component
 
     public function savePayment()
     {
-        $this->validate();
+        $this->validate([
+            'payment_id' => 'required|exists:payments,id',
+            'amount' => 'required|numeric|min:1',
+            'pay' => 'required|numeric|min:' . $this->amount,
+        ]);
 
-        if (! $this->isCash) {
+        $payment = Payment::findOrFail($this->payment_id);
+
+        if ($payment->slug == 'cash') {
+
+            $this->change = $this->pay - $this->amount;
+        } else {
 
             $this->pay = $this->amount;
 
@@ -172,7 +216,7 @@ class BookingPage extends Component
 
         BookingPayment::create([
             'booking_id' => $this->booking->id,
-            'payment_id' => $this->payment_id,
+            'payment_id' => $payment->id,
             'amount' => $this->amount,
             'pay' => $this->pay,
             'change' => $this->change,
@@ -182,22 +226,59 @@ class BookingPage extends Component
             'note' => $this->note,
         ]);
 
-        $this->booking->updatePaymentStatus();
+        if ($this->payment_type == 'extend') {
 
-        $this->reset([
-            'amount',
-            'pay',
-            'change',
-            'payment_id',
-            'note',
-        ]);
-
-        $this->payment_type = 'payment';
+            // karena property pada fn extendBooking ada pada detailBooking sementara dispatch untuk menjalankan extendBooking
+            $this->dispatch('extend-booking');
+            // $this->extendBooking();
+        } elseif ($this->payment_type == 'penalty') {
+            $this->dispatch('update-status-iphone');
+            // $this->updateStatusIphone();
+        }
 
         $this->showPaymentModal = false;
-
-        $this->dispatch('payment-added');
     }
+
+    // old
+    // public function savePayment()
+    // {
+    //     $this->validate();
+
+    //     if (! $this->isCash) {
+
+    //         $this->pay = $this->amount;
+
+    //         $this->change = 0;
+    //     }
+
+    //     BookingPayment::create([
+    //         'booking_id' => $this->booking->id,
+    //         'payment_id' => $this->payment_id,
+    //         'amount' => $this->amount,
+    //         'pay' => $this->pay,
+    //         'change' => $this->change,
+    //         'type' => $this->payment_type,
+    //         'paid_at' => now(),
+    //         'user_id' => auth()->id(),
+    //         'note' => $this->note,
+    //     ]);
+
+    //     $this->booking->updatePaymentStatus();
+
+    //     $this->reset([
+    //         'amount',
+    //         'pay',
+    //         'change',
+    //         'payment_id',
+    //         'note',
+    //     ]);
+
+    //     $this->payment_type = 'payment';
+
+    //     $this->showPaymentModal = false;
+
+    //     $this->dispatch('payment-added');
+    // }
 
 
     public function sendReminder()

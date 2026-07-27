@@ -285,11 +285,11 @@
         </div>
     </x-modal>
 
-    <x-modal name="tambah-durasi" :show="$errors->IsNotEmpty()" maxWidth="sm">
-        <div class="p-3" @modal-durasi.window="show = false">
+    <x-modal name="tambah-durasi" :show="$errors->IsNotEmpty()" maxWidth="lg">
+        <div class="p-5" @modal-durasi.window="show = false">
             <!-- Duration options -->
             <div class="space-y-3">
-                <p class="text-sm font-semibold">Pilih Durasi</p>
+                <p class="text-xl font-semibold">Pilih Durasi</p>
 
                 <div class="grid grid-cols-3 gap-2">
                     @if ($durations && $durations->count())
@@ -307,7 +307,6 @@
 
                 </div>
             </div>
-
             <!-- Multiplier -->
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">

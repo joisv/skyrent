@@ -53,6 +53,17 @@ class DetailBooking extends Component
     public $cashSuggestions = [];
     public $payments;
 
+    // new
+    public $paymentType = 'payment';
+
+    public $pendingExtend = [];
+    // peyment_method_id
+    public $payment_id;
+
+    public $amount;
+
+    public $booking_id;
+
     public function updateDetailBooking()
     {
         $this->validate([
@@ -73,8 +84,7 @@ class DetailBooking extends Component
         $this->dispatch('modal-edit');
     }
 
-
-
+    #[On('update-status-iphone')]
     public function updateStatusIphone(string $status = 'returned')
     {
         $telegramToken = config('services.telegram.bot_token');
@@ -419,7 +429,6 @@ class DetailBooking extends Component
         $this->available = false;
     }
 
-
     public function extend()
     {
         if (! $this->available || $this->totalHours < 1) {
@@ -432,19 +441,69 @@ class DetailBooking extends Component
             ->where('durations.id', $this->selectedDurationId)
             ->first();
 
-        if (! $duration) return;
+        if (! $duration) {
+            return;
+        }
 
-        $this->booking->extendHours($this->totalHours);
+        $amount = $duration->pivot->price * $this->multiplier;
+
+        $this->pendingExtend = [
+            'duration_id' => $duration->id,
+            'hours' => $this->totalHours,
+            'price' => $amount,
+            'new_end' => $this->newEnd,
+            'multiplier' => $this->multiplier,
+        ];
+
+        $this->dispatch(
+            'open-payment-modal',
+            booking_id: $this->booking->id,
+            type: 'extend',
+            amount: $amount
+        );
+    }
+
+    #[On('extend-booking')]
+    public function extendBooking()
+    {
+        $this->booking->extendHours(
+            $this->pendingExtend['hours']
+        );
+
         $this->booking->update([
             'reminder_sent' => false,
         ]);
-        Revenue::create([
-            'booking_id' => $this->booking->id,
-            'amount' => $duration->pivot->price * $this->multiplier,
-            'type' => 'extend',
-            'created' => now('Asia/Jakarta'),
-        ]);
 
+        $this->sendExtendNotification();
+
+        $this->selectedDurationId = null;
+
+        $this->multiplier = 1;
+
+        $this->pendingExtend = [];
+
+        $this->durations = $this->booking
+            ->iphone
+            ->durations
+            ->sortBy('hours')
+            ->values();
+
+        $this->getRevenue();
+
+        $this->resetPreview();
+
+        $this->dispatch('modal-durasi');
+
+        LivewireAlert::title('Berhasil')
+            ->text('Durasi berhasil ditambahkan')
+            ->success()
+            ->toast()
+            ->position('top-end')
+            ->show();
+    }
+
+    public function sendExtendNotification()
+    {
         // booking message
         $successExtendMessage = "Halo {$this->booking->customer_name},\n\n"
             . "Penambahan durasi sewa Anda di *SkyRental* telah *berhasil dikonfirmasi*.\n\n"
@@ -489,23 +548,95 @@ class DetailBooking extends Component
             'text'       => $adminExtendSuccessMessage,
             'parse_mode' => 'HTML',
         ]);
-
-        // Reset UI
-        $this->selectedDurationId = null;
-        $this->multiplier = 1;
-        $this->durations = $this->booking->iphone->durations
-            ->sortBy('hours')
-            ->values();
-        $this->getRevenue();
-        $this->resetPreview();
-        $this->dispatch('modal-durasi');
-        LivewireAlert::title('Berhasil menambahkandurasi!')
-            ->text('Durasi berhasil ditambahkan ke booking')
-            ->success()
-            ->toast()
-            ->position('top-end')
-            ->show();
     }
+
+    // old extend
+    // public function extend()
+    // {
+    //     if (! $this->available || $this->totalHours < 1) {
+    //         return;
+    //     }
+
+    //     $duration = $this->booking
+    //         ->iphone
+    //         ->durations()
+    //         ->where('durations.id', $this->selectedDurationId)
+    //         ->first();
+
+    //     if (! $duration) return;
+
+    //     $this->booking->extendHours($this->totalHours);
+    //     $this->booking->update([
+    //         'reminder_sent' => false,
+    //     ]);
+    //     Revenue::create([
+    //         'booking_id' => $this->booking->id,
+    //         'amount' => $duration->pivot->price * $this->multiplier,
+    //         'type' => 'extend',
+    //         'created' => now('Asia/Jakarta'),
+    //     ]);
+
+    //     // booking message
+    //     $successExtendMessage = "Halo {$this->booking->customer_name},\n\n"
+    //         . "Penambahan durasi sewa Anda di *SkyRental* telah *berhasil dikonfirmasi*.\n\n"
+    //         . "Berikut detail terbaru booking Anda:\n"
+    //         . "--------------------------------------\n"
+    //         . "Kode Booking : *{$this->booking->booking_code}*\n"
+    //         . "Perangkat    : {$this->booking->iphone->name} {$this->booking->iphone->serial_number}\n"
+    //         . "Tambah Waktu : {$this->totalHours} jam\n"
+    //         . "Selesai  : {$this->newEnd} \n"
+    //         . "--------------------------------------\n\n"
+    //         . "Penambahan waktu telah kami konfirmasi.\n"
+    //         . "Silakan menggunakan perangkat sesuai durasi terbaru.\n\n"
+    //         . "Terima kasih atas kepercayaan Anda 🙏\n"
+    //         . "SkyRental";
+
+    //     $adminExtendSuccessMessage = "<b>Tambah Durasi Berhasil</b>\n\n"
+    //         . "<b>Nama</b> : {$this->booking->customer_name}\n"
+    //         . "<b>HP</b>   : {$this->booking->customer_phone}\n"
+    //         . "<b>Email</b>: {$this->booking->customer_email}\n\n"
+    //         . "<b>Kode Booking</b> : {$this->booking->booking_code}\n"
+    //         . "<b>Perangkat</b>    : {$this->booking->iphone->name} {$this->booking->iphone->serial_number}\n"
+    //         . "<b>Tambah Waktu</b> : {$this->totalHours} jam\n"
+    //         . "<b>Waktu Selesai</b>: {$this->newEnd}\n\n"
+    //         . "<b>Status</b>       : Berhasil\n\n"
+    //         . "🔗 <a href='" . url('/admin/bookings/' . $this->booking->id) . "'>Lihat detail di Admin Panel</a>";
+
+    //     $telegramToken = config('services.telegram.bot_token');
+    //     $chatId        = config('services.telegram.chat_id');
+    //     $whatsappToken = config('services.fonnte.token');
+
+    //     // Kirim WhatsApp
+    //     Http::withHeaders([
+    //         'Authorization' => $whatsappToken,
+    //     ])->post('https://api.fonnte.com/send', [
+    //         'target'  => $this->formatPhoneNumber($this->booking->customer_phone),
+    //         'message' => $successExtendMessage,
+    //     ]);
+
+    //     // Kirim Telegram
+    //     Http::post("https://api.telegram.org/bot{$telegramToken}/sendMessage", [
+    //         'chat_id'    => $chatId,
+    //         'text'       => $adminExtendSuccessMessage,
+    //         'parse_mode' => 'HTML',
+    //     ]);
+
+    //     // Reset UI
+    //     $this->selectedDurationId = null;
+    //     $this->multiplier = 1;
+    //     $this->durations = $this->booking->iphone->durations
+    //         ->sortBy('hours')
+    //         ->values();
+    //     $this->getRevenue();
+    //     $this->resetPreview();
+    //     $this->dispatch('modal-durasi');
+    //     LivewireAlert::title('Berhasil menambahkandurasi!')
+    //         ->text('Durasi berhasil ditambahkan ke booking')
+    //         ->success()
+    //         ->toast()
+    //         ->position('top-end')
+    //         ->show();
+    // }
 
     public function changeMultiplier(string $action): void
     {
