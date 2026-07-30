@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Reports;
 
+use App\Models\Affiliate;
 use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\Revenue;
@@ -41,6 +42,19 @@ class Revenues extends Component
     public $revenueLastMonth;
     public $revenuePenalty;
     public $revenueThisMonthPercentage;
+
+    public $cashToday;
+    public $qrisToday;
+    public $transferToday;
+    public $incomeToday;
+
+    public $dpAmount;
+    public $paymentAmount;
+    public $extendAmount;
+    public $penaltyAmount;
+
+    public $affiliates;
+    public $selectedAffiliate = null;
 
     public function loadStatistics()
     {
@@ -200,13 +214,78 @@ class Revenues extends Component
 
     public function mount()
     {
+        $today = today();
         $this->month = now()->month;
         $this->year = now()->year;
 
         $this->startDate = now()->subDays(6)->toDateString();
         $this->endDate = now()->toDateString();
 
+        $start = now()->startOfMonth();
+        $end = now()->endOfMonth();
+
         $this->refreshDashboard();
+
+        $this->cashToday = BookingPayment::whereDate('paid_at', $today)
+            ->whereHas('payment', fn($q) => $q->where('slug', 'cash'))
+            ->sum('amount');
+
+        $this->transferToday = BookingPayment::whereDate('paid_at', $today)
+            ->whereHas('payment', fn($q) => $q->where('slug', 'transfer'))
+            ->sum('amount');
+
+        $this->qrisToday = BookingPayment::whereDate('paid_at', $today)
+            ->whereHas('payment', fn($q) => $q->where('slug', 'qris'))
+            ->sum('amount');
+
+        $this->incomeToday = BookingPayment::whereDate('paid_at', $today)
+            ->sum('amount');
+
+        // ===========================
+        // BERDASARKAN TIPE PEMBAYARAN
+        // ===========================
+
+        $this->dpAmount = BookingPayment::whereDate('paid_at', $today)
+            ->where('type', 'dp')
+            ->sum('amount');
+
+        $this->paymentAmount = BookingPayment::whereDate('paid_at', $today)
+            ->where('type', 'payment')
+            ->sum('amount');
+
+        $this->extendAmount = BookingPayment::whereDate('paid_at', $today)
+            ->where('type', 'extend')
+            ->sum('amount');
+
+        $this->penaltyAmount = BookingPayment::whereDate('paid_at', $today)
+            ->where('type', 'penalty')
+            ->sum('amount');
+
+        // affiliate
+        $this->affiliates = Affiliate::with([
+            'bookings' => function ($q) use ($start, $end) {
+                $q->whereBetween('created_at', [$start, $end])
+                    ->with('paymentTransactions');
+            }
+        ])
+            ->withCount([
+                'bookings' => function ($q) use ($start, $end) {
+                    $q->whereBetween('created_at', [$start, $end]);
+                }
+            ])
+            ->get()
+            ->map(function ($affiliate) {
+
+                $affiliate->omzet = $affiliate->bookings->sum('price');
+
+                $affiliate->paid = $affiliate->bookings
+                    ->flatMap->paymentTransactions
+                    ->sum('amount');
+
+                $affiliate->remaining = max(0, $affiliate->omzet - $affiliate->paid);
+
+                return $affiliate;
+            });
     }
 
     public function previousMonth()

@@ -1,4 +1,248 @@
-<div x-data class="">
+<div x-data class="space-y-4">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <x-mary-stat title="Kas Hari Ini" value="Rp {{ number_format($cashToday, 0, ',', '.') }}" icon="o-banknotes"
+            color="text-green-600" />
+
+        <x-mary-stat title="Transfer" value="Rp {{ number_format($transferToday, 0, ',', '.') }}" icon="o-building-library"
+            color="text-blue-600" />
+
+        <x-mary-stat title="QRIS" value="Rp {{ number_format($qrisToday, 0, ',', '.') }}" icon="o-qr-code"
+            color="text-purple-600" />
+
+        <x-mary-stat title="Total Masuk" value="Rp {{ number_format($incomeToday, 0, ',', '.') }}" icon="o-wallet"
+            color="text-orange-600" />
+
+    </div>
+    <div class="bg-white rounded-xl shadow p-5 mt-6">
+
+        <h2 class="font-semibold text-lg mb-4">
+            Jenis Pembayaran
+        </h2>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+            <div class="rounded-lg border p-4">
+                <p class="text-sm text-gray-500">DP</p>
+
+                <p class="font-bold text-xl">
+                    Rp {{ number_format($dpAmount, 0, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="rounded-lg border p-4">
+                <p class="text-sm text-gray-500">Pelunasan</p>
+
+                <p class="font-bold text-xl">
+                    Rp {{ number_format($paymentAmount, 0, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="rounded-lg border p-4">
+                <p class="text-sm text-gray-500">Extend</p>
+
+                <p class="font-bold text-xl">
+                    Rp {{ number_format($extendAmount, 0, ',', '.') }}
+                </p>
+            </div>
+
+            <div class="rounded-lg border p-4">
+                <p class="text-sm text-gray-500">Penalty</p>
+
+                <p class="font-bold text-xl">
+                    Rp {{ number_format($penaltyAmount, 0, ',', '.') }}
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+    
+    {{-- Affiliate --}}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        @foreach ($affiliates as $affiliate)
+            @php
+
+                $booking = $affiliate->bookings_count;
+
+                $iphone = $affiliate->iphones_count ?? $affiliate->iphones->count();
+
+                $omzet = $affiliate->bookings->sum('price');
+
+                $paid = $affiliate->bookings->flatMap->paymentTransactions->sum('amount');
+
+                $remaining = max(0, $omzet - $paid);
+
+                $progress = $omzet > 0 ? round(($paid / $omzet) * 100) : 0;
+
+            @endphp
+
+            <div class="rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition">
+
+                <div class="p-6">
+
+                    {{-- HEADER --}}
+                    <div class="flex justify-between">
+
+                        <div>
+
+                            <h2 class="text-lg font-bold">
+
+                                {{ $affiliate->name }}
+
+                            </h2>
+
+                            <p class="text-sm text-gray-500">
+
+                                {{ $affiliate->code }}
+
+                            </p>
+
+                        </div>
+
+                        @if ($remaining == 0)
+                            <span class="h-fit p-2 rounded-sm bg-green-100 text-green-600 text-xs">
+
+                                Lunas
+
+                            </span>
+                        @else
+                            <div class="h-fit p-2 rounded-sm bg-orange-100 text-orange-600 text-xs text-center">
+                                Ada Piutang
+                            </div>
+                        @endif
+
+                    </div>
+
+                    {{-- STAT --}}
+                    <div class="">
+
+                        <div class="rounded-xl bg-gray-50 p-4">
+
+                            <p class="text-xs text-gray-500">
+
+                                Booking
+
+                            </p>
+
+                            <p class="text-2xl font-bold">
+
+                                {{ $booking }}
+
+                            </p>
+
+                        </div>
+                    </div>
+
+                    {{-- KEUANGAN --}}
+                    <div class="space-y-4 mt-6">
+
+                        <div class="flex justify-between">
+
+                            <span class="text-gray-500">
+
+                                Omzet
+
+                            </span>
+
+                            <span class="font-semibold">
+
+                                Rp {{ number_format($omzet, 0, ',', '.') }}
+
+                            </span>
+
+                        </div>
+
+                        <div class="flex justify-between">
+
+                            <span class="text-gray-500">
+
+                                Uang Masuk
+
+                            </span>
+
+                            <span class="font-semibold text-green-600">
+
+                                Rp {{ number_format($paid, 0, ',', '.') }}
+
+                            </span>
+
+                        </div>
+
+                        <div class="flex justify-between">
+
+                            <span class="text-gray-500">
+
+                                Piutang
+
+                            </span>
+
+                            <span class="font-semibold {{ $remaining ? 'text-red-600' : 'text-green-600' }}">
+
+                                {{ $remaining ? 'Rp ' . number_format($remaining, 0, ',', '.') : 'Lunas' }}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    {{-- PROGRESS --}}
+                    <div class="mt-6">
+
+                        <div class="flex justify-between text-sm">
+
+                            <span>
+
+                                Progress Pembayaran
+
+                            </span>
+
+                            <span>
+
+                                {{ $progress }}%
+
+                            </span>
+
+                        </div>
+
+                        <div class="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+
+                            <div class="h-full rounded-full bg-green-500" style="width: {{ $progress }}%">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {{-- ACTION --}}
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+
+                        <button wire:click="detailAffiliate({{ $affiliate->id }})"
+                            class="rounded-xl border py-2 hover:bg-gray-100">
+
+                            Detail
+
+                        </button>
+
+                        <button wire:click="bookingAffiliate({{ $affiliate->id }})"
+                            class="rounded-xl bg-orange-500 text-white py-2 hover:bg-orange-600">
+
+                            Booking
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        @endforeach
+
+    </div>
+
     <div class="flex justify-between">
 
         <div class="w-[65%] rounded-2xl border bg-white p-6 shadow">
@@ -84,8 +328,8 @@
             </div>
         </div>
         <div class="w-[20%] space-y-2">
-            <x-mary-stat title="Hari Ini" description="{{ now()->format('d F Y') }}"
-                value="Rp {{ number_format($revenueToday, 0, ',', '.') }}" icon="o-banknotes" color="text-green-600" />
+            {{-- <x-mary-stat title="Hari Ini" description="{{ now()->format('d F Y') }}"
+                value="Rp {{ number_format($revenueToday, 0, ',', '.') }}" icon="o-banknotes" color="text-green-600" /> --}}
             <button type="button" wire:click="getDetailRevenue">
                 <x-mary-stat title="Pendapatan periode" value="Rp {{ number_format($totalIncome, 0, ',', '.') }}"
                     icon="o-currency-dollar" color="text-primary" class="shadow-md"
@@ -111,6 +355,8 @@
         </div>
 
     </div>
+
+
     {{-- datatables --}}
     <div class="w-full ">
         <div class="mt-10">

@@ -5,7 +5,7 @@
         },
         iPhoneWizardtest() {
             $dispatch('open-modal', 'iphone-wizard')
-            $dispatch('reload-iphone')
+            {{-- $dispatch('reload-iphone') --}}
         }
 }">
 

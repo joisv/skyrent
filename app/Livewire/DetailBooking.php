@@ -228,7 +228,7 @@ class DetailBooking extends Component
     {
 
         $this->payments = Payment::where('is_active', true)->get();
-        $this->payment_method_id = $this->booking->payment_id;
+        $this->payment_method_id = $this->booking->payment_id ?? '';
 
         $this->pay = $this->penaltyFee;
 

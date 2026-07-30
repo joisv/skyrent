@@ -146,6 +146,11 @@ class Booking extends Model
         return $this->hasMany(BookingPayment::class);
     }
 
+    // public function bookingPayments()
+    // {
+    //     return $this->hasMany(BookingPayment::class);
+    // }
+
     public function getTotalPaidAttribute()
     {
         return $this->paymentTransactions()->whereIn('type', ['dp', 'payment'])->sum('amount');

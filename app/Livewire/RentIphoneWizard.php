@@ -77,6 +77,11 @@ class RentIphoneWizard extends Component
 
     public $serial_number;
 
+    public function updatedIphoneSearch($value)
+    {
+        $this->loadIphones();
+    }
+    
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
     {
@@ -651,8 +656,6 @@ class RentIphoneWizard extends Component
 
     public function render()
     {
-        return view('livewire.rent-iphone-wizard', [
-            'iphones' => $this->loadIphones(),
-        ]);
+        return view('livewire.rent-iphone-wizard');
     }
 }
