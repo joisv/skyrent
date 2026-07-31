@@ -262,7 +262,7 @@ class Revenues extends Component
             ->sum('amount');
 
         // affiliate
-        $this->affiliates = Affiliate::with([
+        $this->affiliates = Affiliate::where('is_active', true)->with([
             'bookings' => function ($q) use ($start, $end) {
                 $q->whereBetween('created_at', [$start, $end])
                     ->with('paymentTransactions');
