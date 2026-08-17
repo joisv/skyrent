@@ -89,7 +89,7 @@ class RentIphoneWizard extends Component
         $this->getDurations();
         $this->dispatch('display-duration-options');
     }
-
+    
     public function testDispatchEvent()
     {
         $this->dispatch('test-event');
@@ -137,7 +137,7 @@ class RentIphoneWizard extends Component
             ])->post('https://api.fonnte.com/validate', [
                 'target' => $this->formatPhoneNumber($this->customer_phone),
             ]);
-
+    
             $data = $check->json();
 
             if (!empty($data['not_registered'])) {
@@ -470,6 +470,7 @@ class RentIphoneWizard extends Component
         $this->serial_number = $serial_number;
         $this->getDurations();
         $this->dispatch('display-duration-options');
+        $this->loadIphones();
     }
 
     public function updatedSelectedPaymentId()

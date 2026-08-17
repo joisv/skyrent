@@ -45,13 +45,13 @@
         {{-- NAV --}}
         <div class="flex justify-between mb-4 mt-0">
             @if ($step > 1)
-                <button wire:click="back" type="button" class="px-4 py-2 border rounded-xl">
+                <button wire:loading.attr="disabled" wire:click="back" type="button" class="disabled:opacity-50  px-4 py-2 border rounded-xl">
                     Kembali
                 </button>
             @endif
 
             @if ($step < 3)
-                <button wire:click="next" type="button" class="px-6 py-2 bg-black text-white rounded-xl">
+                <button wire:loading.attr="disabled" wire:click="next" type="button" class="disabled:opacity-50 px-6 py-2 bg-black text-white rounded-xl">
                     Lanjut →
                 </button>
             @else
@@ -521,6 +521,7 @@
                 setActiveTab(tab, priceValue) {
                     this.activeTab = tab;
                     this.price = priceValue;
+                    $wire.loadIphones();
                 }
             }">
                 @foreach ($durations as $item)

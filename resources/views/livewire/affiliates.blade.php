@@ -331,16 +331,20 @@
                             <button wire:click="assignAffiliateToUser({{ $detailAffiliate?->id }})" type="button"
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">Pengguna Affiliate</p>
-                                <h2 class="text-lg font-bold">
-                                    {{ $detailAffiliate?->users->first()?->name ?? 'Belum ada pengguna' }}
-                                </h2>
+                                @if (!empty($detailAffiliate?->users))
+                                    @foreach ($detailAffiliate?->users as $user)
+                                        <h2 class="text-lg font-bold">
+                                            {{ $user->name ?? 'Belum ada pengguna' }}
+                                        </h2>
+                                    @endforeach
+                                @endif
                             </button>
 
                             <button type="button" wire:click="listIphones({{ $detailAffiliate?->id }})"
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">iPhone</p>
                                 <h2 class="text-xl font-bold">
-                                    {{ $iphones?->count() ?? 'Belum ada pengguna' }}
+                                    {{ $iphones?->count() ?? 'Tidak ada iPhone' }}
                                 </h2>
                             </button>
 
@@ -348,7 +352,7 @@
                                 class="bg-white rounded-xl shadow p-5 hover:bg-orange-200 border-2 border-transparent hover:border-orange-400 transition duration-200">
                                 <p class="text-gray-500">Booking</p>
                                 <h2 class="text-xl font-bold">
-                                    {{ $allBookings?->count() ?? "Belum ada pengguna" }}
+                                    {{ $allBookings?->count() ?? 'Tidak ada booking' }}
                                 </h2>
                             </button>
                             {{-- Transfer iPhone --}}
@@ -363,7 +367,7 @@
                                 <p class="text-gray-500">Pendapatan hari ini</p>
                                 <h2 class="text-xl font-bold">
                                     Rp
-                                    {{ number_format($revenues?->sum('amount'), 0, ',', '.') ?? "Belum ada pengguna" }}
+                                    {{ number_format($revenues?->sum('amount'), 0, ',', '.') ?? 'Belum ada pengguna' }}
                                 </h2>
                             </button>
 
@@ -563,41 +567,43 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+
 
                 @foreach ($users as $user)
-                    <button wire:click="assignUser('{{ $user?->id }}')"
-                        class="group w-full text-left rounded-xl border transition duration-200 p-5
-    
-                    {{ $selectedUser?->id == $user?->id
-                        ? 'border-orange-600 bg-orange-50'
-                        : 'border-gray-200 hover:border-orange-300 hover:bg-gray-50' }}">
+                    <label class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50">
 
-                        <div class="flex justify-between items-center">
+                        <input type="checkbox" wire:model="selectedUsers" value="{{ $user->id }}"
+                            class="checkbox checkbox-warning">
 
-                            <div>
+                        <div>
 
-                                <h3 class="font-semibold text-gray-800">
-                                    {{ $user?->name }}
-                                </h3>
-
+                            <div class="font-medium">
+                                {{ $user->name }}
                             </div>
 
-                            @if ($selectedUser == $user?->id)
-                                <div
-                                    class="h-8 w-8 rounded-full bg-orange-600 text-white flex items-center justify-center">
-
-                                    ✓
-
-                                </div>
-                            @endif
+                            <div class="text-xs text-gray-500">
+                                {{ $user->email }}
+                            </div>
 
                         </div>
 
-                    </button>
+                    </label>
                 @endforeach
 
             </div>
+            <button wire:click="assignUsers" wire:loading.attr="disabled"
+                class="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-2.5">
+
+                <span wire:loading.remove wire:target="assignUsers">
+                    Tambahkan User
+                </span>
+
+                <span wire:loading wire:target="assignUsers">
+                    Menambahkan...
+                </span>
+
+            </button>
         </div>
     </x-modal>
     <x-modal name="list-iphones" :show="$errors->isNotEmpty()" maxWidth="4xl">

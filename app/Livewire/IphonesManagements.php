@@ -176,7 +176,7 @@ class IphonesManagements extends Component
                 'user'
             ]);
 
-        if (! auth()->user()->hasRole('super-admin')) {
+        if (! auth()->user()->hasRole('super-admin') && ! auth()->user()->hasRole('admin')) {
             $query->where('affiliate_id', auth()->user()->affiliate_id);
         }
 

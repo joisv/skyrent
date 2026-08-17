@@ -57,6 +57,8 @@ class Affiliates extends Component
     public $allBookings;
     public $totalRevenue;
 
+    public array $selectedUsers = [];
+
     protected function rules(): array
     {
         return [
@@ -94,21 +96,32 @@ class Affiliates extends Component
         ];
     }
 
-    public function assignUser($userId)
+    public function assignUsers()
     {
-        $this->selectedUser = User::findOrFail($userId);
-        User::where('affiliate_id', $this->selectedAffiliateId)
-            ->where('id', '!=', $this->selectedUser->id)
+        if (empty($this->selectedUsers)) {
+            LivewireAlert::title('Belum ada user dipilih')
+                ->text('Silakan pilih minimal satu user.')
+                ->warning()
+                ->toast()
+                ->position('top-end')
+                ->show();
+
+            return;
+        }
+
+        User::whereIn('id', $this->selectedUsers)
             ->update([
-                'affiliate_id' => null,
+                'affiliate_id' => $this->selectedAffiliateId,
             ]);
 
-        $this->selectedUser->update([
-            'affiliate_id' => $this->selectedAffiliateId,
-        ]);
+        $count = count($this->selectedUsers);
+
+        $this->selectedUsers = [];
+
         $this->dispatch('close-modal-detail-affiliate');
-        LivewireAlert::title('Berhasil menambahkan user ke affiliate')
-            ->text('User berhasil ditambahkan.')
+
+        LivewireAlert::title('Berhasil')
+            ->text("{$count} user berhasil ditambahkan ke affiliate.")
             ->success()
             ->toast()
             ->position('top-end')
@@ -148,6 +161,8 @@ class Affiliates extends Component
             'bookings.revenue',
         ])->findOrFail($affiliateId);
 
+        $this->selectedUsers = $this->detailAffiliate->users->pluck('id')->toArray();
+
         $user = $this->detailAffiliate->users->first();
 
         if (!empty($user)) {
@@ -164,6 +179,7 @@ class Affiliates extends Component
                 })
                 ->with(['booking', 'booking.iphone'])
                 ->get();
+
             $this->totalRevenue = Revenue::whereHas('booking', function ($query) use ($user) {
                 $query->where(function ($q) use ($user) {
                     $q->where('affiliate_id', $user->affiliate_id)
@@ -172,12 +188,12 @@ class Affiliates extends Component
                                 ->where('user_id', $user->id);
                         });
                 });
-            })
-                ->with([
-                    'booking',
-                    'booking.iphone',
-                ])
+            })->with([
+                'booking',
+                'booking.iphone',
+            ])
                 ->get();
+
             $this->allBookings = Booking::where(function ($query) use ($user) {
                 $query->where('affiliate_id', $this->detailAffiliate->id)
                     ->orWhere(function ($q) use ($user) {
@@ -185,7 +201,7 @@ class Affiliates extends Component
                             ->where('user_id', $user->id);
                     });
             })->with(['iphone', 'revenue'])->get();
-    
+
             $this->bookingsToday = Booking::whereDate('created_at', today())
                 ->where(function ($query) use ($user) {
                     $query->where('affiliate_id', $user->affiliate_id)
@@ -196,15 +212,15 @@ class Affiliates extends Component
                 })
                 ->with(['revenue', 'iphone'])
                 ->get();
-    
+
             $query = Iphones::query();
-    
+
             if ($user?->hasRole('affiliate-admin')) {
                 $query->where('affiliate_id', $user->affiliate_id);
             } elseif ($user?->hasRole('super-admin')) {
                 $query->whereNull('affiliate_id');
             }
-    
+
             $this->iphones = $query->get();
         }
 

@@ -56,6 +56,16 @@ class Revenues extends Component
     public $affiliates;
     public $selectedAffiliate = null;
 
+    public function detailAffiliate($affiliateId = '')
+    {
+        $this->selectedAffiliate = Affiliate::with([
+            'bookings.paymentTransactions.payment',
+            'bookings.iphone',
+        ])->findOrFail($affiliateId);
+
+        dump($this->selectedAffiliate);
+    }
+
     public function loadStatistics()
     {
 
@@ -163,6 +173,7 @@ class Revenues extends Component
                 'user',
             ])
             ->latest('paid_at')
+            // ->paginate($this->paginate)
             ->get();
     }
 

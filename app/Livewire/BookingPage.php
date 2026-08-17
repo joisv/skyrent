@@ -371,32 +371,28 @@ class BookingPage extends Component
         // Revenue hari ini
         $revenueQuery = BookingPayment::whereDate('paid_at', today());
 
-        if ($user->hasRole('affiliate-admin')) {
-            $revenueQuery->whereHas('booking', function ($q) use ($user) {
-                $q->where(function ($query) use ($user) {
-                    $query->where('affiliate_id', $user->affiliate_id)
-                        ->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('affiliate_id')
-                                ->where('user_id', $user->id);
-                        });
-                });
+        $revenueQuery->whereHas('booking', function ($q) use ($user) {
+            $q->where(function ($query) use ($user) {
+                $query->where('affiliate_id', $user->affiliate_id)
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->whereNull('affiliate_id')
+                            ->where('user_id', $user->id);
+                    });
             });
-        }
+        });
 
         $this->revenueToday = $revenueQuery->sum('amount');
 
         // Booking hari ini
         $bookingQuery = Booking::whereDate('created_at', today());
 
-        if ($user->hasRole('affiliate-admin')) {
-            $bookingQuery->where(function ($query) use ($user) {
-                $query->where('affiliate_id', $user->affiliate_id)
-                    ->orWhere(function ($q) use ($user) {
-                        $q->whereNull('affiliate_id')
-                            ->where('user_id', $user->id);
-                    });
-            });
-        }
+        $bookingQuery->where(function ($query) use ($user) {
+            $query->where('affiliate_id', $user->affiliate_id)
+                ->orWhere(function ($q) use ($user) {
+                    $q->whereNull('affiliate_id')
+                        ->where('user_id', $user->id);
+                });
+        });
 
         $this->bookingToday = $bookingQuery->get();
 
