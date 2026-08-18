@@ -268,23 +268,49 @@ class DetailBooking extends Component
 
     public function suggestionPenalty()
     {
-        $lateHours = ceil($this->diff_hours);
-        $package = $this->booking->iphone
-            ->durations()
-            ->where('hours', '<=', $lateHours)
-            ->orderByDesc('hours')
-            ->first();
+        $lateHours = max(0, (int) floor($this->diff_hours));
 
-        if ($package) {
+        // Toleransi 2 jam
+        $toleranceHours = 1;
 
-            $remainingHours = $lateHours - $package->hours;
-
-            $penalty = $package->pivot->price + ($remainingHours * 5000);
+        if ($lateHours <= $toleranceHours) {
+            $penalty = 0;
         } else {
 
-            // Belum mencapai paket pertama
-            $penalty = $lateHours * 5000;
+            // Kurangi waktu toleransi
+            $lateHours -= $toleranceHours;
+
+            $durations = $this->booking->iphone
+                ->durations()
+                ->orderByDesc('hours')
+                ->get();
+
+            $remainingHours = $lateHours;
+            $penalty = 0;
+
+            foreach ($durations as $package) {
+
+                if ($remainingHours < $package->hours) {
+                    continue;
+                }
+
+                $count = intdiv($remainingHours, $package->hours);
+
+                $penalty += $count * $package->pivot->price;
+
+                $remainingHours -= $count * $package->hours;
+
+                if ($remainingHours <= 0) {
+                    break;
+                }
+            }
+
+            // Sisa jam di bawah paket terkecil
+            if ($remainingHours > 0) {
+                $penalty += $remainingHours * 5000;
+            }
         }
+
         $this->penaltyFee = $penalty;
         $this->cashSuggestions = CashSuggestion::generate($penalty);
     }
