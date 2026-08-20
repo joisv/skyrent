@@ -266,7 +266,7 @@
             </div>
         @endif
 
-        <div class="space-y-5">
+        <div class="space-y-2">
 
             {{-- Sisa Tagihan --}}
             <x-mary-stat title="Sisa Tagihan" :value="'Rp ' . number_format((float) $sisa_tagihan, 0, ',', '.')" icon="o-banknotes" />
@@ -304,7 +304,52 @@
                 ['id' => 'extend', 'name' => 'Extend'],
             ]"
                 option-value="id" option-label="name" />
-
+            {{-- Paid At --}}
+            <div class="flex space-x-2 items-center ">
+                {{-- Date picker --}}
+                <div class="w-[75%]">
+                    <div>
+                        <label for="requested_booking_date" class="text-sm text-gray-500 mb-1 block">Tanggal
+                            pembayaran</label>
+                        <livewire:booking.set-date wire:model="requested_booking_date" />
+                    </div>
+                    @error('requested_booking_date')
+                        <span class="error">Pilih tanggal pembayaran</span>
+                    @enderror
+                </div>
+                {{-- Time picker --}}
+                <div wire:ignore>
+                    <label for="timepicker" class="text-sm text-gray-500 mb-1 block">Jam pembayaran</label>
+                    {{-- Initialize flatpickr for time selection --}}
+                    <div class="border-gray-300" x-data="{
+                        timepickerinstance: null,
+                    
+                        init() {
+                            let timepick = document.querySelector('#timepics')
+                            this.timepickerinstance = flatpickr(timepick, {
+                                enableTime: true,
+                                noCalendar: true,
+                                dateFormat: 'H:i',
+                                time_24hr: true,
+                                defaultDate: @js($paid_at ? \Carbon\Carbon::parse($paid_at)->format('H:i') : null),
+                                onChange: (selectedDates, dateStr, instance) => {
+                                    $wire.paid_at = dateStr; // Update Livewire property
+                                    {{-- console.log(selectedDates) --}}
+                                    {{-- $wire.setTime(dateStr); // Call Livewire method to set time --}}
+                                }
+                            })
+                        },
+                    }">
+                        <input id="timepics" wire:ignore type="text" placeholder="YYYY-MM-DD"
+                            class="w-full border-gray-300 rounded-sm" />
+                    </div>
+                    @error('paid_at')
+                        <span class="error">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+            {{-- @if ($payment_type === 'dp' || $payment_type === 'payment')
+            @endif --}}
             {{-- Cash Suggestion --}}
             <div>
 

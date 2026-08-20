@@ -10,6 +10,7 @@ use App\Models\Iphones;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Http;
 use App\Models\Revenue;
+use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -48,6 +49,8 @@ class BookingPage extends Component
     public $note = '';
     public $payments;
     public $booking_id;
+    public $paid_at;
+    public $requested_booking_date;
 
     // public $payment_name;
 
@@ -221,7 +224,10 @@ class BookingPage extends Component
             'pay' => $this->pay,
             'change' => $this->change,
             'type' => $this->payment_type,
-            'paid_at' => now(),
+            'paid_at' => Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $this->requested_booking_date . ' ' . $this->paid_at
+            ),
             'user_id' => auth()->id(),
             'note' => $this->note,
         ]);
@@ -348,6 +354,9 @@ class BookingPage extends Component
     {
         $this->loadStats();
         $this->payments = Payment::where('is_active', true)->get();
+        $this->requested_booking_date =
+            Carbon::today('Asia/Jakarta')->format('Y-m-d');
+        $this->paid_at = Carbon::now('Asia/Jakarta')->format('H:i');
         // $this->payment_name = $this->payments[0]?->name;
     }
 
