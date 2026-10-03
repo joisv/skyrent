@@ -86,6 +86,12 @@ class Booking extends Model
         return $this->hasMany(PaymentProof::class);
     }
 
+    public function bookingPayments()
+    {
+        return $this->hasMany(BookingPayment::class);
+    }
+
+
     public function extendHours(int $hours): void
     {
         $start = Carbon::parse(
@@ -151,17 +157,21 @@ class Booking extends Model
     //     return $this->hasMany(BookingPayment::class);
     // }
 
-    public function getTotalPaidAttribute()
+    public function getTotalPaidAttribute(): float
     {
-        return $this->paymentTransactions()->whereIn('type', ['dp', 'payment'])->sum('amount');
+        if ($this->relationLoaded('paymentTransactions')) {
+            return (float) $this->paymentTransactions->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
+        }
+        return (float) $this->paymentTransactions()->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
     }
 
-    public function getRemainingPaymentAttribute()
+    public function getRemainingPaymentAttribute(): float
     {
-        return $this->price - $this->total_paid;
+        return max(0.0, (float) $this->price - (float) $this->total_paid);
     }
     public function updatePaymentStatus(): void
     {
+        $this->unsetRelation('paymentTransactions');
         $totalPaid = $this->total_paid;
 
         if ($totalPaid <= 0) {
@@ -175,5 +185,73 @@ class Booking extends Model
         $this->update([
             'payment_status' => $status,
         ]);
+    }
+
+    public function getLateInfoAttribute(): array
+    {
+        $isLate = false;
+        $isOverdue = false;
+        $isDueToday = false;
+        $diffHours = 0.0;
+        $lateHours = 0;
+        $lateMinutes = 0;
+        $penalty = 0.0;
+        $now = Carbon::now('Asia/Jakarta');
+
+        if ($this->end_booking_date) {
+            $endTime = $this->end_time ?: '23:59:59';
+            $endDateTime = Carbon::parse("{$this->end_booking_date} {$endTime}", 'Asia/Jakarta');
+            $isDueToday = $endDateTime->isSameDay($now);
+            $diffInMinutes = $endDateTime->diffInMinutes($now, false);
+
+            if (in_array($this->status, ['confirmed', 'rented', 'disewa']) && $diffInMinutes > 0) {
+                $isOverdue = true;
+                $isLate = $diffInMinutes > 90;
+                $diffHours = max(0.0, $diffInMinutes / 60);
+                $lateHours = max(0, (int) floor($diffHours));
+                $lateMinutes = max(0, (int) round(($diffHours - $lateHours) * 60));
+
+                $lateHoursForPenalty = $lateHours;
+                if ($lateHoursForPenalty > 1) {
+                    $lateHoursForPenalty -= 1;
+                    $durations = ($this->relationLoaded('iphone') && $this->iphone)
+                        ? $this->iphone->durations()->orderByDesc('hours')->get()
+                        : collect([]);
+                    $rem = $lateHoursForPenalty;
+                    foreach ($durations as $pkg) {
+                        if ($rem < $pkg->hours) continue;
+                        $cnt = intdiv($rem, $pkg->hours);
+                        $penalty += $cnt * ($pkg->pivot->price ?? 0);
+                        $rem -= $cnt * $pkg->hours;
+                        if ($rem <= 0) break;
+                    }
+                    if ($rem > 0) {
+                        $penalty += $rem * 5000;
+                    }
+                }
+            }
+        }
+
+        if ($this->status === 'returned') {
+            $latestRet = $this->relationLoaded('latestReturn') ? $this->latestReturn : $this->latestReturn()->first();
+            if ($latestRet && (float) $latestRet->penalty_fee > 0) {
+                $penalty = (float) $latestRet->penalty_fee;
+            }
+        }
+
+        $durationText = ($lateHours == 0 && $lateMinutes == 0)
+            ? '0 menit'
+            : ($lateHours > 0 ? "{$lateHours} jam {$lateMinutes} menit" : "{$lateMinutes} menit");
+
+        return [
+            'is_late' => $isLate,
+            'is_overdue' => $isOverdue,
+            'is_due_today' => $isDueToday,
+            'diff_hours' => round($diffHours, 2),
+            'hours' => $lateHours,
+            'minutes' => $lateMinutes,
+            'duration_text' => $durationText,
+            'penalty' => (float) $penalty,
+        ];
     }
 }

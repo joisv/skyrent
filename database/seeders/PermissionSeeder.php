@@ -14,10 +14,8 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $arrayOfPermissionNames = ['create', 'delete', 'update'];
-        $permissions = collect($arrayOfPermissionNames)->map(function ($permission) {
-            return ['name' => $permission, 'guard_name' => 'web'];
-        });
-
-        Permission::insert($permissions->toArray());
+        foreach ($arrayOfPermissionNames as $permission) {
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        }
     }
 }

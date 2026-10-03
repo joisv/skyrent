@@ -50,20 +50,54 @@
                         <ul
                             class="py-1 overflow-auto text-base leading-6 rounded-md shadow-xs max-h-60 focus:outline-none sm:text-sm sm:leading-5">
                             @foreach ($iphonesQuery as $iphone)
+                                @php
+                                    $isRented = in_array(strtolower($iphone->status ?? ''), ['rented', 'disewa'])
+                                        || $iphone->bookings()->whereIn('status', ['rented', 'disewa'])->exists();
+                                    $isMaintenance = in_array(strtolower($iphone->status ?? ''), ['maintenance', 'perawatan']);
+                                @endphp
                                 <li
-                                    class="relative py-1 pl-3 mb-1 text-gray-900 select-none pr-9 hover:bg-gray-100 cursor-pointer rounded-md">
-                                    <span class="block font-normal truncate"
-                                        @click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}')">{{ $iphone->name }}</span>
-                                    <span class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-700">
-                                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                    </span>
+                                    class="relative py-2 px-3 mb-1 select-none rounded-md transition-colors {{ $isRented || $isMaintenance ? 'bg-gray-50 opacity-80 cursor-not-allowed' : 'hover:bg-blue-50 cursor-pointer' }}"
+                                    @click="
+                                        @if($isRented)
+                                            $wire.alertRentedUnit('{{ addslashes($iphone->name) }}', '{{ addslashes($iphone->asset_code ?? '') }}');
+                                        @elseif($isMaintenance)
+                                            $wire.alertMaintenanceUnit('{{ addslashes($iphone->name) }}');
+                                        @else
+                                            selectIphone('{{ $iphone->id }}', '{{ addslashes($iphone->name) }}');
+                                        @endif
+                                    ">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex flex-col pr-2">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="font-medium text-sm {{ $isRented ? 'text-gray-500 line-through' : 'text-gray-900' }}">
+                                                    {{ $iphone->name }}
+                                                </span>
+                                                @if($iphone->storage)
+                                                    <span class="text-xs text-gray-500 font-normal">({{ $iphone->storage }})</span>
+                                                @endif
+                                            </div>
+                                            <span class="text-xs text-gray-500">
+                                                SN: {{ $iphone->serial_number ?? '-' }} • Aset: {{ $iphone->asset_code ?? '-' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            @if($isRented)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                                                    🔒 Sedang Disewa
+                                                </span>
+                                            @elseif($isMaintenance)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-300">
+                                                    🛠️ Perawatan
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                    ✓ Tersedia
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </li>
                             @endforeach
-
                         </ul>
                     </div>
                 </div>

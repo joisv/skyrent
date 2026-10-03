@@ -24,7 +24,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Builder::macro('search', function ($fields, $string) {
+        Builder::macro('search', function ($fields, $string = null) {
+            if ($string === null) {
+                $string = $fields;
+                $model = $this->getModel();
+                if ($model instanceof \App\Models\Iphones) {
+                    return $string ? $this->where(function ($query) use ($string) {
+                        $query->where('name', 'like', '%' . $string . '%')
+                            ->orWhere('asset_code', 'like', '%' . $string . '%')
+                            ->orWhere('serial_number', 'like', '%' . $string . '%')
+                            ->orWhere('storage', 'like', '%' . $string . '%')
+                            ->orWhere('color', 'like', '%' . $string . '%');
+                    }) : $this;
+                }
+                $fields = ['name'];
+            }
+
             if (!is_array($fields)) {
                 $fields = [$fields];
             }

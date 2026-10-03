@@ -17,7 +17,8 @@ class IphonesFactory extends Factory
     public function definition(): array
     {
         return [
-            'serial_number' => $this->faker->randomDigit(),
+            'serial_number' => 'SN-' . strtoupper($this->faker->bothify('??####')),
+            'asset_code' => 'AST-' . strtoupper($this->faker->bothify('??####')),
             'name' => $this->faker->unique()->word(),
             'description' => $this->faker->sentence(),
             'slug' => $this->faker->unique()->slug(),

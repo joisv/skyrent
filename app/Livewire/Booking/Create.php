@@ -57,7 +57,7 @@ class Create extends Component
         $this->validate([
             'selectedIphoneId' => 'required|exists:iphones,id',
             'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:15',
+            'customer_phone' => 'required|string|max:30',
             'customer_email' => 'nullable|email|max:255',
             'requested_booking_date' => 'required|date',
             'requested_time' => 'required|date_format:H:i',
@@ -82,9 +82,26 @@ class Create extends Component
         $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d') . ' ' . $this->requested_time);
         $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
 
+        // 🔍 Cek apakah iPhone sedang disewa
+        $iphone = Iphones::find($this->selectedIphoneId);
+        if ($iphone) {
+            $isRented = in_array(strtolower($iphone->status ?? ''), ['rented', 'disewa']);
+            $activeRental = Booking::where('iphone_id', $iphone->id)->whereIn('status', ['rented', 'disewa'])->first();
+            if ($isRented || $activeRental) {
+                $renter = $activeRental ? " oleh {$activeRental->customer_name} (Kode: {$activeRental->booking_code})" : '';
+                LivewireAlert::title('Unit Sedang Disewa')
+                    ->text("Unit {$iphone->name} ({$iphone->asset_code}) saat ini sedang aktif disewa{$renter}. Mohon pilih unit iPhone lain yang berstatus Tersedia.")
+                    ->warning()
+                    ->toast()
+                    ->position('top-end')
+                    ->show();
+                return;
+            }
+        }
+
         // 🔍 Cek apakah ada booking bentrok
         $bookings = Booking::where('iphone_id', $this->selectedIphoneId)
-            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
             ->get();
 
         $conflict = $bookings->contains(function ($booking) use ($start, $end) {
@@ -99,7 +116,7 @@ class Create extends Component
 
         if ($conflict) {
             LivewireAlert::title('Booking Gagal')
-                ->text('Tanggal dan waktu yang dipilih sudah dibooking.')
+                ->text('Tanggal dan waktu yang dipilih sudah memiliki jadwal booking lain.')
                 ->error()
                 ->toast()
                 ->position('top-end')
@@ -271,6 +288,27 @@ class Create extends Component
         }
 
         return $digits;
+    }
+
+    public function alertRentedUnit($name, $assetCode = '')
+    {
+        $asset = $assetCode ? " ({$assetCode})" : '';
+        LivewireAlert::title('Unit Sedang Disewa!')
+            ->text("Unit {$name}{$asset} saat ini sedang aktif disewa pelanggan dan belum dikembalikan. Mohon pilih unit yang berstatus Tersedia.")
+            ->warning()
+            ->toast()
+            ->position('top-end')
+            ->show();
+    }
+
+    public function alertMaintenanceUnit($name)
+    {
+        LivewireAlert::title('Unit Dalam Perawatan')
+            ->text("Unit {$name} saat ini sedang dalam masa perawatan/perbaikan teknis dan belum siap disewa.")
+            ->warning()
+            ->toast()
+            ->position('top-end')
+            ->show();
     }
 
     public function render()

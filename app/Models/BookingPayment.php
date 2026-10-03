@@ -22,6 +22,21 @@ class BookingPayment extends Model
         'paid_at' => 'datetime',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($payment) {
+            if ($payment->pay === null) {
+                $payment->pay = $payment->amount ?? 0;
+            }
+            if ($payment->change === null) {
+                $payment->change = 0;
+            }
+            if ($payment->type === 'rental') {
+                $payment->type = 'payment';
+            }
+        });
+    }
+
     public function booking()
     {
         return $this->belongsTo(Booking::class);

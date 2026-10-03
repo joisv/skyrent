@@ -62,7 +62,7 @@ class Detail extends Component
             'customer_name'      => 'required|string|max:255',
             'customer_phone'     => [
                 'required',
-                'regex:/^[0-9]{4}-[0-9]{4}-[0-9]{3}$/', // format: 8314-6838-432
+                'regex:/^[0-9]{3,4}-[0-9]{3,4}-[0-9]{3,5}$/', // format: 8314-6838-432 atau 8123-4567-8901
             ],
             'customer_email'     => 'nullable|email|max:255',
             'selectedDuration'   => 'required|integer|min:1',
@@ -246,7 +246,7 @@ class Detail extends Component
             'customer_name'      => 'required|string|max:255',
             'customer_phone'     => [
                 'required',
-                'regex:/^[0-9]{4}-[0-9]{4}-[0-9]{3}$/', // format: 8314-6838-432
+                'regex:/^[0-9]{3,4}-[0-9]{3,4}-[0-9]{3,5}$/', // format: 8314-6838-432 atau 8123-4567-8901
             ],
             'customer_email'     => 'nullable|email|max:255',
             'selectedDuration'   => 'required|integer|min:1',

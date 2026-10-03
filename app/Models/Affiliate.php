@@ -27,6 +27,12 @@ class Affiliate extends Model
         'is_active',
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
+    ];
+
     public function users()
     {
         return $this->hasMany(User::class);

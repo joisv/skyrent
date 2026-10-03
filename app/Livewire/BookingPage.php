@@ -22,9 +22,25 @@ class BookingPage extends Component
     public $sortField = 'created_at';       // default sort pakai status
     public $sortDirection = 'desc';      // bisa diatur 'asc' / 'desc'
     public $filterStatus = '';
+    public string $activeTab = 'booking'; // 'booking' | 'pengembalian'
+    public string $filterReturnStatus = 'unreturned'; // 'unreturned', 'late', 'today', 'returned', 'all'
     public $paginate = 50;
     public $selectedAll = false;
     public $mySelected = [];
+
+    public function setTab(string $tab): void
+    {
+        $this->activeTab = $tab;
+        $this->mySelected = [];
+        $this->selectedAll = false;
+    }
+
+    public function setReturnFilter(string $status): void
+    {
+        $this->filterReturnStatus = $status;
+        $this->mySelected = [];
+        $this->selectedAll = false;
+    }
 
     public $iphonesAvailable;
     public $revenueToday;
@@ -412,8 +428,8 @@ class BookingPage extends Component
     {
         $user = auth()->user();
 
-        $this->returnToday = Booking::with('iphone')
-            ->where('status', 'confirmed')
+        $this->returnToday = Booking::with(['iphone.durations', 'user'])
+            ->whereIn('status', ['confirmed', 'rented'])
             ->whereDate('end_booking_date', '<=', today())
             ->when($user->hasRole('affiliate-admin'), function ($query) use ($user) {
                 $query->where(function ($q) use ($user) {
@@ -512,9 +528,10 @@ class BookingPage extends Component
         $user = auth()->user();
 
         $query = Booking::query()->with([
-            'iphone',
+            'iphone.durations',
             'user',
             'affiliate',
+            'latestReturn',
         ]);
 
         if ($user->hasRole('affiliate-admin')) {
@@ -527,12 +544,40 @@ class BookingPage extends Component
             });
         }
 
-        // Filter status
-        if ($this->filterStatus) {
-            $query->where('status', $this->filterStatus);
+        // Tab Filter
+        if ($this->activeTab === 'pengembalian') {
+            $now = Carbon::now('Asia/Jakarta');
+            $today = $now->toDateString();
+            $currentTime = $now->format('H:i:s');
+
+            if ($this->filterReturnStatus === 'returned') {
+                $query->where('status', 'returned');
+            } elseif ($this->filterReturnStatus === 'late') {
+                $query->whereIn('status', ['confirmed', 'rented'])
+                    ->where(function ($q) use ($today, $currentTime) {
+                        $q->whereDate('end_booking_date', '<', $today)
+                            ->orWhere(function ($sub) use ($today, $currentTime) {
+                                $sub->whereDate('end_booking_date', '=', $today)
+                                    ->where('end_time', '<', $currentTime);
+                            });
+                    });
+            } elseif ($this->filterReturnStatus === 'today') {
+                $query->whereIn('status', ['confirmed', 'rented'])
+                    ->whereDate('end_booking_date', '=', $today);
+            } elseif ($this->filterReturnStatus === 'all') {
+                $query->whereIn('status', ['confirmed', 'rented', 'returned']);
+            } else {
+                // Default 'unreturned': Unit belum kembali (sedang disewa / confirmed / rented)
+                $query->whereIn('status', ['confirmed', 'rented']);
+            }
+        } else {
+            // Filter status untuk Tab Booking
+            if ($this->filterStatus) {
+                $query->where('status', $this->filterStatus);
+            }
         }
 
-        // Search
+        // Multi-field search
         if ($this->search) {
             $query->search([
                 'customer_name',
@@ -589,49 +634,19 @@ class BookingPage extends Component
         $this->selectedAll = false;
     }
 
-    // debug
-    // public function sendGroupMessage()
-    // {
-    //     try {
-    //         $response = Http::withHeaders([
-    //             'Authorization' => env('FONNTE_TOKEN'),
-    //         ])->post('https://api.fonnte.com/send', [
-    //             'target'  => env('FONNTE_GROUP_ID'),
-    //             'message' => 'test from dashboard admin',
-    //         ]);
-
-    //         if ($response->failed()) {
-    //             Log::error('Fonnte group message failed', [
-    //                 'status' => $response->status(),
-    //                 'body'   => $response->body(),
-    //             ]);
-
-    //             return false;
-    //         }
-
-    //         return true;
-    //     } catch (\Throwable $e) {
-
-    //         Log::error('Fonnte exception', [
-    //             'message' => $e->getMessage(),
-    //             'line'    => $e->getLine(),
-    //             'file'    => $e->getFile(),
-    //         ]);
-
-    //         return false;
-    //     }
-    // }
-
     #[On('close-modal')]
     public function reRender()
     {
         $this->revenueToday = Revenue::whereDate('created_at', now()->toDateString())->sum('amount');
+        $this->loadStats();
     }
 
     public function render()
     {
         return view('livewire.booking-page', [
-            'bookings' => $this->getData()->paginate($this->paginate)
+            'bookings' => $this->getData()->paginate($this->paginate),
+            'totalBookingsCount' => Booking::count(),
+            'unreturnedCount' => Booking::whereIn('status', ['confirmed', 'rented'])->count(),
         ]);
     }
 }

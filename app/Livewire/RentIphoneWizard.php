@@ -107,7 +107,7 @@ class RentIphoneWizard extends Component
             ],
             2 => [
                 'customer_name' => 'required|string|max:255',
-                'customer_phone' => 'required|string|max:15',
+                'customer_phone' => 'required|string|max:30',
                 'customer_email' => 'nullable|email|max:255',
                 'address' => 'required|string|max:255',
                 'jaminan_type' => 'required|in:KTP,KK,Kartu Pelajar,SIM,Kartu Identitas Mahasiswa,Kartu Identitas Anak',
@@ -183,9 +183,26 @@ class RentIphoneWizard extends Component
         $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d') . ' ' . $this->requested_time);
         $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
 
+        // 🔍 Cek apakah iPhone sedang disewa
+        $iphone = Iphones::find($this->selectedIphoneId);
+        if ($iphone) {
+            $isRented = in_array(strtolower($iphone->status ?? ''), ['rented', 'disewa']);
+            $activeRental = Booking::where('iphone_id', $iphone->id)->whereIn('status', ['rented', 'disewa'])->first();
+            if ($isRented || $activeRental) {
+                $renter = $activeRental ? " oleh {$activeRental->customer_name}" : '';
+                LivewireAlert::title('Unit Sedang Disewa')
+                    ->text("Unit {$iphone->name} saat ini sedang aktif disewa{$renter}. Mohon pilih unit iPhone lain yang berstatus Tersedia.")
+                    ->warning()
+                    ->toast()
+                    ->position('top-end')
+                    ->show();
+                return;
+            }
+        }
+
         // 🔍 Cek apakah ada booking bentrok
         $bookings = Booking::where('iphone_id', $this->selectedIphoneId)
-            ->whereIn('status', ['pending', 'confirmed'])
+            ->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
             ->get();
 
         $conflict = $bookings->contains(function ($booking) use ($start, $end) {
@@ -263,7 +280,7 @@ class RentIphoneWizard extends Component
         $this->validate([
             'selectedIphoneId' => 'required|exists:iphones,id',
             'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:15',
+            'customer_phone' => 'required|string|max:30',
             'customer_email' => 'nullable|email|max:255',
             'requested_booking_date' => 'required|date',
             'requested_time' => 'required|date_format:H:i',
@@ -358,40 +375,6 @@ class RentIphoneWizard extends Component
                         'target' => $this->formatPhoneNumber($booking->customer_phone),
                         'message' => $message,
                     ]);
-
-                // Http::timeout(10)->withHeaders([
-                //     'Authorization' => $whatsappToken,
-                // ])->post('https://api.fonnte.com/validate', [
-                //     'target' => $this->formatPhoneNumber($booking->customer_phone),
-                // ]);
-
-                // if (! $response->successful()) {
-                //     DB::rollBack();
-
-                //     LivewireAlert::title('Gagal')
-                //         ->text('Pesan WhatsApp gagal dikirim.')
-                //         ->warning()
-                //         ->toast()
-                //         ->position('top-end')
-                //         ->show();
-
-                //     return;
-                // }
-
-                // $result = $response->json();
-                // // Sesuaikan dengan format response Fonnte
-                // if (isset($result['status']) && $result['status'] === false) {
-                //     DB::rollBack();
-
-                //     LivewireAlert::title('Gagal')
-                //         ->text('Pesan WhatsApp gagal dikirim.')
-                //         ->warning()
-                //         ->toast()
-                //         ->position('top-end')
-                //         ->show();
-
-                //     return;
-                // }
             }
 
             DB::commit();
@@ -549,7 +532,7 @@ class RentIphoneWizard extends Component
             ->get()
             ->map(function ($iphone) use ($now) {
 
-                $iphone->is_available = true;
+                // $iphone->is_available = true;
 
                 foreach ($iphone->bookings as $booking) {
 
@@ -564,7 +547,7 @@ class RentIphoneWizard extends Component
                         break;
                     }
                 }
-
+            
                 return $iphone;
             });
     }

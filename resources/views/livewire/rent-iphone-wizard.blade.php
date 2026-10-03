@@ -215,6 +215,7 @@
                         @else
                             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                                 @foreach ($iphones as $iphone)
+                                @dump($iphone->is_available)
                                     <button type="button"
                                         wire:click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}', '{{ $iphone->serial_number }}')"
                                         @disabled(!$iphone->is_available)

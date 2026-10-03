@@ -23,24 +23,52 @@ class DatabaseSeeder extends Seeder
         
         $this->call([
             PermissionSeeder::class,
-            RolesSeeder::class
+            RolesSeeder::class,
+            ShopSettingsSeeder::class,
+            AffiliateSeeder::class,
         ]);
         
         foreach ($roles as $role) {
-            # code...
-            User::factory()->create([
-                'name' => $role,
-                'email' => $role.'@example.com',
-            ])->assignRole($role);
+            $user = User::firstOrCreate(
+                ['email' => $role.'@example.com'],
+                [
+                    'name' => $role,
+                    'password' => bcrypt('password'),
+                ]
+            );
+            $user->syncRoles([$role]);
         }
 
-        ModelsGallery::factory(10)->create();
-        Iphones::factory(10)->create();
-        Revenue::factory()->count(5)->create();
-        FaqFactory::new()->count(5)->create([
-            'created_by' => User::factory()->create()->id,
-            'updated_by' => User::factory()->create()->id,
-        ]);
-        Payment::factory()->count(5)->create();
+        // Add default mobile admin & kasir users
+        $adminMobile = User::firstOrCreate(
+            ['email' => 'admin@skyrental.id'],
+            [
+                'name' => 'Admin SKYRental',
+                'password' => bcrypt('password123'),
+            ]
+        );
+        $adminMobile->syncRoles(['super-admin']);
+
+        $kasirMobile = User::firstOrCreate(
+            ['email' => 'kasir@skyrental.id'],
+            [
+                'name' => 'Budi Kasir',
+                'password' => bcrypt('password123'),
+            ]
+        );
+        $kasirMobile->syncRoles(['admin']);
+
+        if (ModelsGallery::count() == 0) {
+            ModelsGallery::factory(10)->create();
+        }
+        if (Iphones::count() == 0) {
+            Iphones::factory(10)->create();
+        }
+        if (Revenue::count() == 0) {
+            Revenue::factory()->count(5)->create();
+        }
+        if (Payment::count() == 0) {
+            Payment::factory()->count(5)->create();
+        }
     }
 }
