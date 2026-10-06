@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -180,8 +181,135 @@ class Iphones extends Model
         return trim("{$this->name}{$storage}");
     }
 
+    public function setIsAvailableAttribute($value): void
+    {
+        $this->attributes['is_available'] = (bool) $value;
+    }
+
     public function getIsAvailableAttribute(): bool
     {
+        if (array_key_exists('is_available', $this->attributes)) {
+            return (bool) $this->attributes['is_available'];
+        }
+
         return in_array(strtolower($this->status ?? 'ready'), ['ready', 'tersedia']);
+    }
+
+    /**
+     * Determine if this specific physical iPhone unit is available for a requested rental period.
+     *
+     * @param \Carbon\Carbon|string $start
+     * @param \Carbon\Carbon|string $end
+     * @param int|null $excludeBookingId
+     * @param bool $fresh
+     * @return bool
+     */
+    public function isAvailableForPeriod($start, $end, ?int $excludeBookingId = null, bool $fresh = false): bool
+    {
+        $rawStatus = strtolower(trim($this->status ?? 'ready'));
+        if (in_array($rawStatus, ['maintenance', 'perawatan', 'lost', 'hilang', 'retired', 'nonaktif', 'in_transit', 'transferred', 'mutasi'])) {
+            return false;
+        }
+
+        try {
+            $startDt = $start instanceof Carbon ? $start->copy() : Carbon::parse($start, 'Asia/Jakarta');
+            $endDt = $end instanceof Carbon ? $end->copy() : Carbon::parse($end, 'Asia/Jakarta');
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        if ($endDt->lte($startDt)) {
+            $endDt = $startDt->copy()->addHour();
+        }
+
+        $bookings = ($fresh || !$this->relationLoaded('bookings'))
+            ? $this->bookings()
+                ->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
+                ->when($excludeBookingId, fn($q) => $q->where('id', '!=', $excludeBookingId))
+                ->whereDoesntHave('returns')
+                ->get()
+            : $this->bookings;
+
+        $now = Carbon::now('Asia/Jakarta');
+
+        foreach ($bookings as $b) {
+            if ($excludeBookingId && (int) $b->id === (int) $excludeBookingId) {
+                continue;
+            }
+
+            if (!in_array($b->status, ['pending', 'confirmed', 'rented', 'disewa'])) {
+                continue;
+            }
+
+            // Check if pending booking has expired (30 minutes without payment)
+            if ($b->status === 'pending') {
+                $bookingCreatedAt = $b->created_at ?: ($b->created ? Carbon::parse($b->created) : null);
+                if ($bookingCreatedAt && $bookingCreatedAt->copy()->addMinutes(30)->isPast()) {
+                    continue;
+                }
+            }
+
+            // Extract start date and time safely
+            $rawStartDate = $b->start_booking_date ?: $b->requested_booking_date;
+            $startDateStr = $rawStartDate instanceof Carbon ? $rawStartDate->toDateString() : (is_string($rawStartDate) ? substr($rawStartDate, 0, 10) : null);
+
+            $rawStartTime = $b->start_time ?: $b->requested_time;
+            if ($rawStartTime instanceof Carbon) {
+                $startTimeStr = $rawStartTime->format('H:i');
+            } elseif (is_string($rawStartTime) && strlen($rawStartTime) > 0) {
+                if (strlen($rawStartTime) >= 19 && strpos($rawStartTime, ' ') !== false) {
+                    $startTimeStr = substr(explode(' ', $rawStartTime)[1], 0, 5);
+                } else {
+                    $startTimeStr = substr(trim($rawStartTime), 0, 5);
+                }
+            } else {
+                $startTimeStr = '00:00';
+            }
+
+            try {
+                $bStart = Carbon::parse("{$startDateStr} {$startTimeStr}", 'Asia/Jakarta');
+            } catch (\Exception $e) {
+                $bStart = $rawStartDate instanceof Carbon ? $rawStartDate->copy() : Carbon::parse($rawStartDate, 'Asia/Jakarta');
+            }
+
+            // Extract end date and time safely
+            $rawEndDate = $b->end_booking_date;
+            $rawEndTime = $b->end_time;
+            if ($rawEndDate) {
+                $endDateStr = $rawEndDate instanceof Carbon ? $rawEndDate->toDateString() : (is_string($rawEndDate) ? substr($rawEndDate, 0, 10) : null);
+                if ($rawEndTime instanceof Carbon) {
+                    $endTimeStr = $rawEndTime->format('H:i');
+                } elseif (is_string($rawEndTime) && strlen($rawEndTime) > 0) {
+                    if (strlen($rawEndTime) >= 19 && strpos($rawEndTime, ' ') !== false) {
+                        $endTimeStr = substr(explode(' ', $rawEndTime)[1], 0, 5);
+                    } else {
+                        $endTimeStr = substr(trim($rawEndTime), 0, 5);
+                    }
+                } else {
+                    $endTimeStr = '23:59';
+                }
+
+                try {
+                    $bEnd = Carbon::parse("{$endDateStr} {$endTimeStr}", 'Asia/Jakarta');
+                } catch (\Exception $e) {
+                    $bEnd = $bStart->copy()->addHours((int) ($b->duration ?: 24));
+                }
+            } else {
+                $bEnd = $bStart->copy()->addHours((int) ($b->duration ?: 24));
+            }
+
+            // If unit is currently rented/disewa and not returned, and current time passed scheduled end,
+            // the unit remains physically out until now.
+            if (in_array($b->status, ['rented', 'disewa']) && $bEnd->lt($now)) {
+                $bEnd = $now;
+            }
+
+            // Check interval overlap: [bStart, bEnd] overlaps with [startDt, endDt]
+            if ($bStart->lt($endDt) && $bEnd->gt($startDt)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

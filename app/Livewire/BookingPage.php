@@ -233,20 +233,29 @@ class BookingPage extends Component
             $this->change = 0;
         }
 
-        BookingPayment::create([
-            'booking_id' => $this->booking->id,
-            'payment_id' => $payment->id,
-            'amount' => $this->amount,
-            'pay' => $this->pay,
-            'change' => $this->change,
-            'type' => $this->payment_type,
-            'paid_at' => Carbon::createFromFormat(
-                'Y-m-d H:i',
-                $this->requested_booking_date . ' ' . $this->paid_at
-            ),
-            'user_id' => auth()->id(),
-            'note' => $this->note,
-        ]);
+        // Prevent duplicate payment creation (e.g. repeated double clicks within 15 seconds)
+        $recentDuplicate = BookingPayment::where('booking_id', $this->booking->id)
+            ->where('amount', $this->amount)
+            ->where('type', $this->payment_type)
+            ->where('created_at', '>=', now()->subSeconds(15))
+            ->first();
+
+        if (!$recentDuplicate) {
+            BookingPayment::create([
+                'booking_id' => $this->booking->id,
+                'payment_id' => $payment->id,
+                'amount' => $this->amount,
+                'pay' => $this->pay,
+                'change' => $this->change,
+                'type' => $this->payment_type,
+                'paid_at' => Carbon::createFromFormat(
+                    'Y-m-d H:i',
+                    $this->requested_booking_date . ' ' . $this->paid_at
+                ),
+                'user_id' => auth()->id(),
+                'note' => $this->note,
+            ]);
+        }
         $this->booking->updatePaymentStatus();
         if ($this->payment_type == 'extend') {
 

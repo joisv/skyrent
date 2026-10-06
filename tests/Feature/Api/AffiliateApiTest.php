@@ -144,6 +144,8 @@ class AffiliateApiTest extends TestCase
     public function test_can_create_and_accept_iphone_transfer(): void
     {
         $user = User::factory()->create();
+        Role::firstOrCreate(['name' => 'super-admin']);
+        $user->assignRole('super-admin');
         $this->actingAs($user);
 
         $affA = Affiliate::create(['code' => 'AFA', 'name' => 'Affiliate Asal', 'slug' => 'affiliate-asal']);

@@ -16,8 +16,11 @@ class AffiliateFactory extends Factory
      */
     public function definition(): array
     {
+        $name = $this->faker->unique()->city() . ' Branch';
         return [
-            //
+            'name' => $name,
+            'code' => strtoupper($this->faker->unique()->bothify('???')),
+            'slug' => \Illuminate\Support\Str::slug($name),
         ];
     }
 }

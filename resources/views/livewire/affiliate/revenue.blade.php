@@ -37,7 +37,7 @@
             </p>
 
             <p class="text-2xl font-bold mt-2">
-                {{ $affiliatePayments->count() }}
+                {{ $affiliatePayments ? $affiliatePayments->count() : 0 }}
             </p>
 
         </div>
@@ -164,7 +164,7 @@
 
                 </x-slot>
                 <x-slot name="tbody">
-                    @foreach ($paymentsList as $index => $payment)
+                    @forelse ($paymentsList as $index => $payment)
                         <tr>
                             <x-tables.td>
                                 <input id="default-{{ $index }}" type="checkbox"
@@ -173,19 +173,19 @@
                             </x-tables.td>
 
                             <x-tables.td>
-                                {{ $payment->paid_at->format('d/m/Y H:i') }}
+                                {{ $payment->paid_at ? $payment->paid_at->format('d/m/Y H:i') : '-' }}
                             </x-tables.td>
 
-                            <x-tables.td>{{ $payment->booking->booking_code }}</x-tables.td>
+                            <x-tables.td>{{ $payment->booking?->booking_code ?? '-' }}</x-tables.td>
 
-                            <x-tables.td>{{ $payment->booking->customer_name }}</x-tables.td>
+                            <x-tables.td>{{ $payment->booking?->customer_name ?? '-' }}</x-tables.td>
 
-                            <x-tables.td>{{ $payment->booking->iphone->name }}</x-tables.td>
+                            <x-tables.td>{{ $payment->booking?->iphone?->name ?? '-' }}</x-tables.td>
 
-                            <x-tables.td>{{ $payment->payment->name }}</x-tables.td>
+                            <x-tables.td>{{ $payment->payment?->name ?? '-' }}</x-tables.td>
 
                             <x-tables.td>
-                                <x-mary-badge :value="ucfirst($payment->type)" />
+                                <x-mary-badge :value="ucfirst($payment->type ?? 'payment')" />
                             </x-tables.td>
 
                             <x-tables.td>
@@ -200,10 +200,16 @@
                                 Rp {{ number_format($payment->change, 0, ',', '.') }}
                             </x-tables.td>
 
-                            <x-tables.td>{{ $payment->user->name }}</x-tables.td>
+                            <x-tables.td>{{ $payment->user?->name ?? 'Admin' }}</x-tables.td>
 
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                Tidak ada transaksi pembayaran yang ditemukan.
+                            </td>
+                        </tr>
+                    @endforelse
 
                 </x-slot>
             </x-tables.table>

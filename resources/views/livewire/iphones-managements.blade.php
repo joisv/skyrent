@@ -125,7 +125,7 @@
             @endrole
         </x-slot>
         <x-slot name="addBtn">
-            @role('super-admin|admin|staff')
+            @role('super-admin|admin')
                 <x-tables.addbtn type="button" x-data=""
                     @click="window.location.href = '{{ route('iphones.create') }}'">
                     Add iPhone

@@ -53,8 +53,8 @@ class BookingController extends Controller
             return $query;
         }
 
-        // affiliate-admin: hanya melihat booking dari affiliasi miliknya atau booking buatannya sendiri
-        if (method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin')) {
+        // affiliate-admin / affiliate / affiliate-scoped users: hanya melihat booking dari affiliasi miliknya atau booking buatannya sendiri
+        if (method_exists($user, 'hasRole') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('super-admin')))) {
             if ($user->affiliate_id) {
                 return $query->where(function ($q) use ($user) {
                     $q->where('affiliate_id', $user->affiliate_id)
@@ -85,7 +85,7 @@ class BookingController extends Controller
             return true;
         }
 
-        if (method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin')) {
+        if (method_exists($user, 'hasRole') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('super-admin')))) {
             if ($user->affiliate_id) {
                 return $booking->affiliate_id == $user->affiliate_id || $booking->user_id == $user->id;
             }
@@ -656,13 +656,71 @@ class BookingController extends Controller
 
         $iphone = Iphones::findOrFail($validated['iphone_id']);
 
-        // Pastikan iPhone yang sedang disewa tidak dapat disewa lagi
+        $authUser = $this->resolveUser($request);
+
+        // Security check: If authenticated user belongs to an affiliate, verify that iPhone belongs to their affiliate
+        $isSuperAdmin = $authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('super-admin');
+        $isGlobalAdmin = $authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('admin') && empty($authUser->affiliate_id);
+
+        $isAffiliateUser = $authUser && (
+            (method_exists($authUser, 'hasRole') && ($authUser->hasRole('affiliate-admin') || $authUser->hasRole('affiliate')))
+            || (!empty($authUser->affiliate_id) && !$isSuperAdmin && !$isGlobalAdmin)
+        );
+
+        if ($isAffiliateUser) {
+            $userAffiliateId = $authUser->affiliate_id;
+            if (! $userAffiliateId || (int) $iphone->affiliate_id !== (int) $userAffiliateId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Akses ditolak: Unit iPhone ini tidak terdaftar pada cabang/affiliate Anda.',
+                ], 403);
+            }
+        }
+
+        // Cek jika unit dalam status perawatan / tidak siap fisik
+        if (in_array(strtolower($iphone->status ?? ''), ['maintenance', 'perawatan', 'lost', 'hilang', 'retired', 'nonaktif', 'in_transit', 'transferred', 'mutasi'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Unit iPhone '{$iphone->name}' ({$iphone->asset_code}) sedang dalam status '{$iphone->status}' dan tidak dapat disewa.",
+            ], 422);
+        }
+
+        $startDate = Carbon::parse($validated['start_booking_date'])->toDateString();
+        $endDate = Carbon::parse($validated['end_booking_date'])->toDateString();
+        $startTime = !empty($validated['start_time']) ? substr($validated['start_time'], 0, 5) : '09:00';
+        $endTime = !empty($validated['end_time']) ? substr($validated['end_time'], 0, 5) : '18:00';
+
+        $startDt = Carbon::parse("{$startDate} {$startTime}", 'Asia/Jakarta');
+        $endDt = Carbon::parse("{$endDate} {$endTime}", 'Asia/Jakarta');
+
+        $duration = (int) ($validated['duration'] ?? 24);
+        if ($duration < 5) {
+            $duration = $duration * 24;
+        }
+
+        if ($endDt->lte($startDt)) {
+            $endDt = $startDt->copy()->addHours(max(1, $duration));
+            $endDate = $endDt->toDateString();
+            $endTime = $endDt->format('H:i');
+        }
+
+        // Cek ketersediaan unit untuk jadwal sewa yang diminta menggunakan model source-of-truth isAvailableForPeriod
+        if (! $iphone->isAvailableForPeriod($startDt, $endDt, null, true)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Unit iPhone '{$iphone->name}' ({$iphone->serial_number}) tidak tersedia untuk jadwal yang dipilih ({$startDate} {$startTime} s/d {$endDate} {$endTime}). Mohon pilih unit lain atau sesuaikan jadwal sewa.",
+            ], 422);
+        }
+
+        // Pastikan iPhone yang sedang disewa aktif saat ini tidak dapat disewa tumpang tindih
         $isRented = in_array(strtolower($iphone->status ?? ''), ['rented', 'disewa']);
         $activeRental = Booking::where('iphone_id', $iphone->id)
             ->whereIn('status', ['rented', 'disewa'])
+            ->whereDoesntHave('returns')
             ->first();
 
-        if ($isRented || $activeRental) {
+        $now = Carbon::now('Asia/Jakarta');
+        if (($isRented || $activeRental) && $startDt->lte($now)) {
             $renterInfo = $activeRental ? " oleh pelanggan '{$activeRental->customer_name}' (Kode Booking: {$activeRental->booking_code})" : '';
             return response()->json([
                 'status' => 'error',
@@ -670,25 +728,10 @@ class BookingController extends Controller
             ], 422);
         }
 
-        // Cek juga jika unit dalam status perawatan
-        if (in_array(strtolower($iphone->status ?? ''), ['maintenance', 'perawatan'])) {
-            return response()->json([
-                'status' => 'error',
-                'message' => "Unit iPhone '{$iphone->name}' ({$iphone->asset_code}) sedang dalam masa perawatan (maintenance) dan belum dapat disewa.",
-            ], 422);
-        }
-
         // Generate unique booking code: SKY + ymd + 4 random uppercase chars
         do {
             $bookingCode = 'SKY' . Carbon::now()->format('ymd') . strtoupper(Str::random(4));
         } while (Booking::where('booking_code', $bookingCode)->exists());
-
-        $startDate = Carbon::parse($validated['start_booking_date'])->toDateString();
-        $endDate = Carbon::parse($validated['end_booking_date'])->toDateString();
-        $duration = (int) ($validated['duration'] ?? 24);
-        if ($duration < 5) {
-            $duration = $duration * 24;
-        }
         $deposit = (float) ($validated['deposit_amount'] ?? $validated['deposit'] ?? 200000);
         $price = (float) $validated['price'];
 

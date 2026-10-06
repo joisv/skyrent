@@ -88,7 +88,13 @@ class AffiliateController extends Controller
                     });
             });
         } else {
-            $query->where('affiliate_id', $affiliate->id);
+            $query->where(function ($q) use ($affiliate) {
+                $q->where('affiliate_id', $affiliate->id)
+                    ->orWhere(function ($sub) use ($affiliate) {
+                        $sub->whereNull('affiliate_id')
+                            ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
+                    });
+            });
         }
         return $query;
     }
@@ -505,21 +511,35 @@ class AffiliateController extends Controller
         $user = $this->resolveUser($request);
 
         $query = IphoneTransfer::with([
-            'iphone:id,name,serial_number,status,battery_health,color',
+            'iphone:id,name,serial_number,status,asset_code,affiliate_id',
             'fromAffiliate:id,code,name,city',
             'toAffiliate:id,code,name,city',
             'sender:id,name,email',
             'receiver:id,name,email',
         ]);
 
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin')) {
+        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAffiliate = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+
+        // Otorisasi: hanya super-admin, admin, affiliate-admin, dan affiliate yang diizinkan
+        if (!$isSuperAdmin && !$isAdmin && !$isAffiliateAdmin && !$isAffiliate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Anda tidak memiliki izin untuk melihat daftar transfer iPhone.',
+            ], 403);
+        }
+
+        if ($isAffiliateAdmin || $isAffiliate) {
             if ($user->affiliate_id) {
-                // Scope affiliate-admin: HANYA menampilkan transfer yang ditujukan ke affiliate miliknya
+                // Scope affiliate / affiliate-admin: HANYA menampilkan transfer yang ditujukan ke affiliate miliknya
+                // Mengabaikan parameter affiliate_id dari client untuk mencegah cross-affiliate leakage
                 $query->where('to_affiliate_id', $user->affiliate_id);
             } else {
                 $query->whereRaw('1 = 0');
             }
-        } else {
+        } elseif ($isSuperAdmin) {
             if ($request->filled('affiliate_id')) {
                 $affId = $request->input('affiliate_id');
                 $type = $request->input('type'); // 'inbound' or 'outbound'
@@ -533,6 +553,16 @@ class AffiliateController extends Controller
                             ->orWhere('to_affiliate_id', $affId);
                     });
                 }
+            }
+        } elseif ($isAdmin) {
+            if ($user->affiliate_id) {
+                $query->where('to_affiliate_id', $user->affiliate_id);
+            } elseif ($request->filled('affiliate_id')) {
+                $affId = $request->input('affiliate_id');
+                $query->where(function ($q) use ($affId) {
+                    $q->where('from_affiliate_id', $affId)
+                        ->orWhere('to_affiliate_id', $affId);
+                });
             }
         }
 
@@ -591,15 +621,50 @@ class AffiliateController extends Controller
 
         $iphone = Iphones::findOrFail($validated['iphone_id']);
 
-        // Pastikan unit tidak sedang disewa
-        if (in_array(strtolower($iphone->status), ['rented', 'disewa'])) {
+        // 1. Cek apakah unit iPhone sedang dalam proses mutasi aktif (in_transit / pending)
+        $existingTransfer = IphoneTransfer::where('iphone_id', $iphone->id)
+            ->whereIn('status', ['in_transit', 'pending'])
+            ->with('toAffiliate')
+            ->first();
+
+        if ($existingTransfer) {
+            $destName = $existingTransfer->toAffiliate?->name ?? 'cabang tujuan';
+            return response()->json([
+                'success' => false,
+                'message' => "Unit {$iphone->name} saat ini sedang dalam perjalanan mutasi/pengiriman aktif ke {$destName} dan belum diterima.",
+            ], 409);
+        }
+
+        // 2. Cek status ketersediaan unit iPhone
+        $rawStatus = strtolower($iphone->status ?? 'ready');
+        if (in_array($rawStatus, ['rented', 'disewa'])) {
             return response()->json([
                 'success' => false,
                 'message' => "Unit {$iphone->name} sedang disewa dan tidak dapat dimutasi/ditransfer.",
             ], 422);
         }
 
-        $fromAffiliateId = $validated['from_affiliate_id'] ?? $iphone->affiliate_id;
+        if (in_array($rawStatus, ['transferred', 'in_transit'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Unit {$iphone->name} sudah berstatus mutasi/pengiriman dan belum diterima di cabang tujuan.",
+            ], 409);
+        }
+
+        if (in_array($rawStatus, ['maintenance', 'perawatan'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Unit {$iphone->name} sedang dalam masa perawatan (maintenance) dan tidak dapat dimutasi.",
+            ], 422);
+        }
+
+        $fromAffiliateId = $validated['from_affiliate_id'] ?? $iphone->affiliate_id ?? $user?->affiliate_id;
+        if (!$fromAffiliateId) {
+            $fromAffiliateId = Affiliate::where('is_active', true)
+                ->where('id', '!=', $validated['to_affiliate_id'])
+                ->orderBy('id')
+                ->value('id') ?? 4;
+        }
 
         if ($fromAffiliateId == $validated['to_affiliate_id']) {
             return response()->json([
@@ -609,8 +674,23 @@ class AffiliateController extends Controller
         }
 
         return DB::transaction(function () use ($iphone, $validated, $fromAffiliateId, $user) {
+            // Lock row unit untuk mencegah race condition atau double submit simultan
+            $lockedIphone = Iphones::where('id', $iphone->id)->lockForUpdate()->first();
+
+            $concurrencyCheck = IphoneTransfer::where('iphone_id', $lockedIphone->id)
+                ->whereIn('status', ['in_transit', 'pending'])
+                ->lockForUpdate()
+                ->first();
+
+            if ($concurrencyCheck) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Unit {$lockedIphone->name} sudah dalam proses transfer aktif ke cabang tujuan.",
+                ], 409);
+            }
+
             $transfer = IphoneTransfer::create([
-                'iphone_id' => $iphone->id,
+                'iphone_id' => $lockedIphone->id,
                 'from_affiliate_id' => $fromAffiliateId,
                 'to_affiliate_id' => $validated['to_affiliate_id'],
                 'sent_by' => $user?->id ?? auth()->id() ?? 1,
@@ -619,7 +699,7 @@ class AffiliateController extends Controller
                 'sent_at' => now(),
             ]);
 
-            $iphone->update([
+            $lockedIphone->update([
                 'status' => 'transferred',
             ]);
 
@@ -627,7 +707,7 @@ class AffiliateController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "iPhone {$iphone->name} berhasil dikirim ke {$transfer->toAffiliate?->name}.",
+                'message' => "iPhone {$lockedIphone->name} berhasil dikirim ke {$transfer->toAffiliate?->name}.",
                 'data' => $transfer,
             ], 201);
         });
@@ -650,9 +730,21 @@ class AffiliateController extends Controller
             ], 404);
         }
 
-        // Cek otorisasi untuk role affiliate-admin: hanya boleh menerima transfer yang ditujukan ke cabangnya
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin')) {
-            if (!$user->affiliate_id || (int) $transfer->to_affiliate_id !== (int) $user->affiliate_id) {
+        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAffiliate = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+
+        if (!$isSuperAdmin && !$isAdmin && !$isAffiliateAdmin && !$isAffiliate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki hak akses untuk menerima transfer iPhone ini.',
+            ], 403);
+        }
+
+        // Cek otorisasi untuk role affiliate & affiliate-admin: hanya boleh menerima transfer yang ditujukan ke cabangnya
+        if ($isAffiliateAdmin || $isAffiliate || ($isAdmin && $user?->affiliate_id)) {
+            if (!$user?->affiliate_id || (int) $transfer->to_affiliate_id !== (int) $user->affiliate_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Anda tidak memiliki hak akses untuk menerima transfer iPhone ini.',
@@ -667,12 +759,39 @@ class AffiliateController extends Controller
             ], 422);
         }
 
+        if (!in_array($transfer->status, ['in_transit', 'pending'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Transfer tidak dapat diterima karena saat ini berstatus '{$transfer->status}'.",
+            ], 422);
+        }
+
+        if (!$transfer->iphone) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data unit iPhone untuk transfer ini tidak ditemukan.',
+            ], 422);
+        }
+
         return DB::transaction(function () use ($transfer, $user) {
+            $receiverId = $user?->id ?? auth()->id() ?? 1;
+
             $transfer->update([
                 'status' => 'received',
-                'received_by' => $user?->id ?? auth()->id() ?? 1,
+                'received_by' => $receiverId,
                 'received_at' => now(),
             ]);
+
+            // Bersihkan / sinkronkan jika ada transfer duplikat in_transit untuk iPhone yang sama
+            IphoneTransfer::where('iphone_id', $transfer->iphone_id)
+                ->where('id', '!=', $transfer->id)
+                ->whereIn('status', ['in_transit', 'pending'])
+                ->update([
+                    'status' => 'received',
+                    'received_by' => $receiverId,
+                    'received_at' => now(),
+                    'notes' => DB::raw("CONCAT(COALESCE(notes, ''), ' (Auto-resolved duplicate transfer)')"),
+                ]);
 
             if ($transfer->iphone) {
                 $transfer->iphone->update([
@@ -695,6 +814,30 @@ class AffiliateController extends Controller
      */
     public function revenue(Request $request, string $id): JsonResponse
     {
+        $user = $this->resolveUser($request);
+
+        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAffiliate = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+
+        // Affiliate and affiliate-admin must only see their own affiliate revenue
+        if ($isAffiliateAdmin || $isAffiliate) {
+            if (!$user->affiliate_id || (int) $id !== (int) $user->affiliate_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Anda tidak memiliki izin untuk melihat laporan pendapatan affiliate ini.',
+                ], 403);
+            }
+        } elseif ($isAdmin && $user->affiliate_id) {
+            if ((int) $id !== (int) $user->affiliate_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Anda tidak memiliki izin untuk melihat laporan pendapatan affiliate ini.',
+                ], 403);
+            }
+        }
+
         $affiliate = Affiliate::findOrFail($id);
 
         $startDate = $request->input('start_date', now()->subDays(6)->toDateString());
@@ -715,7 +858,13 @@ class AffiliateController extends Controller
             $query = BookingPayment::query()
                 ->whereBetween('paid_at', [$start, $end])
                 ->whereHas('booking', function ($q) use ($affiliate) {
-                    $q->where('affiliate_id', $affiliate->id);
+                    $q->where(function ($sub) use ($affiliate) {
+                        $sub->where('affiliate_id', $affiliate->id)
+                            ->orWhere(function ($legacy) use ($affiliate) {
+                                $legacy->whereNull('affiliate_id')
+                                    ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
+                            });
+                    });
                 });
         }
 
@@ -739,12 +888,18 @@ class AffiliateController extends Controller
         } else {
             $revenueToday = (float) BookingPayment::whereDate('paid_at', $today)
                 ->whereHas('booking', function ($q) use ($affiliate) {
-                    $q->where('affiliate_id', $affiliate->id);
+                    $q->where(function ($sub) use ($affiliate) {
+                        $sub->where('affiliate_id', $affiliate->id)
+                            ->orWhere(function ($legacy) use ($affiliate) {
+                                $legacy->whereNull('affiliate_id')
+                                    ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
+                            });
+                    });
                 })
                 ->sum('amount');
 
-            $bookingToday = Booking::whereDate('created_at', $today)
-                ->where('affiliate_id', $affiliate->id)
+            $bookingToday = (clone $bookingQuery)
+                ->whereDate('created_at', $today)
                 ->count();
         }
 

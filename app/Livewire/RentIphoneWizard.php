@@ -81,6 +81,40 @@ class RentIphoneWizard extends Component
     {
         $this->loadIphones();
     }
+
+    public function updatedRequestedBookingDate()
+    {
+        $this->calculateEndDateTime();
+        $this->loadIphones();
+    }
+
+    public function updatedRequestedTime()
+    {
+        $this->calculateEndDateTime();
+        $this->loadIphones();
+    }
+
+    public function updatedSelectedDuration()
+    {
+        $this->calculateEndDateTime();
+        $this->loadIphones();
+    }
+
+    public function getRequestedStartDateTime(): Carbon
+    {
+        $date = $this->requested_booking_date ? Carbon::parse($this->requested_booking_date)->toDateString() : Carbon::today('Asia/Jakarta')->toDateString();
+        $time = $this->requested_time ? Carbon::parse($this->requested_time)->format('H:i') : Carbon::now('Asia/Jakarta')->format('H:i');
+
+        return Carbon::parse("{$date} {$time}", 'Asia/Jakarta');
+    }
+
+    public function getRequestedEndDateTime(): Carbon
+    {
+        $start = $this->getRequestedStartDateTime();
+        $duration = (int) ($this->selectedDuration ?: 1);
+
+        return $start->copy()->addHours(max(1, $duration));
+    }
     
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
@@ -180,49 +214,30 @@ class RentIphoneWizard extends Component
         }
 
         // Gabungkan tanggal dan waktu dari booking sekarang
-        $start = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->requested_booking_date)->format('Y-m-d') . ' ' . $this->requested_time);
+        $start = $this->getRequestedStartDateTime();
         $end = Carbon::createFromFormat('Y-m-d H:i', Carbon::parse($this->end_booking_date)->format('Y-m-d') . ' ' . $this->end_time);
 
-        // 🔍 Cek apakah iPhone sedang disewa
         $iphone = Iphones::find($this->selectedIphoneId);
-        if ($iphone) {
-            $isRented = in_array(strtolower($iphone->status ?? ''), ['rented', 'disewa']);
-            $activeRental = Booking::where('iphone_id', $iphone->id)->whereIn('status', ['rented', 'disewa'])->first();
-            if ($isRented || $activeRental) {
-                $renter = $activeRental ? " oleh {$activeRental->customer_name}" : '';
-                LivewireAlert::title('Unit Sedang Disewa')
-                    ->text("Unit {$iphone->name} saat ini sedang aktif disewa{$renter}. Mohon pilih unit iPhone lain yang berstatus Tersedia.")
-                    ->warning()
-                    ->toast()
-                    ->position('top-end')
-                    ->show();
-                return;
-            }
+        if (! $iphone) {
+            LivewireAlert::title('Unit Tidak Ditemukan')
+                ->text('Unit iPhone tidak ditemukan.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+            return;
         }
 
-        // 🔍 Cek apakah ada booking bentrok
-        $bookings = Booking::where('iphone_id', $this->selectedIphoneId)
-            ->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
-            ->get();
-
-        $conflict = $bookings->contains(function ($booking) use ($start, $end) {
-            $bookingStart = Carbon::parse($booking->requested_booking_date . ' ' . $booking->requested_time);
-
-            // Hitung bookingEnd berdasarkan requested + durasi
-            $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
-
-            // Cek apakah waktu booking lama bertabrakan dengan booking baru
-            return $bookingStart < $end && $bookingEnd > $start;
-        });
-
-        if ($conflict) {
-            LivewireAlert::title('Booking Gagal')
-                ->text('Tanggal dan waktu yang dipilih sudah dibooking.')
+        // 🔍 Cek ketersediaan unit fisik iPhone untuk rentang waktu yang dipilih
+        if (! $iphone->isAvailableForPeriod($start, $end, null, true)) {
+            LivewireAlert::title('Unit Tidak Tersedia')
+                ->text("Unit {$iphone->name} ({$iphone->serial_number}) tidak tersedia untuk jadwal yang dipilih. Mohon pilih unit lain atau sesuaikan tanggal sewa.")
                 ->error()
                 ->toast()
                 ->position('top-end')
                 ->show();
 
+            $this->loadIphones();
             return;
         }
     }
@@ -291,6 +306,48 @@ class RentIphoneWizard extends Component
         DB::beginTransaction();
 
         try {
+            $iphone = Iphones::where('id', $this->selectedIphoneId)->lockForUpdate()->first();
+            if (! $iphone) {
+                DB::rollBack();
+                LivewireAlert::title('Unit Tidak Ditemukan')
+                    ->text('Unit iPhone tidak ditemukan.')
+                    ->error()
+                    ->toast()
+                    ->position('top-end')
+                    ->show();
+                return;
+            }
+
+            $user = auth()->user();
+            if ($user && method_exists($user, 'hasRole') && !$user->hasRole('super-admin') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('admin')))) {
+                if ($user->affiliate_id && $iphone->affiliate_id != $user->affiliate_id) {
+                    DB::rollBack();
+                    LivewireAlert::title('Akses Ditolak')
+                        ->text('Unit iPhone ini tidak terdaftar pada affiliate Anda.')
+                        ->error()
+                        ->toast()
+                        ->position('top-end')
+                        ->show();
+                    return;
+                }
+            }
+
+            $start = $this->getRequestedStartDateTime();
+            $duration = (int) $this->selectedDuration;
+            $end = $start->copy()->addHours(max(1, $duration));
+
+            if (! $iphone->isAvailableForPeriod($start, $end, null, true)) {
+                DB::rollBack();
+                LivewireAlert::title('Unit Sudah Dibooking')
+                    ->text("Maaf, unit iPhone {$iphone->name} ({$iphone->serial_number}) baru saja dibooking oleh pengguna lain untuk jadwal tersebut.")
+                    ->error()
+                    ->toast()
+                    ->position('top-end')
+                    ->show();
+
+                $this->loadIphones();
+                return;
+            }
 
             $booking = Booking::create([
                 'iphone_id' => $this->selectedIphoneId,
@@ -448,6 +505,32 @@ class RentIphoneWizard extends Component
 
     public function selectIphone(int $iphoneId, string $name, $serial_number)
     {
+        $iphone = Iphones::find($iphoneId);
+        if (! $iphone) {
+            LivewireAlert::title('Unit Tidak Ditemukan')
+                ->text('iPhone yang dipilih tidak ditemukan.')
+                ->error()
+                ->toast()
+                ->position('top-end')
+                ->show();
+            return;
+        }
+
+        $start = $this->getRequestedStartDateTime();
+        $end = $this->getRequestedEndDateTime();
+
+        if (! $iphone->isAvailableForPeriod($start, $end, null, true)) {
+            LivewireAlert::title('Unit Sedang Disewa')
+                ->text("Unit {$iphone->name} ({$iphone->serial_number}) tidak tersedia untuk jadwal yang dipilih.")
+                ->warning()
+                ->toast()
+                ->position('top-end')
+                ->show();
+
+            $this->loadIphones();
+            return;
+        }
+
         $this->selectedIphoneId = $iphoneId;
         $this->iphone_name = $name;
         $this->serial_number = $serial_number;
@@ -467,8 +550,6 @@ class RentIphoneWizard extends Component
 
     public function mount()
     {
-
-        $this->requested_booking_date = Carbon::now('Asia/Jakarta');
         $this->payments = Payment::orderBy('created_at', 'desc')->get();
         $this->selectedPayment = $this->payments->firstWhere('id', $this->selectedPaymentId);
 
@@ -480,6 +561,7 @@ class RentIphoneWizard extends Component
 
         $this->requested_booking_date = $now->toDateString(); // Y-m-d
         $this->requested_time = $now->format('H:i');
+        $this->loadIphones();
     }
 
     public function formatPhoneNumber($phone, $mode = '62')
@@ -506,18 +588,20 @@ class RentIphoneWizard extends Component
     #[On('reload-iphone')]
     public function loadIphones()
     {
-        $now = Carbon::now('Asia/Jakarta');
-
         $user = auth()->user();
+        $start = $this->getRequestedStartDateTime();
+        $end = $this->getRequestedEndDateTime();
 
         $this->iphones = Iphones::query()
             ->with([
                 'gallery',
+                'durations',
                 'bookings' => function ($query) {
-                    $query->whereIn('status', ['pending', 'confirmed']);
+                    $query->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
+                          ->whereDoesntHave('returns');
                 },
             ])
-            ->when($user->hasRole('affiliate-admin'), function ($query) use ($user) {
+            ->when($user && method_exists($user, 'hasRole') && !$user->hasRole('super-admin') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('admin'))), function ($query) use ($user) {
                 $query->where('affiliate_id', $user->affiliate_id);
             })
             // ->when($user->hasRole('super-admin'), function ($query) {
@@ -530,24 +614,11 @@ class RentIphoneWizard extends Component
                 });
             })
             ->get()
-            ->map(function ($iphone) use ($now) {
+            ->map(function ($iphone) use ($start, $end) {
+                $available = $iphone->isAvailableForPeriod($start, $end);
+                $iphone->is_available = $available;
+                $iphone->setAttribute('is_available', $available);
 
-                // $iphone->is_available = true;
-
-                foreach ($iphone->bookings as $booking) {
-
-                    $bookingStart = Carbon::parse(
-                        "{$booking->requested_booking_date} {$booking->requested_time}",
-                        'Asia/Jakarta'
-                    );
-
-                    $bookingEnd = $bookingStart->copy()->addHours((int) $booking->duration);
-                    if (in_array($booking->status, ['pending', 'confirmed'])) {
-                        $iphone->is_available = false;
-                        break;
-                    }
-                }
-            
                 return $iphone;
             });
     }
@@ -571,11 +642,15 @@ class RentIphoneWizard extends Component
             ?->pivot
             ?->price ?? 5000;
         $this->updateDurationAndPrice();
+        $this->calculateEndDateTime();
+        $this->loadIphones();
     }
 
     public function updatedJumlah()
     {
         $this->updateDurationAndPrice();
+        $this->calculateEndDateTime();
+        $this->loadIphones();
     }
 
     private function updateDurationAndPrice()

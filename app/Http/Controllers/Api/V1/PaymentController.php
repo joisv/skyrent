@@ -352,6 +352,21 @@ class PaymentController extends Controller
 
         $userId = $authUser?->id ?? $request->user()?->id ?? $request->input('user_id');
 
+        // Prevent duplicate payment creation (e.g. repeated double clicks within 15 seconds with identical booking, amount, and type)
+        $recentDuplicate = BookingPayment::where('booking_id', $booking->id)
+            ->where('amount', $amount)
+            ->where('type', $type)
+            ->where('created_at', '>=', now()->subSeconds(15))
+            ->first();
+
+        if ($recentDuplicate) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pembayaran berhasil diproses.',
+                'data' => new BookingPaymentResource($recentDuplicate),
+            ], 200);
+        }
+
         $paymentRecord = BookingPayment::create([
             'booking_id' => $booking->id,
             'payment_id' => $paymentId,

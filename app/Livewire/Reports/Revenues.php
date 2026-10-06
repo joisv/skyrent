@@ -153,16 +153,21 @@ class Revenues extends Component
 
         $user = auth()->user();
 
-        if ($user->hasRole('affiliate-admin')) {
-            $query->whereHas('booking', function ($q) use ($user) {
-                $q->where(function ($query) use ($user) {
-                    $query->where('affiliate_id', $user->affiliate_id)
-                        ->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('affiliate_id')
-                                ->where('user_id', $user->id);
-                        });
+        if ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin')))) {
+            $affiliateId = $user->affiliate_id;
+            if ($affiliateId) {
+                $query->whereHas('booking', function ($q) use ($affiliateId) {
+                    $q->where(function ($sub) use ($affiliateId) {
+                        $sub->where('affiliate_id', $affiliateId)
+                            ->orWhere(function ($legacy) use ($affiliateId) {
+                                $legacy->whereNull('affiliate_id')
+                                    ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliateId));
+                            });
+                    });
                 });
-            });
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         $this->paymentsList = $query

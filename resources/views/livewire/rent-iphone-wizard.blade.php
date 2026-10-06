@@ -125,7 +125,7 @@
                             <label for="requested_booking_date"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tanggal
                                 booking</label>
-                            <livewire:booking.set-date wire:model="requested_booking_date" />
+                            <livewire:booking.set-date wire:model.live="requested_booking_date" />
                         </div>
                         @error('requested_booking_date')
                             <span class="error">Pilih tanggal sewa</span>
@@ -150,8 +150,7 @@
                                     defaultDate: @js($requested_time ? \Carbon\Carbon::parse($requested_time)->format('H:i') : null),
                                     onChange: (selectedDates, dateStr, instance) => {
                                         $wire.requested_time = dateStr; // Update Livewire property
-                                        {{-- console.log(selectedDates) --}}
-                                        {{-- $wire.setTime(dateStr); // Call Livewire method to set time --}}
+                                        $wire.loadIphones();
                                     }
                                 })
                             },
@@ -215,7 +214,6 @@
                         @else
                             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
                                 @foreach ($iphones as $iphone)
-                                @dump($iphone->is_available)
                                     <button type="button"
                                         wire:click="selectIphone('{{ $iphone->id }}', '{{ $iphone->name }}', '{{ $iphone->serial_number }}')"
                                         @disabled(!$iphone->is_available)

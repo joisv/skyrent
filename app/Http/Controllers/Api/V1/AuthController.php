@@ -55,17 +55,7 @@ class AuthController extends Controller
 
         $roles = method_exists($user, 'getRoleNames') ? $user->getRoleNames() : collect();
 
-        if ($roles->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk aplikasi ini.',
-                'errors' => [
-                    'role' => ['Pengguna tidak memiliki role yang sesuai.'],
-                ],
-            ], 403);
-        }
-
-        $primaryRole = $roles->first();
+        $primaryRole = $roles->first() ?? 'staff';
 
         return response()->json([
             'success' => true,
@@ -77,6 +67,7 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'role' => $primaryRole,
                     'roles' => $roles,
+                    'affiliate_id' => $user->affiliate_id,
                     'outlet_name' => $shop->outlet_name ?? 'Outlet Utama',
                     'shift_name' => 'Shift Aktif',
                 ],
@@ -130,6 +121,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'role' => $roles->first() ?? 'Staff',
                 'roles' => $roles,
+                'affiliate_id' => $user->affiliate_id,
                 'outlet_name' => $shop->outlet_name ?? 'Outlet Utama',
                 'shift_name' => 'Shift Aktif',
             ],

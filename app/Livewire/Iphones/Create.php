@@ -32,11 +32,18 @@ class Create extends Component
 
     public function mount()
     {
+        if (!auth()->user() || (!auth()->user()->hasRole('super-admin') && !auth()->user()->hasRole('admin'))) {
+            abort(403, 'Akses ditolak: Hanya Super Admin dan Admin yang memiliki izin untuk menambah unit iPhone baru.');
+        }
         $this->date = Carbon::now();
     }
 
     public function save()
     {
+        if (!auth()->user() || (!auth()->user()->hasRole('super-admin') && !auth()->user()->hasRole('admin'))) {
+            abort(403, 'Akses ditolak: Hanya Super Admin dan Admin yang memiliki izin untuk menambah unit iPhone baru.');
+        }
+
         $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',

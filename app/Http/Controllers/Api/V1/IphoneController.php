@@ -34,10 +34,55 @@ class IphoneController extends Controller
     }
 
     /**
+     * Determine the strict affiliate ID scope for the request.
+     * Returns [bool $isScoped, ?int $affiliateId]:
+     * - $isScoped = true: user belongs to an affiliate (affiliate-admin, affiliate, or user with affiliate_id).
+     *   They MUST be restricted to their assigned affiliate_id.
+     *   Client-supplied affiliate_id query param is completely ignored.
+     * - $isScoped = false: user has global scope (super-admin, global admin without affiliate_id, or guest).
+     *   Client-supplied affiliate_id query param may be used if supplied.
+     */
+    private function resolveAffiliateScope(Request $request): array
+    {
+        $user = $this->resolveUser($request);
+        if (! $user) {
+            $clientAffId = $request->query('affiliate_id');
+            return [false, ($clientAffId && is_numeric($clientAffId)) ? (int) $clientAffId : null];
+        }
+
+        // Super-admin retains global visibility across all affiliates
+        $isSuperAdmin = (method_exists($user, 'hasRole') && $user->hasRole('super-admin'))
+            || ($user->role === 'super-admin')
+            || (method_exists($user, 'getRoleNames') && $user->getRoleNames()->contains('super-admin'))
+            || (str_contains(strtolower($user->email ?? ''), 'super-admin'));
+
+        if ($isSuperAdmin) {
+            $clientAffId = $request->query('affiliate_id');
+            return [false, ($clientAffId && is_numeric($clientAffId)) ? (int) $clientAffId : null];
+        }
+
+        // Web logic matching RentIphoneWizard:
+        // !$user->hasRole('super-admin') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('admin')))
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate'));
+        $hasAffiliateId = !empty($user->affiliate_id);
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+
+        $isScopedToAffiliate = $isAffiliateAdmin || ($hasAffiliateId && !$isAdmin);
+
+        if ($isScopedToAffiliate) {
+            return [true, $user->affiliate_id ? (int) $user->affiliate_id : null];
+        }
+
+        // Global admin without affiliate restriction
+        $clientAffId = $request->query('affiliate_id');
+        return [false, ($clientAffId && is_numeric($clientAffId)) ? (int) $clientAffId : null];
+    }
+
+    /**
      * Determine real-time rental status ('disewa', 'terlambat', or 'tersedia')
      * without loading entire historical booking relationships.
      */
-    private function resolveUnitRealtimeStatus(Iphones $unit, Carbon $now): array
+    private function resolveUnitRealtimeStatus(Iphones $unit, Carbon $now, ?int $excludeBookingId = null): array
     {
         $status = 'tersedia';
         $relevantBooking = null;
@@ -52,6 +97,9 @@ class IphoneController extends Controller
                 ->get();
 
         foreach ($bookings as $b) {
+            if ($excludeBookingId && (int) $b->id === (int) $excludeBookingId) {
+                continue;
+            }
             $startTime = $b->start_time ? substr($b->start_time, 0, 5) : '00:00';
             $endTime = $b->end_time ? substr($b->end_time, 0, 5) : '23:59';
             $startDt = Carbon::parse($b->start_booking_date . ' ' . $startTime, 'Asia/Jakarta');
@@ -70,8 +118,18 @@ class IphoneController extends Controller
 
         if ($status === 'tersedia') {
             $rawStatus = strtolower($unit->status ?? 'ready');
-            if (in_array($rawStatus, ['maintenance', 'perawatan'])) {
+            if (in_array($rawStatus, ['rented', 'disewa'])) {
+                $status = 'disewa';
+            } elseif (in_array($rawStatus, ['maintenance', 'perawatan'])) {
                 $status = 'maintenance';
+            } elseif (in_array($rawStatus, ['in_transit', 'transferred', 'mutasi'])) {
+                $status = 'transferred';
+            } elseif (in_array($rawStatus, ['booked', 'dibooking'])) {
+                $status = 'booked';
+            } elseif (in_array($rawStatus, ['lost', 'hilang'])) {
+                $status = 'lost';
+            } elseif (in_array($rawStatus, ['retired', 'nonaktif'])) {
+                $status = 'retired';
             }
         }
 
@@ -104,6 +162,9 @@ class IphoneController extends Controller
         $tersedia = 0;
         $disewa = 0;
         $terlambat = 0;
+        $transferred = 0;
+        $maintenance = 0;
+        $dibooking = 0;
 
         foreach ($allUnits as $unit) {
             $res = $this->resolveUnitRealtimeStatus($unit, $now);
@@ -111,6 +172,12 @@ class IphoneController extends Controller
                 $terlambat++;
             } elseif ($res['status'] === 'disewa') {
                 $disewa++;
+            } elseif ($res['status'] === 'transferred') {
+                $transferred++;
+            } elseif ($res['status'] === 'maintenance') {
+                $maintenance++;
+            } elseif ($res['status'] === 'booked') {
+                $dibooking++;
             } else {
                 $tersedia++;
             }
@@ -121,8 +188,9 @@ class IphoneController extends Controller
             'tersedia' => $tersedia,
             'disewa' => $disewa,
             'terlambat' => $terlambat,
-            'maintenance' => 0,
-            'dibooking' => 0,
+            'transferred' => $transferred,
+            'maintenance' => $maintenance,
+            'dibooking' => $dibooking,
             // Standard English aliases
             'ready' => $tersedia,
             'rented' => $disewa,
@@ -141,32 +209,21 @@ class IphoneController extends Controller
         $now = Carbon::now('Asia/Jakarta');
 
         // Affiliate scoping check based on authenticated user or request
-        $user = $this->resolveUser($request);
-        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-
-        $affiliateId = null;
-        if ($isAffiliateAdmin) {
-            $affiliateId = $user->affiliate_id;
-        } elseif ($isAdmin && $user->affiliate_id) {
-            $affiliateId = $user->affiliate_id;
-        } else {
-            $affiliateId = $request->query('affiliate_id');
-        }
+        [$isScoped, $affiliateId] = $this->resolveAffiliateScope($request);
 
         $query = Iphones::with([
             'gallery',
             'affiliate',
             'durations',
             'bookings' => function ($bq) {
-                $bq->whereIn('status', ['confirmed', 'rented', 'disewa'])
+                $bq->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
                    ->whereDoesntHave('returns')
                    ->orderBy('end_booking_date', 'desc')
                    ->orderBy('end_time', 'desc');
             }
         ]);
 
-        if ($isAffiliateAdmin) {
+        if ($isScoped) {
             if ($affiliateId) {
                 $query->where('affiliate_id', $affiliateId);
             } else {
@@ -211,11 +268,45 @@ class IphoneController extends Controller
 
         $allUnits = $query->get();
 
-        // Calculate dynamic real-time status for each unit
+        // Optional period availability evaluation
+        $startDateParam = $request->query('start_date') ?? $request->query('start_booking_date') ?? $request->query('requested_booking_date');
+        $endDateParam = $request->query('end_date') ?? $request->query('end_booking_date');
+        $startTimeParam = $request->query('start_time') ?? $request->query('requested_time') ?? '09:00';
+        $endTimeParam = $request->query('end_time') ?? '18:00';
+        $durationParam = (int) $request->query('duration', 0);
+
+        $periodStart = null;
+        $periodEnd = null;
+        if ($startDateParam) {
+            try {
+                $periodStart = Carbon::parse("{$startDateParam} {$startTimeParam}", 'Asia/Jakarta');
+                if ($endDateParam) {
+                    $periodEnd = Carbon::parse("{$endDateParam} {$endTimeParam}", 'Asia/Jakarta');
+                } elseif ($durationParam > 0) {
+                    $hours = $durationParam < 5 ? ($durationParam * 24) : $durationParam;
+                    $periodEnd = $periodStart->copy()->addHours($hours);
+                } else {
+                    $periodEnd = $periodStart->copy()->addDay();
+                }
+            } catch (\Exception $e) {
+                $periodStart = null;
+                $periodEnd = null;
+            }
+        }
+
+        // Calculate dynamic real-time status and period availability for each unit
         foreach ($allUnits as $unit) {
             $resolved = $this->resolveUnitRealtimeStatus($unit, $now);
             $unit->realtime_status = $resolved['status'];
             $unit->realtime_booking = $resolved['booking'];
+
+            if ($periodStart && $periodEnd) {
+                $isPeriodAvail = $unit->isAvailableForPeriod($periodStart, $periodEnd);
+                $unit->is_available_for_period = $isPeriodAvail;
+                $unit->is_available = $isPeriodAvail;
+            } else {
+                $unit->is_available = in_array(strtolower($resolved['status']), ['ready', 'tersedia']);
+            }
         }
 
         // Filter by status if provided (support Indonesian and English)
@@ -239,10 +330,15 @@ class IphoneController extends Controller
 
         // Filter available only
         if ($request->boolean('available_only') || $request->query('only_available') === '1') {
-            $allUnits = $allUnits->filter(fn($u) => ($u->realtime_status ?? 'tersedia') === 'tersedia')->values();
+            $allUnits = $allUnits->filter(function ($u) {
+                if (isset($u->is_available_for_period)) {
+                    return (bool) $u->is_available_for_period;
+                }
+                return ($u->realtime_status ?? 'tersedia') === 'tersedia';
+            })->values();
         }
 
-        $summary = $this->calculateUnitSummary($affiliateId);
+        $summary = $this->calculateUnitSummary($isScoped ? ($affiliateId ?? -1) : $affiliateId);
 
         // Optional pagination
         if ($request->has('per_page') || $request->boolean('paginate')) {
@@ -279,27 +375,16 @@ class IphoneController extends Controller
      */
     public function summary(Request $request): JsonResponse
     {
-        $user = $this->resolveUser($request);
-        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-
-        $affiliateId = null;
-        if ($isAffiliateAdmin) {
-            $affiliateId = $user->affiliate_id ?? -1;
-        } elseif ($isAdmin && $user->affiliate_id) {
-            $affiliateId = $user->affiliate_id;
-        } else {
-            $affiliateId = $request->query('affiliate_id');
-        }
+        [$isScoped, $affiliateId] = $this->resolveAffiliateScope($request);
 
         return response()->json([
             'status' => 'success',
-            'data' => $this->calculateUnitSummary($affiliateId),
+            'data' => $this->calculateUnitSummary($isScoped ? ($affiliateId ?? -1) : $affiliateId),
         ]);
     }
 
     /**
-     * Display a listing of available iPhone units ready for pickup assignment.
+     * Display a listing of available iPhone units ready for pickup assignment or booking wizard.
      * GET /api/v1/iphones/available
      * GET /api/v1/pickup/available-units
      */
@@ -307,32 +392,21 @@ class IphoneController extends Controller
     {
         $now = Carbon::now('Asia/Jakarta');
 
-        $user = $this->resolveUser($request);
-        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-
-        $affiliateId = null;
-        if ($isAffiliateAdmin) {
-            $affiliateId = $user->affiliate_id;
-        } elseif ($isAdmin && $user->affiliate_id) {
-            $affiliateId = $user->affiliate_id;
-        } else {
-            $affiliateId = $request->query('affiliate_id');
-        }
+        [$isScoped, $affiliateId] = $this->resolveAffiliateScope($request);
 
         $query = Iphones::with([
             'gallery',
             'affiliate',
             'durations',
             'bookings' => function ($bq) {
-                $bq->whereIn('status', ['confirmed', 'rented', 'disewa'])
+                $bq->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
                    ->whereDoesntHave('returns')
                    ->orderBy('end_booking_date', 'desc')
                    ->orderBy('end_time', 'desc');
             }
         ]);
 
-        if ($isAffiliateAdmin) {
+        if ($isScoped) {
             if ($affiliateId) {
                 $query->where('affiliate_id', $affiliateId);
             } else {
@@ -342,6 +416,7 @@ class IphoneController extends Controller
             $query->where('affiliate_id', $affiliateId);
         }
 
+        $excludeBookingId = null;
         // If booking_code or booking_id is provided, match its model if not explicitly specified
         if ($bookingCode = $request->query('booking_code') ?? $request->query('booking_id')) {
             $booking = Booking::with('iphone')
@@ -355,9 +430,12 @@ class IphoneController extends Controller
                 })
                 ->first();
 
-            if ($booking && $booking->iphone) {
-                if (! $request->has('model') && ! $request->has('model_name')) {
-                    $query->where('name', 'like', "%{$booking->iphone->name}%");
+            if ($booking) {
+                $excludeBookingId = $booking->id;
+                if ($booking->iphone) {
+                    if (! $request->has('model') && ! $request->has('model_name')) {
+                        $query->where('name', 'like', "%{$booking->iphone->name}%");
+                    }
                 }
             }
         }
@@ -378,11 +456,47 @@ class IphoneController extends Controller
 
         $units = $query->orderBy('name')->orderBy('asset_code')->get();
 
-        $availableUnits = $units->filter(function ($unit) use ($now) {
-            $resolved = $this->resolveUnitRealtimeStatus($unit, $now);
+        // Optional period availability evaluation
+        $startDateParam = $request->query('start_date') ?? $request->query('start_booking_date') ?? $request->query('requested_booking_date');
+        $endDateParam = $request->query('end_date') ?? $request->query('end_booking_date');
+        $startTimeParam = $request->query('start_time') ?? $request->query('requested_time') ?? '09:00';
+        $endTimeParam = $request->query('end_time') ?? '18:00';
+        $durationParam = (int) $request->query('duration', 0);
+
+        $periodStart = null;
+        $periodEnd = null;
+        if ($startDateParam) {
+            try {
+                $periodStart = Carbon::parse("{$startDateParam} {$startTimeParam}", 'Asia/Jakarta');
+                if ($endDateParam) {
+                    $periodEnd = Carbon::parse("{$endDateParam} {$endTimeParam}", 'Asia/Jakarta');
+                } elseif ($durationParam > 0) {
+                    $hours = $durationParam < 5 ? ($durationParam * 24) : $durationParam;
+                    $periodEnd = $periodStart->copy()->addHours($hours);
+                } else {
+                    $periodEnd = $periodStart->copy()->addDay();
+                }
+            } catch (\Exception $e) {
+                $periodStart = null;
+                $periodEnd = null;
+            }
+        }
+
+        $availableUnits = $units->filter(function ($unit) use ($now, $periodStart, $periodEnd, $excludeBookingId) {
+            $resolved = $this->resolveUnitRealtimeStatus($unit, $now, $excludeBookingId);
             $unit->realtime_status = $resolved['status'];
             $unit->realtime_booking = $resolved['booking'];
-            return $resolved['status'] === 'tersedia';
+
+            if ($periodStart && $periodEnd) {
+                $avail = $unit->isAvailableForPeriod($periodStart, $periodEnd, $excludeBookingId);
+                $unit->is_available_for_period = $avail;
+                $unit->is_available = $avail;
+                return $avail;
+            }
+
+            $avail = ($resolved['status'] === 'tersedia');
+            $unit->is_available = $avail;
+            return $avail;
         })->values();
 
         return response()->json([
@@ -398,8 +512,7 @@ class IphoneController extends Controller
      */
     public function show(Request $request, string $idOrAssetCode): JsonResponse
     {
-        $user = $this->resolveUser($request);
-        $isAffiliateAdmin = $user && $user->hasRole('affiliate-admin');
+        [$isScoped, $affiliateId] = $this->resolveAffiliateScope($request);
 
         $unitQuery = Iphones::with([
             'gallery',
@@ -422,8 +535,12 @@ class IphoneController extends Controller
             }
         });
 
-        if ($isAffiliateAdmin && $user->affiliate_id) {
-            $unitQuery->where('affiliate_id', $user->affiliate_id);
+        if ($isScoped) {
+            if ($affiliateId) {
+                $unitQuery->where('affiliate_id', $affiliateId);
+            } else {
+                $unitQuery->whereRaw('1 = 0');
+            }
         }
 
         $unit = $unitQuery->first();
@@ -530,6 +647,18 @@ class IphoneController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $user = $this->resolveUser($request);
+        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+
+        if (! $isSuperAdmin && ! $isAdmin) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => 'Akses ditolak: Hanya Super Admin dan Admin yang memiliki izin untuk menambah unit iPhone baru.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:2000',

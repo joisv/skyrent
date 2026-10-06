@@ -35,6 +35,7 @@ Route::middleware(['auth', 'role:super-admin|admin|staff|affiliate-admin'])->pre
         })->name('iphones.edit');
 
         Route::view('iphones/create', 'iphones.create')
+            ->middleware('role:super-admin|admin')
             ->name('iphones.create');
 
         Route::view('profile', 'profile')

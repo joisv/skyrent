@@ -65,7 +65,7 @@
                         </x-tables.td>
                         <x-tables.td>
                             @php
-                                $status = $iphone['iphone']->transfers->first()?->status;
+                                $status = $iphone->status;
                             @endphp
 
                             @if ($status)
@@ -81,6 +81,13 @@
                                         <span
                                             class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
                                             In Transit
+                                        </span>
+                                    @break
+
+                                    @case('received')
+                                        <span
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                            Diterima
                                         </span>
                                     @break
 
@@ -102,13 +109,17 @@
                             @endif
                         </x-tables.td>
                         <x-tables.td>
-                            {{ $iphone['iphone']->user->name }}
+                            {{ $iphone['iphone']?->user?->name ?? '-' }}
                         </x-tables.td>
-                        <x-tables.td>{{ Carbon\Carbon::createFromFormat('Y-m-d', $iphone['iphone']->created)->format('F j, Y') }}</x-tables.td>
-                        <x-tables.td>{{ $iphone['iphone']->updated_at->format('d M Y') }}</x-tables.td>
+                        <x-tables.td>{{ $iphone->sent_at ? Carbon\Carbon::parse($iphone->sent_at)->format('d M Y H:i') : ($iphone['iphone']?->created ? Carbon\Carbon::createFromFormat('Y-m-d', $iphone['iphone']->created)->format('F j, Y') : '-') }}</x-tables.td>
+                        <x-tables.td>{{ $iphone->updated_at ? $iphone->updated_at->format('d M Y') : '-' }}</x-tables.td>
                         <x-tables.td>
-                            <x-primary-button type="button"
-                                wire:click="acceptTransferIphone({{ $iphone['iphone']->transfers->first()?->id }}, 'delete')">terima</x-primary-button>
+                            @if ($iphone->status === 'in_transit' || $iphone->status === 'pending')
+                                <x-primary-button type="button"
+                                    wire:click="acceptTransferIphone({{ $iphone->id }})">terima</x-primary-button>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded bg-green-100 text-green-700">Diterima</span>
+                            @endif
                         </x-tables.td>
 
                     </tr>

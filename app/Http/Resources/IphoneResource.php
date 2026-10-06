@@ -15,7 +15,9 @@ class IphoneResource extends JsonResource
     public function toArray(Request $request): array
     {
         $status = $this->realtime_status ?? $this->status ?? 'ready';
-        $isAvailable = in_array(strtolower($status), ['ready', 'tersedia']);
+        $isAvailable = isset($this->is_available_for_period)
+            ? (bool) $this->is_available_for_period
+            : (isset($this->is_available) ? (bool) $this->is_available : in_array(strtolower($status), ['ready', 'tersedia']));
 
         $rental = $this->realtime_booking ?? $this->currentRental ?? $this->activeBooking ?? ($this->relationLoaded('bookings') ? $this->bookings->whereIn('status', ['confirmed', 'rented', 'disewa'])->first() : null);
         $customerName = $rental?->customer_name;
@@ -79,36 +81,26 @@ class IphoneResource extends JsonResource
             'photo_url' => $this->gallery?->image
                 ? (filter_var($this->gallery->image, FILTER_VALIDATE_URL) ? $this->gallery->image : asset('storage/' . $this->gallery->image))
                 : ($this->gallery?->photo ? asset('storage/' . $this->gallery->photo) : null),
-            'active_booking' => $this->whenLoaded('activeBooking', function () {
-                if (! $this->activeBooking) {
-                    return null;
-                }
-                return [
-                    'id' => $this->activeBooking->id,
-                    'booking_code' => $this->activeBooking->booking_code,
-                    'customer_name' => $this->activeBooking->customer_name,
-                    'customer_phone' => $this->activeBooking->customer_phone,
-                    'start_date' => $this->activeBooking->start_booking_date,
-                    'end_date' => $this->activeBooking->end_booking_date,
-                    'end_time' => $this->activeBooking->end_time,
-                    'status' => $this->activeBooking->status,
-                ];
-            }),
-            'current_rental' => $this->whenLoaded('currentRental', function () {
-                if (! $this->currentRental) {
-                    return null;
-                }
-                return [
-                    'id' => $this->currentRental->id,
-                    'booking_code' => $this->currentRental->booking_code,
-                    'customer_name' => $this->currentRental->customer_name,
-                    'customer_phone' => $this->currentRental->customer_phone,
-                    'start_date' => $this->currentRental->start_booking_date,
-                    'end_date' => $this->currentRental->end_booking_date,
-                    'end_time' => $this->currentRental->end_time,
-                    'status' => $this->currentRental->status,
-                ];
-            }),
+            'active_booking' => $rental ? [
+                'id' => $rental->id,
+                'booking_code' => $rental->booking_code,
+                'customer_name' => $rental->customer_name,
+                'customer_phone' => $rental->customer_phone,
+                'start_date' => $rental->start_booking_date,
+                'end_date' => $rental->end_booking_date,
+                'end_time' => $rental->end_time,
+                'status' => $rental->status,
+            ] : null,
+            'current_rental' => $rental ? [
+                'id' => $rental->id,
+                'booking_code' => $rental->booking_code,
+                'customer_name' => $rental->customer_name,
+                'customer_phone' => $rental->customer_phone,
+                'start_date' => $rental->start_booking_date,
+                'end_date' => $rental->end_booking_date,
+                'end_time' => $rental->end_time,
+                'status' => $rental->status,
+            ] : null,
             'affiliate' => $this->whenLoaded('affiliate', function () {
                 return $this->affiliate ? [
                     'id' => $this->affiliate->id,

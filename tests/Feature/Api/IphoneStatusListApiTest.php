@@ -16,23 +16,16 @@ class IphoneStatusListApiTest extends TestCase
     {
         $readyUnit = Iphones::factory()->create([
             'name' => 'iPhone 15 Pro',
-            'storage' => '256GB',
-            'color' => 'Natural Titanium',
             'status' => 'ready',
-            'notes' => 'Unit display utama',
         ]);
 
         $rentedUnit = Iphones::factory()->create([
             'name' => 'iPhone 14 Pro Max',
-            'storage' => '128GB',
-            'color' => 'Space Black',
             'status' => 'rented',
         ]);
 
         $maintUnit = Iphones::factory()->create([
             'name' => 'iPhone 13',
-            'storage' => '128GB',
-            'color' => 'Blue',
             'status' => 'maintenance',
         ]);
 
@@ -158,16 +151,14 @@ class IphoneStatusListApiTest extends TestCase
             'name' => 'iPhone 15 Pro Max',
             'asset_code' => 'AST-IP15PM-001',
             'serial_number' => 'SN-SPEC-7788',
-            'storage' => '512GB',
-            'color' => 'Blue Titanium',
+            'description' => '512GB Blue Titanium',
         ]);
 
         Iphones::factory()->create([
             'name' => 'iPhone 11',
             'asset_code' => 'AST-IP11-002',
             'serial_number' => 'SN-REG-1122',
-            'storage' => '64GB',
-            'color' => 'Black',
+            'description' => '64GB Black',
         ]);
 
         // Search by serial

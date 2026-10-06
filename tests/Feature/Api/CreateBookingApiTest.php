@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Affiliate;
 use App\Models\Booking;
 use App\Models\Iphones;
 use App\Models\User;
 use Database\Seeders\ShopSettingsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class CreateBookingApiTest extends TestCase
@@ -142,5 +144,103 @@ class CreateBookingApiTest extends TestCase
             ->assertJson([
                 'status' => 'success',
             ]);
+    }
+
+    public function test_affiliate_user_cannot_book_iphone_belonging_to_another_affiliate_returns_403(): void
+    {
+        $this->seed(ShopSettingsSeeder::class);
+        Role::firstOrCreate(['name' => 'affiliate', 'guard_name' => 'web']);
+
+        $affiliate1 = Affiliate::factory()->create();
+        $affiliate2 = Affiliate::factory()->create();
+
+        $affiliateUser = User::factory()->create(['affiliate_id' => $affiliate1->id]);
+        $affiliateUser->assignRole('affiliate');
+
+        $iphoneAff2 = Iphones::factory()->create([
+            'affiliate_id' => $affiliate2->id,
+            'status' => 'ready',
+        ]);
+
+        $payload = [
+            'customer_name' => 'Budi Cross',
+            'customer_phone' => '081234567890',
+            'iphone_id' => $iphoneAff2->id,
+            'start_booking_date' => now()->toDateString(),
+            'end_booking_date' => now()->addDays(2)->toDateString(),
+            'price' => 300000,
+        ];
+
+        $response = $this->actingAs($affiliateUser, 'sanctum')->postJson('/api/v1/bookings', $payload);
+
+        $response->assertStatus(403)
+            ->assertJson([
+                'status' => 'error',
+                'message' => 'Akses ditolak: Unit iPhone ini tidak terdaftar pada cabang/affiliate Anda.',
+            ]);
+    }
+
+    public function test_affiliate_user_can_book_their_own_affiliate_iphone(): void
+    {
+        $this->seed(ShopSettingsSeeder::class);
+        Role::firstOrCreate(['name' => 'affiliate', 'guard_name' => 'web']);
+
+        $affiliate = Affiliate::factory()->create();
+
+        $affiliateUser = User::factory()->create(['affiliate_id' => $affiliate->id]);
+        $affiliateUser->assignRole('affiliate');
+
+        $iphone = Iphones::factory()->create([
+            'affiliate_id' => $affiliate->id,
+            'status' => 'ready',
+        ]);
+
+        $payload = [
+            'customer_name' => 'Budi Own Affiliate',
+            'customer_phone' => '081234567890',
+            'iphone_id' => $iphone->id,
+            'start_booking_date' => now()->toDateString(),
+            'end_booking_date' => now()->addDays(2)->toDateString(),
+            'price' => 300000,
+        ];
+
+        $response = $this->actingAs($affiliateUser, 'sanctum')->postJson('/api/v1/bookings', $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'status' => 'success',
+            ]);
+    }
+
+    public function test_cannot_book_iphone_when_schedule_conflicts_returns_422(): void
+    {
+        $this->seed(ShopSettingsSeeder::class);
+
+        $iphone = Iphones::factory()->create(['status' => 'ready']);
+
+        // Create an active confirmed booking for this unit
+        Booking::factory()->create([
+            'iphone_id' => $iphone->id,
+            'status' => 'confirmed',
+            'start_booking_date' => now()->addDays(1)->startOfDay(),
+            'end_booking_date' => now()->addDays(3)->endOfDay(),
+        ]);
+
+        $payload = [
+            'customer_name' => 'Overlapping Customer',
+            'customer_phone' => '081234567890',
+            'iphone_id' => $iphone->id,
+            'start_booking_date' => now()->addDays(2)->toDateString(),
+            'end_booking_date' => now()->addDays(4)->toDateString(),
+            'price' => 300000,
+        ];
+
+        $response = $this->postJson('/api/v1/bookings', $payload);
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'status' => 'error',
+            ]);
+        $this->assertStringContainsString('tidak tersedia untuk jadwal yang dipilih', $response->json('message'));
     }
 }
