@@ -45,6 +45,12 @@ return [
         'chat_id'   => env('TELEGRAM_CHAT_ID'),
     ],
 
+    'firebase' => [
+        'project_id'  => env('FIREBASE_PROJECT_ID', 'skyrental-admin'),
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+        'server_key'  => env('FCM_SERVER_KEY'),
+    ],
+
     'expired' => [
         'minutes' => env('BOOKING_EXPIRE_MINUTES', 30),
     ],

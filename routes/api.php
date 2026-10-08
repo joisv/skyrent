@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AffiliateController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\DeviceTokenController;
 use App\Http\Controllers\Api\V1\IphoneController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ReceiptController;
@@ -45,6 +46,13 @@ Route::prefix('v1')->group(function () {
         Route::put('/shop-settings', [SettingController::class, 'updateShopSettings'])->name('api.v1.shop_settings.update');
         Route::post('/shop-settings', [SettingController::class, 'updateShopSettings'])->name('api.v1.shop_settings.update_post');
         Route::put('/settings', [SettingController::class, 'updateShopSettings'])->name('api.v1.settings.update');
+
+        // FCM Device Tokens
+        Route::post('/device-tokens', [DeviceTokenController::class, 'store'])->name('api.v1.device_tokens.store');
+        Route::post('/device-token', [DeviceTokenController::class, 'store']);
+        Route::delete('/device-tokens', [DeviceTokenController::class, 'destroy'])->name('api.v1.device_tokens.destroy');
+        Route::post('/device-tokens/delete', [DeviceTokenController::class, 'destroy'])->name('api.v1.device_tokens.destroy_post');
+        Route::post('/device-tokens/test', [DeviceTokenController::class, 'sendTest'])->name('api.v1.device_tokens.send_test');
     });
 
     // Public / Operational Shop Settings read endpoints

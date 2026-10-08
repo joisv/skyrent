@@ -25,3 +25,5 @@ npm-debug.log
 Thumbs.db
 yarn-error.log
 /mobile
+*-firebase-adminsdk-*.json
+firebase-credentials.json

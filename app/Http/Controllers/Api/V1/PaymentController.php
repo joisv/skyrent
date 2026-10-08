@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\FcmService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -453,6 +454,16 @@ class PaymentController extends Controller
             } catch (\Exception $e) {
                 logger()->error('Telegram Payment Notification Error: ' . $e->getMessage());
             }
+        }
+
+        // Kirim push notification FCM
+        try {
+            app(FcmService::class)->notifyBookingPayment(
+                $booking,
+                $newPaymentStatus === 'paid' ? 'LUNAS' : 'SEBAGIAN'
+            );
+        } catch (\Throwable $e) {
+            logger()->error('FCM Payment Notification Error: ' . $e->getMessage());
         }
 
         $freshBooking = $booking->fresh(['paymentTransactions.payment', 'iphone', 'payment', 'user']);

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Booking;
 use App\Models\Revenue;
+use App\Services\FcmService;
 use Carbon\Carbon;
 
 class BookingObserver
@@ -27,15 +28,12 @@ class BookingObserver
 
                 $booking->saveQuietly();
             }
-            // if (!$booking->revenue && $booking->status !== 'cancelled') {
+        }
 
-            //     Revenue::create([
-            //         'booking_id' => $booking->id,
-            //         'amount' => $booking->price,
-            //         'type' =>  'booking',
-            //         'created' => now('Asia/Jakarta'),
-            //     ]);
-            // }
+        try {
+            app(FcmService::class)->notifyNewBooking($booking);
+        } catch (\Throwable $e) {
+            logger()->error('FCM new booking notification failed: ' . $e->getMessage());
         }
     }
 
@@ -55,6 +53,14 @@ class BookingObserver
             $booking->end_time = $end->format('H:i');
 
             $booking->saveQuietly(); // agar tidak loop observer
+        }
+
+        if ($booking->wasChanged('status') && $booking->status === 'confirmed') {
+            try {
+                app(FcmService::class)->notifyBookingConfirmed($booking);
+            } catch (\Throwable $e) {
+                logger()->error('FCM booking confirmed notification failed: ' . $e->getMessage());
+            }
         }
 
         // if (!$booking->revenue && $booking->status !== 'cancelled') {

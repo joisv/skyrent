@@ -42,8 +42,8 @@
     @endif
     <form wire:submit="submit">
 
-        {{-- NAV --}}
-        <div class="flex justify-between mb-4 mt-0">
+        {{-- NAV (Mobile view) --}}
+        <div class="flex justify-between mb-4 mt-0 md:hidden">
             @if ($step > 1)
                 <button wire:loading.attr="disabled" wire:click="back" type="button" class="disabled:opacity-50  px-4 py-2 border rounded-xl">
                     Kembali
@@ -97,21 +97,35 @@
                 </div>
             </div>
 
-            {{-- RIGHT --}}
-            @if ($step === 1)
-                <div class="flex items-center gap-4">
-                    <input type="text" id="iphone_search"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Cari Tipe iPhone" wire:model.live.debounce.2500ms="iphone_search" />
+            {{-- RIGHT (Tablet & Desktop Top-Right Area) --}}
+            <div class="flex items-center gap-3">
+                @if ($step === 1)
+                    <div class="w-48 sm:w-64">
+                        <input type="text" id="iphone_search"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Cari Tipe iPhone" wire:model.live.debounce.2500ms="iphone_search" />
+                    </div>
+                @endif
 
-                    {{-- NEXT BUTTON --}}
-                    {{-- <button wire:click="next" class="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm rounded">
-                Lanjut
-                <span>→</span>
-            </button> --}}
+                <div class="hidden md:flex items-center gap-2">
+                    @if ($step > 1)
+                        <button wire:loading.attr="disabled" wire:click="back" type="button" class="disabled:opacity-50 px-4 py-2 border rounded-xl hover:bg-gray-50 transition">
+                            Kembali
+                        </button>
+                    @endif
 
+                    @if ($step < 3)
+                        <button wire:loading.attr="disabled" wire:click="next" type="button" class="disabled:opacity-50 px-6 py-2 bg-black text-white rounded-xl hover:bg-black/90 transition">
+                            Lanjut →
+                        </button>
+                    @else
+                        <button type="submit" class="px-6 py-2 bg-green-600 text-white disabled:bg-green-200 rounded-xl hover:bg-green-700 transition"
+                            wire:loading.attr="disabled">
+                            Konfirmasi
+                        </button>
+                    @endif
                 </div>
-            @endif
+            </div>
         </div>
 
 

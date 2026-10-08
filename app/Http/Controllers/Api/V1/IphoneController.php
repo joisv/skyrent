@@ -143,11 +143,13 @@ class IphoneController extends Controller
      * Helper to compute fleet status counts.
      * Guaranteed: total = tersedia + disewa + terlambat (no double counting).
      */
-    private function calculateUnitSummary(?int $affiliateId = null): array
+    private function calculateUnitSummary(?int $affiliateId = null, bool $unassignedOnly = false): array
     {
         $now = Carbon::now('Asia/Jakarta');
         $query = Iphones::query();
-        if ($affiliateId) {
+        if ($unassignedOnly) {
+            $query->whereNull('affiliate_id');
+        } elseif ($affiliateId) {
             $query->where('affiliate_id', $affiliateId);
         }
 
@@ -223,7 +225,22 @@ class IphoneController extends Controller
             }
         ]);
 
-        if ($isScoped) {
+        $forBooking = $request->boolean('for_booking')
+            || $request->query('for_booking') === '1'
+            || $request->query('for_booking') === 'true'
+            || $request->query('context') === 'booking';
+
+        $user = $this->resolveUser($request);
+        $isSuperAdmin = $user && (
+            (method_exists($user, 'hasRole') && $user->hasRole('super-admin'))
+            || ($user->role === 'super-admin')
+            || (method_exists($user, 'getRoleNames') && $user->getRoleNames()->contains('super-admin'))
+            || (str_contains(strtolower($user->email ?? ''), 'super-admin'))
+        );
+
+        if ($request->query('affiliate_id') === 'none' || $request->query('affiliate_id') === 'null' || $request->query('affiliate_id') === '0') {
+            $query->whereNull('affiliate_id');
+        } elseif ($isScoped) {
             if ($affiliateId) {
                 $query->where('affiliate_id', $affiliateId);
             } else {
@@ -231,6 +248,9 @@ class IphoneController extends Controller
             }
         } elseif ($affiliateId) {
             $query->where('affiliate_id', $affiliateId);
+        } elseif ($forBooking && $isSuperAdmin) {
+            // For booking context, Super Admin only sees iPhones where affiliate_id IS NULL
+            $query->whereNull('affiliate_id');
         } elseif ($branch = $request->query('branch') ?? $request->query('affiliate') ?? $request->query('branch_name')) {
             $b = trim($branch);
             if (strtolower($b) !== 'semua cabang' && strtolower($b) !== 'semua' && strtolower($b) !== 'all') {
@@ -315,14 +335,17 @@ class IphoneController extends Controller
             $sf = strtolower(trim($statusFilter));
             $allUnits = $allUnits->filter(function ($unit) use ($sf) {
                 $st = strtolower($unit->realtime_status ?? 'tersedia');
-                if (in_array($sf, ['ready', 'tersedia'])) {
-                    return $st === 'tersedia';
+                if (in_array($sf, ['ready', 'tersedia', 'available'])) {
+                    if (isset($unit->is_available_for_period)) {
+                        return (bool) $unit->is_available_for_period && in_array($st, ['ready', 'tersedia']);
+                    }
+                    return in_array($st, ['ready', 'tersedia']);
                 } elseif (in_array($sf, ['rented', 'disewa'])) {
-                    return $st === 'disewa';
+                    return in_array($st, ['rented', 'disewa']) || (isset($unit->is_available_for_period) && !$unit->is_available_for_period);
                 } elseif (in_array($sf, ['terlambat', 'overdue', 'late'])) {
-                    return $st === 'terlambat';
+                    return in_array($st, ['terlambat', 'overdue', 'late']);
                 } elseif (in_array($sf, ['maintenance', 'perawatan'])) {
-                    return $st === 'maintenance';
+                    return in_array($st, ['maintenance', 'perawatan']);
                 }
                 return $st === $sf;
             })->values();
@@ -338,11 +361,12 @@ class IphoneController extends Controller
             })->values();
         }
 
-        $summary = $this->calculateUnitSummary($isScoped ? ($affiliateId ?? -1) : $affiliateId);
+        $unassignedOnly = ($request->query('affiliate_id') === 'none' || $request->query('affiliate_id') === 'null' || ($forBooking && $isSuperAdmin));
+        $summary = $this->calculateUnitSummary($isScoped ? ($affiliateId ?? -1) : $affiliateId, $unassignedOnly);
 
         // Optional pagination
-        if ($request->has('per_page') || $request->boolean('paginate')) {
-            $perPage = min(100, max(1, (int) $request->query('per_page', 15)));
+        if ($request->has('per_page') || $request->has('page') || $request->boolean('paginate')) {
+            $perPage = min(100, max(1, (int) $request->query('per_page', 10)));
             $page = max(1, (int) $request->query('page', 1));
             $totalCount = $allUnits->count();
             $pagedItems = $allUnits->forPage($page, $perPage)->values();
@@ -406,7 +430,17 @@ class IphoneController extends Controller
             }
         ]);
 
-        if ($isScoped) {
+        $user = $this->resolveUser($request);
+        $isSuperAdmin = $user && (
+            (method_exists($user, 'hasRole') && $user->hasRole('super-admin'))
+            || ($user->role === 'super-admin')
+            || (method_exists($user, 'getRoleNames') && $user->getRoleNames()->contains('super-admin'))
+            || (str_contains(strtolower($user->email ?? ''), 'super-admin'))
+        );
+
+        if ($request->query('affiliate_id') === 'none' || $request->query('affiliate_id') === 'null' || $request->query('affiliate_id') === '0') {
+            $query->whereNull('affiliate_id');
+        } elseif ($isScoped) {
             if ($affiliateId) {
                 $query->where('affiliate_id', $affiliateId);
             } else {
@@ -414,6 +448,9 @@ class IphoneController extends Controller
             }
         } elseif ($affiliateId) {
             $query->where('affiliate_id', $affiliateId);
+        } elseif ($isSuperAdmin) {
+            // Super Admin in booking availability only sees iPhones where affiliate_id IS NULL
+            $query->whereNull('affiliate_id');
         }
 
         $excludeBookingId = null;

@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Booking;
+use App\Models\IphoneTransfer;
 use App\Observers\BookingObserver;
+use App\Observers\IphoneTransferObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\View;
@@ -61,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Booking::observe(BookingObserver::class);
+        IphoneTransfer::observe(IphoneTransferObserver::class);
         View::composer('*', SeoComposer::class);
     }
 }

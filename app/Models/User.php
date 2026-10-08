@@ -68,4 +68,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Affiliate::class);
     }
+
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
 }

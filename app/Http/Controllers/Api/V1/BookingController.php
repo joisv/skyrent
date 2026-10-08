@@ -667,6 +667,13 @@ class BookingController extends Controller
             || (!empty($authUser->affiliate_id) && !$isSuperAdmin && !$isGlobalAdmin)
         );
 
+        if ($isSuperAdmin && ! is_null($iphone->affiliate_id)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak: Super Admin hanya dapat membuat booking untuk unit iPhone pusat (tanpa cabang/affiliate).',
+            ], 403);
+        }
+
         if ($isAffiliateUser) {
             $userAffiliateId = $authUser->affiliate_id;
             if (! $userAffiliateId || (int) $iphone->affiliate_id !== (int) $userAffiliateId) {

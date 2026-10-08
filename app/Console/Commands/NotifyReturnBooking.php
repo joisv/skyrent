@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Booking;
+use App\Services\FcmService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
@@ -37,12 +38,17 @@ class NotifyReturnBooking extends Command
         $now = now();
         $compareTime = now()->addMinutes(30);
 
+        $nowStr = $now->format('Y-m-d H:i:s');
+        $compareStr = $compareTime->format('Y-m-d H:i:s');
+
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+        $dateExpression = $driver === 'sqlite'
+            ? "(end_booking_date || ' ' || end_time) BETWEEN ? AND ?"
+            : "STR_TO_DATE(CONCAT(end_booking_date, ' ', end_time), '%Y-%m-%d %H:%i:%s') BETWEEN ? AND ?";
+
         $bookings = Booking::where('status', 'confirmed')
             ->where('reminder_sent', false)
-            ->whereRaw(
-                "STR_TO_DATE(CONCAT(end_booking_date, ' ', end_time), '%Y-%m-%d %H:%i:%s') BETWEEN ? AND ?",
-                [$now, $compareTime]
-            )
+            ->whereRaw($dateExpression, [$nowStr, $compareStr])
             ->get();
         foreach ($bookings as $booking) {
             $adminMessage = "⚠️ *Reminder Booking Akan Berakhir*\n\n"
@@ -77,6 +83,13 @@ class NotifyReturnBooking extends Command
                 'target'  => $booking->customer_phone,
                 'message' => $message,
             ]);
+
+            // Kirim Push Notification FCM ke Staff / Admin
+            try {
+                app(FcmService::class)->notifyReturnReminder($booking);
+            } catch (\Throwable $e) {
+                logger()->error('FCM return reminder notification failed: ' . $e->getMessage());
+            }
 
             $booking->update(['reminder_sent' => true]);
             $this->info("Reminder sent to booking ID {$booking->id}");

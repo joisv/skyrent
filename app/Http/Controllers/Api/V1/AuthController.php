@@ -85,6 +85,14 @@ class AuthController extends Controller
         $user = $request->user();
 
         if ($user) {
+            // Remove device token if provided in logout request
+            $deviceToken = $request->input('device_token') ?? $request->input('fcm_token') ?? $request->input('token');
+            if (!empty($deviceToken)) {
+                \App\Models\DeviceToken::where('token', $deviceToken)
+                    ->where('user_id', $user->id)
+                    ->delete();
+            }
+
             // Delete the current personal access token
             $request->user()->currentAccessToken()?->delete();
             auth()->guard('sanctum')->forgetUser();
