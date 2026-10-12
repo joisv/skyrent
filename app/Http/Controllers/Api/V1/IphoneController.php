@@ -46,8 +46,7 @@ class IphoneController extends Controller
     {
         $user = $this->resolveUser($request);
         if (! $user) {
-            $clientAffId = $request->query('affiliate_id');
-            return [false, ($clientAffId && is_numeric($clientAffId)) ? (int) $clientAffId : null];
+            return [true, -1];
         }
 
         // Super-admin retains global visibility across all affiliates
@@ -143,22 +142,28 @@ class IphoneController extends Controller
      * Helper to compute fleet status counts.
      * Guaranteed: total = tersedia + disewa + terlambat (no double counting).
      */
-    private function calculateUnitSummary(?int $affiliateId = null, bool $unassignedOnly = false): array
+    private function calculateUnitSummary(?int $affiliateId = null, bool $unassignedOnly = false, $preloadedUnits = null): array
     {
         $now = Carbon::now('Asia/Jakarta');
-        $query = Iphones::query();
-        if ($unassignedOnly) {
-            $query->whereNull('affiliate_id');
-        } elseif ($affiliateId) {
-            $query->where('affiliate_id', $affiliateId);
-        }
+        if ($preloadedUnits !== null) {
+            $allUnits = $preloadedUnits;
+        } else {
+            $query = Iphones::query();
+            if ($unassignedOnly) {
+                $query->whereNull('affiliate_id');
+            } elseif ($affiliateId && $affiliateId > 0) {
+                $query->where('affiliate_id', $affiliateId);
+            } elseif ($affiliateId === -1) {
+                $query->whereRaw('1 = 0');
+            }
 
-        $allUnits = $query->with(['bookings' => function ($bq) {
-            $bq->whereIn('status', ['confirmed', 'rented', 'disewa'])
-               ->whereDoesntHave('returns')
-               ->orderBy('end_booking_date', 'desc')
-               ->orderBy('end_time', 'desc');
-        }])->get();
+            $allUnits = $query->with(['bookings' => function ($bq) {
+                $bq->whereIn('status', ['confirmed', 'rented', 'disewa'])
+                   ->whereDoesntHave('returns')
+                   ->orderBy('end_booking_date', 'desc')
+                   ->orderBy('end_time', 'desc');
+            }])->get();
+        }
 
         $total = $allUnits->count();
         $tersedia = 0;
@@ -169,16 +174,20 @@ class IphoneController extends Controller
         $dibooking = 0;
 
         foreach ($allUnits as $unit) {
-            $res = $this->resolveUnitRealtimeStatus($unit, $now);
-            if ($res['status'] === 'terlambat') {
+            $status = $unit->realtime_status ?? null;
+            if (!$status) {
+                $res = $this->resolveUnitRealtimeStatus($unit, $now);
+                $status = $res['status'];
+            }
+            if ($status === 'terlambat') {
                 $terlambat++;
-            } elseif ($res['status'] === 'disewa') {
+            } elseif ($status === 'disewa') {
                 $disewa++;
-            } elseif ($res['status'] === 'transferred') {
+            } elseif ($status === 'transferred') {
                 $transferred++;
-            } elseif ($res['status'] === 'maintenance') {
+            } elseif ($status === 'maintenance') {
                 $maintenance++;
-            } elseif ($res['status'] === 'booked') {
+            } elseif ($status === 'booked') {
                 $dibooking++;
             } else {
                 $tersedia++;
@@ -329,6 +338,8 @@ class IphoneController extends Controller
             }
         }
 
+        $unfilteredUnits = $allUnits;
+
         // Filter by status if provided (support Indonesian and English)
         $statusFilter = $request->query('status');
         if ($statusFilter && !in_array(strtolower($statusFilter), ['all', 'semua'])) {
@@ -362,7 +373,21 @@ class IphoneController extends Controller
         }
 
         $unassignedOnly = ($request->query('affiliate_id') === 'none' || $request->query('affiliate_id') === 'null' || ($forBooking && $isSuperAdmin));
-        $summary = $this->calculateUnitSummary($isScoped ? ($affiliateId ?? -1) : $affiliateId, $unassignedOnly);
+
+        $hasNarrowingFilters = (bool) ($request->query('model')
+            || $request->query('model_name')
+            || $request->query('q')
+            || $request->query('search')
+            || ($request->query('branch') && !in_array(strtolower(trim($request->query('branch'))), ['semua cabang', 'semua', 'all']))
+            || ($request->query('affiliate') && !in_array(strtolower(trim($request->query('affiliate'))), ['semua cabang', 'semua', 'all']))
+            || ($request->query('branch_name') && !in_array(strtolower(trim($request->query('branch_name'))), ['semua cabang', 'semua', 'all']))
+        );
+
+        $summary = $this->calculateUnitSummary(
+            $isScoped ? ($affiliateId ?? -1) : $affiliateId,
+            $unassignedOnly,
+            $hasNarrowingFilters ? null : $unfilteredUnits
+        );
 
         // Optional pagination
         if ($request->has('per_page') || $request->has('page') || $request->boolean('paginate')) {
@@ -802,8 +827,26 @@ class IphoneController extends Controller
         }
 
         $user = $this->resolveUser($request);
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin')) {
-            if ($user->affiliate_id && $iphone->affiliate_id != $user->affiliate_id) {
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+
+        if (! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak: Anda tidak memiliki izin untuk mengubah data unit iPhone.',
+            ], 403);
+        }
+
+        if ($isAffiliateAdmin) {
+            if ($user->affiliate_id && (int) $iphone->affiliate_id !== (int) $user->affiliate_id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Anda tidak memiliki hak akses untuk mengubah unit dari affiliate lain.',
@@ -925,8 +968,27 @@ class IphoneController extends Controller
         }
 
         $user = $this->resolveUser($request);
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin')) {
-            if ($user->affiliate_id && $unit->affiliate_id != $user->affiliate_id) {
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAffiliate = method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+
+        if (! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin && ! $isAffiliate) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak: Anda tidak memiliki izin untuk mengubah status unit iPhone.',
+            ], 403);
+        }
+
+        if (($isAffiliateAdmin || $isAffiliate) && ! $isSuperAdmin && ! $isAdmin) {
+            if ($user->affiliate_id && (int) $unit->affiliate_id !== (int) $user->affiliate_id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Anda tidak memiliki hak akses untuk mengubah status unit dari affiliate lain.',
@@ -990,6 +1052,14 @@ class IphoneController extends Controller
      */
     public function uploadGallery(Request $request): JsonResponse
     {
+        $user = $this->resolveUser($request);
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
         $request->validate([
             'image' => 'required|file|mimes:jpeg,png,jpg,gif,webp,heic|max:10240',
         ]);

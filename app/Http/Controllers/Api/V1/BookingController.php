@@ -33,7 +33,7 @@ class BookingController extends Controller
     protected function applyUserScope($query, ?User $user)
     {
         if (! $user) {
-            return $query;
+            return $query->whereRaw('1 = 0');
         }
 
         // super-admin: melihat semua booking dari semua user dan semua affiliate
@@ -71,7 +71,7 @@ class BookingController extends Controller
     protected function canAccessBooking(Booking $booking, ?User $user): bool
     {
         if (! $user) {
-            return true;
+            return false;
         }
 
         if (method_exists($user, 'hasRole') && $user->hasRole('super-admin')) {
@@ -657,6 +657,12 @@ class BookingController extends Controller
         $iphone = Iphones::findOrFail($validated['iphone_id']);
 
         $authUser = $this->resolveUser($request);
+        if (! $authUser) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated. Token autentikasi diperlukan untuk membuat booking.',
+            ], 401);
+        }
 
         // Security check: If authenticated user belongs to an affiliate, verify that iPhone belongs to their affiliate
         $isSuperAdmin = $authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('super-admin');
@@ -740,7 +746,30 @@ class BookingController extends Controller
             $bookingCode = 'SKY' . Carbon::now()->format('ymd') . strtoupper(Str::random(4));
         } while (Booking::where('booking_code', $bookingCode)->exists());
         $deposit = (float) ($validated['deposit_amount'] ?? $validated['deposit'] ?? 200000);
-        $price = (float) $validated['price'];
+        $clientPrice = (float) ($validated['price'] ?? 0);
+
+        // Server-side pricing calculation based on official duration packages
+        $serverPrice = 0;
+        $matchedDuration = $iphone->durations()->where('hours', $duration)->first();
+        if ($matchedDuration && isset($matchedDuration->pivot->price) && (float) $matchedDuration->pivot->price > 0) {
+            $serverPrice = (float) $matchedDuration->pivot->price;
+        } elseif ($duration >= 24 && ($duration % 24 === 0)) {
+            $dailyPackage = $iphone->durations()->where('hours', 24)->first();
+            if ($dailyPackage && isset($dailyPackage->pivot->price) && (float) $dailyPackage->pivot->price > 0) {
+                $days = (int) ($duration / 24);
+                $serverPrice = (float) $dailyPackage->pivot->price * $days;
+            }
+        }
+
+        // Enforce server-side pricing if computed, preventing client-side price tampering
+        $price = ($serverPrice > 0) ? $serverPrice : $clientPrice;
+
+        if ($price <= 0) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Total biaya sewa (price) tidak valid atau paket durasi belum dikonfigurasi.',
+            ], 422);
+        }
 
         $amountPaid = (float) ($validated['amount_paid'] ?? 0);
         $paymentStatus = $validated['payment_status'] ?? ($amountPaid >= $price ? 'paid' : ($amountPaid > 0 ? 'partial' : 'unpaid'));
@@ -759,9 +788,11 @@ class BookingController extends Controller
             }
         }
 
-        $authUser = $this->resolveUser($request);
-        $userId = $authUser?->id ?? User::first()?->id ?? null;
-        $affiliateId = $authUser?->affiliate_id ?? $iphone->affiliate_id ?? null;
+        $isKia = ($cleanJaminan === 'Kartu Identitas Anak') || filter_var($request->input('kia'), FILTER_VALIDATE_BOOLEAN);
+        $finalJaminan = $cleanJaminan === 'Kartu Identitas Anak' ? 'Kartu Pelajar' : $cleanJaminan;
+
+        $userId = $authUser->id;
+        $affiliateId = $authUser->affiliate_id ?? $iphone->affiliate_id ?? null;
 
         $booking = Booking::create([
             'booking_code' => $bookingCode,
@@ -780,7 +811,8 @@ class BookingController extends Controller
             'price' => $price,
             'status' => 'confirmed', // Siap untuk serah terima / pickup
             'pickup_type' => $pickupType,
-            'jaminan_type' => $cleanJaminan,
+            'jaminan_type' => $finalJaminan,
+            'kia' => $isKia,
             'payment_status' => $paymentStatus,
             'user_id' => $userId,
             'affiliate_id' => $affiliateId,
@@ -934,6 +966,23 @@ class BookingController extends Controller
         }
 
         $user = $this->resolveUser($request);
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+
+        if (! $isSuperAdmin && ! $isAdmin) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak: Hanya Super Admin dan Admin yang memiliki izin untuk menghapus data booking.',
+            ], 403);
+        }
+
         if (! $this->canAccessBooking($booking, $user)) {
             return response()->json([
                 'status' => 'error',

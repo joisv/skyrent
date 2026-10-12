@@ -42,18 +42,27 @@ class DashboardController extends Controller
 
         // Affiliate and role scoping check based on authenticated user or request
         $user = $this->resolveUser($request);
-        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-        $isStaff = $user && ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isStaff = ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
 
         $affiliateId = null;
         if ($isAffiliateAdmin) {
             $affiliateId = $user->affiliate_id;
         } elseif ($isAdmin && $user->affiliate_id) {
             $affiliateId = $user->affiliate_id;
-        } else {
+        } elseif ($isSuperAdmin) {
             $affiliateId = $request->query('affiliate_id');
+        } else {
+            $affiliateId = $user->affiliate_id;
         }
 
         // 1. Operational booking metrics & real-time inventory calculation
@@ -531,18 +540,27 @@ class DashboardController extends Controller
 
         // Authenticated user check for affiliate and role scoping
         $user = $this->resolveUser($request);
-        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-        $isStaff = $user && ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isStaff = ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
 
         $affiliateId = null;
         if ($isAffiliateAdmin) {
             $affiliateId = $user->affiliate_id;
         } elseif ($isAdmin && $user->affiliate_id) {
             $affiliateId = $user->affiliate_id;
-        } else {
+        } elseif ($isSuperAdmin) {
             $affiliateId = $request->query('affiliate_id');
+        } else {
+            $affiliateId = $user->affiliate_id;
         }
 
         // Base BookingPayments query

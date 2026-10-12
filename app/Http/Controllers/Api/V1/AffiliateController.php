@@ -105,7 +105,29 @@ class AffiliateController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $user = $this->resolveUser($request);
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
         $query = Affiliate::query();
+
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAffiliate = method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+
+        // Affiliate and branch-scoped admins can only see their own affiliate branch
+        if ($isAffiliateAdmin || $isAffiliate || ($isAdmin && $user->affiliate_id)) {
+            if ($user->affiliate_id) {
+                $query->where('id', $user->affiliate_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
 
         if ($request->filled('search')) {
             $search = trim($request->input('search'));
@@ -208,6 +230,14 @@ class AffiliateController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $user = $this->resolveUser($request);
+        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('super-admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk menambah mitra affiliate.',
+            ], 403);
+        }
+
         // Sanitize string inputs: convert empty strings to null
         $inputs = $request->all();
         foreach (['email', 'phone', 'address', 'city', 'province', 'postal_code', 'slug', 'description'] as $field) {
@@ -381,6 +411,14 @@ class AffiliateController extends Controller
      */
     public function update(Request $request, string $id): JsonResponse
     {
+        $user = $this->resolveUser($request);
+        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('super-admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk mengubah data affiliate.',
+            ], 403);
+        }
+
         $affiliate = Affiliate::find($id);
         if (!$affiliate) {
             return response()->json([
@@ -468,8 +506,16 @@ class AffiliateController extends Controller
      * Menghapus mitra affiliate.
      * DELETE /api/v1/affiliates/{id}
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
+        $user = $this->resolveUser($request);
+        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('super-admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk menghapus mitra affiliate.',
+            ], 403);
+        }
+
         $affiliate = Affiliate::find($id);
         if (!$affiliate) {
             return response()->json([
@@ -815,11 +861,25 @@ class AffiliateController extends Controller
     public function revenue(Request $request, string $id): JsonResponse
     {
         $user = $this->resolveUser($request);
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
 
-        $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-        $isAffiliateAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-        $isAffiliate = $user && method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isAffiliate = method_exists($user, 'hasRole') && $user->hasRole('affiliate');
+
+        // Staff / unauthorized roles are forbidden from viewing revenue
+        if (! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin && ! $isAffiliate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Anda tidak memiliki izin untuk melihat laporan pendapatan.',
+            ], 403);
+        }
 
         // Affiliate and affiliate-admin must only see their own affiliate revenue
         if ($isAffiliateAdmin || $isAffiliate) {
@@ -1019,6 +1079,14 @@ class AffiliateController extends Controller
      */
     public function assignUsers(Request $request, string $id): JsonResponse
     {
+        $authUser = $this->resolveUser($request);
+        if (! $authUser || ! method_exists($authUser, 'hasRole') || ! $authUser->hasRole('super-admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk menugaskan staf ke affiliate.',
+            ], 403);
+        }
+
         $affiliate = Affiliate::findOrFail($id);
 
         $validated = $request->validate([
@@ -1055,8 +1123,16 @@ class AffiliateController extends Controller
      * Melepas penugasan user dari mitra affiliate.
      * DELETE /api/v1/affiliates/{id}/users/{userId}
      */
-    public function removeUser(string $id, string $userId): JsonResponse
+    public function removeUser(Request $request, string $id, string $userId): JsonResponse
     {
+        $authUser = $this->resolveUser($request);
+        if (! $authUser || ! method_exists($authUser, 'hasRole') || ! $authUser->hasRole('super-admin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk melepas staf dari affiliate.',
+            ], 403);
+        }
+
         $affiliate = Affiliate::findOrFail($id);
 
         $user = User::where('id', $userId)

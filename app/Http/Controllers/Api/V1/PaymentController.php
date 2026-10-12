@@ -35,7 +35,7 @@ class PaymentController extends Controller
     protected function canAccessBooking(?Booking $booking, ?User $user): bool
     {
         if (! $booking || ! $user) {
-            return true;
+            return false;
         }
 
         if (method_exists($user, 'hasRole') && $user->hasRole('super-admin')) {
@@ -71,33 +71,38 @@ class PaymentController extends Controller
 
         // Scope by user role
         $authUser = $this->resolveUser($request);
-        if ($authUser) {
-            if (method_exists($authUser, 'hasRole') && $authUser->hasRole('super-admin')) {
-                // super-admin: melihat semua pembayaran dari semua user dan semua affiliate
-            } elseif (method_exists($authUser, 'hasRole') && $authUser->hasRole('admin')) {
-                if ($authUser->affiliate_id) {
-                    $query->whereHas('booking', function ($bq) use ($authUser) {
-                        $bq->where('affiliate_id', $authUser->affiliate_id)
-                            ->orWhere('user_id', $authUser->id);
-                    });
-                }
-            } elseif (method_exists($authUser, 'hasRole') && $authUser->hasRole('affiliate-admin')) {
-                if ($authUser->affiliate_id) {
-                    $query->whereHas('booking', function ($bq) use ($authUser) {
-                        $bq->where('affiliate_id', $authUser->affiliate_id)
-                            ->orWhere('user_id', $authUser->id);
-                    });
-                } else {
-                    $query->whereHas('booking', function ($bq) use ($authUser) {
-                        $bq->where('user_id', $authUser->id);
-                    });
-                }
+        if (! $authUser) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        if (method_exists($authUser, 'hasRole') && $authUser->hasRole('super-admin')) {
+            // super-admin: melihat semua pembayaran dari semua user dan semua affiliate
+        } elseif (method_exists($authUser, 'hasRole') && $authUser->hasRole('admin')) {
+            if ($authUser->affiliate_id) {
+                $query->whereHas('booking', function ($bq) use ($authUser) {
+                    $bq->where('affiliate_id', $authUser->affiliate_id)
+                        ->orWhere('user_id', $authUser->id);
+                });
+            }
+        } elseif (method_exists($authUser, 'hasRole') && $authUser->hasRole('affiliate-admin')) {
+            if ($authUser->affiliate_id) {
+                $query->whereHas('booking', function ($bq) use ($authUser) {
+                    $bq->where('affiliate_id', $authUser->affiliate_id)
+                        ->orWhere('user_id', $authUser->id);
+                });
             } else {
-                // staff: hanya transaksi dari booking yang dibuat oleh dirinya sendiri
                 $query->whereHas('booking', function ($bq) use ($authUser) {
                     $bq->where('user_id', $authUser->id);
                 });
             }
+        } else {
+            // staff: hanya transaksi dari booking yang dibuat oleh dirinya sendiri
+            $query->whereHas('booking', function ($bq) use ($authUser) {
+                $bq->where('user_id', $authUser->id);
+            });
         }
 
         // Scope to booking if idOrCode or booking_code/id provided
@@ -219,7 +224,14 @@ class PaymentController extends Controller
         }
 
         $authUser = $this->resolveUser($request);
-        if ($authUser && $payment->booking && ! $this->canAccessBooking($payment->booking, $authUser)) {
+        if (! $authUser) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        if ($payment->booking && ! $this->canAccessBooking($payment->booking, $authUser)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak memiliki hak akses untuk melihat transaksi pembayaran ini.',
@@ -267,7 +279,14 @@ class PaymentController extends Controller
         }
 
         $authUser = $this->resolveUser($request);
-        if ($authUser && ! $this->canAccessBooking($booking, $authUser)) {
+        if (! $authUser) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated. Token autentikasi diperlukan untuk mencatat pembayaran.',
+            ], 401);
+        }
+
+        if (! $this->canAccessBooking($booking, $authUser)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak memiliki hak akses untuk memproses pembayaran booking ini.',
@@ -282,33 +301,101 @@ class PaymentController extends Controller
         }
 
         $amount = (float) $request->input('amount', 0);
-        if ($amount <= 0) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Nominal pembayaran (amount) harus lebih besar dari 0.',
-            ], 422);
-        }
-
         $requestedType = $request->input('type');
         $isExtendPayment = ($requestedType === 'extend');
+        $isPenaltyPayment = ($requestedType === 'penalty');
 
-        $currentPaid = (float) $booking->paymentTransactions()
-            ->whereIn('type', ['dp', 'payment', 'pelunasan', 'extend'])
-            ->sum('amount');
-        $currentRemaining = max(0, (float) $booking->price - $currentPaid);
+        if ($isPenaltyPayment) {
+            if (! in_array($booking->status, ['confirmed', 'rented', 'disewa', 'returned'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Booking dengan status '{$booking->status}' belum dapat diproses denda pengembaliannya.",
+                ], 422);
+            }
 
-        if (! $isExtendPayment && $currentRemaining <= 0) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Tagihan sewa untuk booking ini sudah lunas (Rp ' . number_format($booking->price, 0, ',', '.') . ').',
-            ], 422);
+            // Cegah penagihan ganda jika denda sudah pernah dibayar sebelumnya (Requirement 8)
+            $existingPenalty = $booking->paymentTransactions()
+                ->where('type', 'penalty')
+                ->first();
+
+            if ($existingPenalty) {
+                $freshBooking = $booking->fresh(['paymentTransactions.payment', 'iphone', 'payment', 'user']);
+                $currentPaid = (float) $booking->paymentTransactions()
+                    ->whereIn('type', ['dp', 'payment', 'pelunasan'])
+                    ->sum('amount');
+                $currentRemaining = max(0, (float) $booking->price - $currentPaid);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Denda keterlambatan untuk booking ini sudah pernah dicatat dan lunas.',
+                    'data' => new BookingResource($freshBooking),
+                    'payment' => new BookingPaymentResource($existingPenalty->fresh(['booking.iphone', 'payment', 'user'])),
+                    'payment_summary' => [
+                        'booking_code' => $booking->booking_code,
+                        'receipt_number' => $booking->booking_code,
+                        'payment_code' => $existingPenalty->payment_code ?? ('PAY-' . str_pad((string) $existingPenalty->id, 6, '0', STR_PAD_LEFT)),
+                        'customer_name' => $booking->customer_name,
+                        'customer_phone' => $booking->customer_phone,
+                        'unit_name' => $booking->iphone ? "{$booking->iphone->name} ({$booking->iphone->serial_number})" : 'Unit iPhone',
+                        'price' => (float) $booking->price,
+                        'total_amount' => (float) $booking->price,
+                        'amount_paid' => (float) $existingPenalty->amount,
+                        'amount' => (float) $existingPenalty->amount,
+                        'cash_received' => (float) ($existingPenalty->pay ?? $existingPenalty->amount),
+                        'change' => (float) ($existingPenalty->change ?? 0),
+                        'payment_method' => $existingPenalty->payment?->name ?? 'Tunai (Cash)',
+                        'payment_type' => 'penalty',
+                        'payment_type_label' => 'Denda Keterlambatan',
+                        'total_paid' => $currentPaid,
+                        'remaining_payment' => $currentRemaining,
+                        'payment_status' => $booking->payment_status,
+                        'is_settled' => $booking->payment_status === 'paid',
+                        'paid_at' => $existingPenalty->paid_at->toIso8601String(),
+                        'paid_at_formatted' => $existingPenalty->paid_at->format('d M Y, H:i'),
+                    ],
+                ], 200);
+            }
+
+            // Validasi & hitung denda berdasarkan aturan bisnis server (Requirement 4)
+            $lateInfo = $booking->late_info;
+            $calculatedPenalty = (float) ($lateInfo['penalty'] ?? 0);
+
+            if ($calculatedPenalty <= 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking ini tidak memiliki tagihan denda keterlambatan (tidak terlambat atau masih dalam toleransi).',
+                ], 422);
+            }
+
+            // Gunakan nominal denda terhitung server
+            $amount = $calculatedPenalty;
+        } else {
+            if ($amount <= 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Nominal pembayaran (amount) harus lebih besar dari 0.',
+                ], 422);
+            }
+
+            $currentPaid = (float) $booking->paymentTransactions()
+                ->whereIn('type', ['dp', 'payment', 'pelunasan', 'extend'])
+                ->sum('amount');
+            $currentRemaining = max(0, (float) $booking->price - $currentPaid);
+
+            if (! $isExtendPayment && $currentRemaining <= 0) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Tagihan sewa untuk booking ini sudah lunas (Rp ' . number_format($booking->price, 0, ',', '.') . ').',
+                ], 422);
+            }
         }
 
         $pay = $request->has('pay') ? (float) $request->input('pay') : $amount;
         if ($pay < $amount) {
+            $label = $isPenaltyPayment ? 'tagihan denda' : 'tagihan';
             return response()->json([
                 'status' => 'error',
-                'message' => 'Jumlah uang yang dibayarkan (pay) tidak boleh lebih kecil dari tagihan (amount).',
+                'message' => "Jumlah uang yang dibayarkan (pay) tidak boleh lebih kecil dari {$label} (amount: Rp " . number_format($amount, 0, ',', '.') . ').',
             ], 422);
         }
 
@@ -351,7 +438,7 @@ class PaymentController extends Controller
             $type = ($currentPaid + $amount >= (float) $booking->price) ? 'payment' : ($currentPaid == 0 ? 'dp' : 'payment');
         }
 
-        $userId = $authUser?->id ?? $request->user()?->id ?? $request->input('user_id');
+        $userId = $authUser->id;
 
         // Prevent duplicate payment creation (e.g. repeated double clicks within 15 seconds with identical booking, amount, and type)
         $recentDuplicate = BookingPayment::where('booking_id', $booking->id)
@@ -361,10 +448,46 @@ class PaymentController extends Controller
             ->first();
 
         if ($recentDuplicate) {
+            $freshBooking = $booking->fresh(['paymentTransactions.payment', 'iphone', 'payment', 'user']);
+            $currentPaid = (float) $booking->paymentTransactions()
+                ->whereIn('type', ['dp', 'payment', 'pelunasan', 'extend'])
+                ->sum('amount');
+            $currentRemaining = max(0, (float) $booking->price - $currentPaid);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Pembayaran berhasil diproses.',
-                'data' => new BookingPaymentResource($recentDuplicate),
+                'data' => new BookingResource($freshBooking),
+                'payment' => new BookingPaymentResource($recentDuplicate->fresh(['booking.iphone', 'payment', 'user'])),
+                'payment_summary' => [
+                    'booking_code' => $booking->booking_code,
+                    'receipt_number' => $booking->booking_code,
+                    'payment_code' => $recentDuplicate->payment_code ?? ('PAY-' . str_pad((string) $recentDuplicate->id, 6, '0', STR_PAD_LEFT)),
+                    'customer_name' => $booking->customer_name,
+                    'customer_phone' => $booking->customer_phone,
+                    'unit_name' => $booking->iphone ? "{$booking->iphone->name} ({$booking->iphone->serial_number})" : 'Unit iPhone',
+                    'price' => (float) $booking->price,
+                    'total_amount' => (float) $booking->price,
+                    'amount_paid' => (float) $recentDuplicate->amount,
+                    'amount' => (float) $recentDuplicate->amount,
+                    'cash_received' => (float) ($recentDuplicate->pay ?? $recentDuplicate->amount),
+                    'change' => (float) ($recentDuplicate->change ?? 0),
+                    'payment_method' => $recentDuplicate->payment?->name ?? ($payment?->name ?? 'Tunai (Cash)'),
+                    'payment_type' => $recentDuplicate->type,
+                    'payment_type_label' => match ($recentDuplicate->type) {
+                        'dp' => 'Uang Muka (DP)',
+                        'payment', 'pelunasan' => 'Pelunasan Sewa',
+                        'extend' => 'Perpanjangan Sewa',
+                        'penalty' => 'Denda Keterlambatan',
+                        default => ucfirst($recentDuplicate->type),
+                    },
+                    'total_paid' => $currentPaid,
+                    'remaining_payment' => $currentRemaining,
+                    'payment_status' => $booking->payment_status,
+                    'is_settled' => $booking->payment_status === 'paid',
+                    'paid_at' => $recentDuplicate->paid_at->toIso8601String(),
+                    'paid_at_formatted' => $recentDuplicate->paid_at->format('d M Y, H:i'),
+                ],
             ], 200);
         }
 
@@ -472,15 +595,29 @@ class PaymentController extends Controller
             'status' => 'success',
             'message' => 'Pembayaran sewa sebesar Rp ' . number_format($amount, 0, ',', '.') . ' berhasil dicatat.',
             'data' => new BookingResource($freshBooking),
-            'payment' => new BookingPaymentResource($paymentRecord->fresh(['booking', 'payment', 'user'])),
+            'payment' => new BookingPaymentResource($paymentRecord->fresh(['booking.iphone', 'payment', 'user'])),
             'payment_summary' => [
                 'booking_code' => $booking->booking_code,
+                'receipt_number' => $booking->booking_code,
+                'payment_code' => $paymentRecord->payment_code ?? ('PAY-' . str_pad((string) $paymentRecord->id, 6, '0', STR_PAD_LEFT)),
                 'customer_name' => $booking->customer_name,
+                'customer_phone' => $booking->customer_phone,
+                'unit_name' => $booking->iphone ? "{$booking->iphone->name} ({$booking->iphone->serial_number})" : 'Unit iPhone',
                 'price' => (float) $booking->price,
+                'total_amount' => (float) $booking->price,
                 'amount_paid' => $amount,
+                'amount' => $amount,
                 'cash_received' => $pay,
                 'change' => $change,
                 'payment_method' => $payment?->name ?? 'Tunai (Cash)',
+                'payment_type' => $type,
+                'payment_type_label' => match ($type) {
+                    'dp' => 'Uang Muka (DP)',
+                    'payment', 'pelunasan' => 'Pelunasan Sewa',
+                    'extend' => 'Perpanjangan Sewa',
+                    'penalty' => 'Denda Keterlambatan',
+                    default => ucfirst($type),
+                },
                 'total_paid' => $newTotalPaid,
                 'remaining_payment' => $newRemaining,
                 'payment_status' => $newPaymentStatus,

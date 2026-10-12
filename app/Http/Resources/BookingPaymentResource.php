@@ -17,10 +17,12 @@ class BookingPaymentResource extends JsonResource
         return [
             'id' => $this->id,
             'payment_code' => $this->payment_code ?? 'PAY-' . str_pad((string) $this->id, 6, '0', STR_PAD_LEFT),
+            'receipt_number' => $this->booking?->booking_code ?? ($this->payment_code ?? 'PAY-' . str_pad((string) $this->id, 6, '0', STR_PAD_LEFT)),
             'booking_id' => $this->booking_id,
             'booking_code' => $this->booking?->booking_code,
             'customer_name' => $this->booking?->customer_name,
             'customer_phone' => $this->booking?->customer_phone,
+            'unit_name' => $this->booking?->iphone ? "{$this->booking->iphone->name} ({$this->booking->iphone->serial_number})" : 'Unit iPhone',
             'payment_id' => $this->payment_id,
             'payment_method' => $this->payment?->name ?? 'Tunai (Cash)',
             'amount' => (float) $this->amount,

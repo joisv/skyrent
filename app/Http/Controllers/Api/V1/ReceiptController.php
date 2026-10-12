@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReceiptResource;
 use App\Models\Booking;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class ReceiptController extends Controller
     protected function canAccessBooking(Booking $booking, ?User $user): bool
     {
         if (! $user) {
-            return true;
+            return false;
         }
 
         if (method_exists($user, 'hasRole') && $user->hasRole('super-admin')) {
@@ -69,28 +70,33 @@ class ReceiptController extends Controller
         ]);
 
         $user = $this->resolveUser($request);
-        if ($user) {
-            $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-            $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
-            $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-            $isStaff = ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
 
-            if ($isStaff) {
-                // Staff: hanya riwayat struk booking miliknya sendiri
-                $query->where('user_id', $user->id);
-            } elseif ($isAffiliateAdmin) {
-                if ($user->affiliate_id) {
-                    $query->where(function ($q) use ($user) {
-                        $q->where('affiliate_id', $user->affiliate_id)->orWhere('user_id', $user->id);
-                    });
-                } else {
-                    $query->where('user_id', $user->id);
-                }
-            } elseif ($isAdmin && $user->affiliate_id) {
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isStaff = ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
+
+        if ($isStaff) {
+            // Staff: hanya riwayat struk booking miliknya sendiri
+            $query->where('user_id', $user->id);
+        } elseif ($isAffiliateAdmin) {
+            if ($user->affiliate_id) {
                 $query->where(function ($q) use ($user) {
                     $q->where('affiliate_id', $user->affiliate_id)->orWhere('user_id', $user->id);
                 });
+            } else {
+                $query->where('user_id', $user->id);
             }
+        } elseif ($isAdmin && $user->affiliate_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('affiliate_id', $user->affiliate_id)->orWhere('user_id', $user->id);
+            });
         }
 
         // Filter by completed / operational transactions by default
@@ -249,7 +255,14 @@ class ReceiptController extends Controller
         }
 
         $user = $this->resolveUser($request);
-        if ($user && ! $this->canAccessBooking($booking, $user)) {
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        if (! $this->canAccessBooking($booking, $user)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak memiliki hak akses untuk melihat struk transaksi ini.',

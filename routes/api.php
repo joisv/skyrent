@@ -27,14 +27,22 @@ Route::prefix('v1')->group(function () {
     Route::get('/health', fn() => response()->json(['status' => 'ok', 'app' => 'skyrent', 'version' => '1.0', 'time' => now()->toIso8601String()]));
     Route::get('/ping', fn() => response()->json(['status' => 'pong', 'message' => 'SKYRental API is online']));
 
-    // Authentication endpoints
-    Route::post('/auth/login', [AuthController::class, 'login'])->name('api.v1.auth.login');
-    Route::post('/login', [AuthController::class, 'login'])->name('api.v1.login');
+    // Authentication endpoints (Throttled: 5 attempts per minute)
+    Route::middleware('throttle:5,1')->group(function () {
+        Route::post('/auth/login', [AuthController::class, 'login'])->name('api.v1.auth.login');
+        Route::post('/login', [AuthController::class, 'login'])->name('api.v1.login');
+    });
+
+    // Public / Operational Shop Settings read endpoints
+    Route::get('/settings/shop', [SettingController::class, 'getShopSettings'])->name('api.v1.settings.shop');
+    Route::get('/shop-settings', [SettingController::class, 'getShopSettings'])->name('api.v1.shop_settings.get');
+    Route::get('/settings', [SettingController::class, 'getShopSettings'])->name('api.v1.settings.index');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v1.auth.logout');
         Route::post('/logout', [AuthController::class, 'logout'])->name('api.v1.logout');
         Route::get('/auth/me', [AuthController::class, 'me'])->name('api.v1.auth.me');
+        Route::get('/me', [AuthController::class, 'me'])->name('api.v1.me');
         Route::get('/auth/user', [AuthController::class, 'me'])->name('api.v1.auth.user');
         Route::get('/user', [AuthController::class, 'me'])->name('api.v1.user');
         Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->name('api.v1.auth.change_password');
@@ -53,12 +61,6 @@ Route::prefix('v1')->group(function () {
         Route::delete('/device-tokens', [DeviceTokenController::class, 'destroy'])->name('api.v1.device_tokens.destroy');
         Route::post('/device-tokens/delete', [DeviceTokenController::class, 'destroy'])->name('api.v1.device_tokens.destroy_post');
         Route::post('/device-tokens/test', [DeviceTokenController::class, 'sendTest'])->name('api.v1.device_tokens.send_test');
-    });
-
-    // Public / Operational Shop Settings read endpoints
-    Route::get('/settings/shop', [SettingController::class, 'getShopSettings'])->name('api.v1.settings.shop');
-    Route::get('/shop-settings', [SettingController::class, 'getShopSettings'])->name('api.v1.shop_settings.get');
-    Route::get('/settings', [SettingController::class, 'getShopSettings'])->name('api.v1.settings.index');
 
     // Operational Dashboard endpoints
     Route::get('/dashboard/summary', [DashboardController::class, 'dailySummary'])->name('api.v1.dashboard.summary');
@@ -173,15 +175,18 @@ Route::prefix('v1')->group(function () {
     Route::post('/affiliates/{id}/users', [AffiliateController::class, 'assignUsers'])->name('api.v1.affiliates.assign_users');
     Route::delete('/affiliates/{id}/users/{userId}', [AffiliateController::class, 'removeUser'])->name('api.v1.affiliates.remove_user');
 
-    // Users, Roles & Permissions management endpoints (matches web admin/roles-permissions)
-    Route::get('/users', [UserController::class, 'index'])->name('api.v1.users.index');
-    Route::post('/users', [UserController::class, 'store'])->name('api.v1.users.store');
-    Route::get('/roles', [UserController::class, 'roles'])->name('api.v1.roles.index');
-    Route::get('/permissions', [UserController::class, 'permissions'])->name('api.v1.permissions.index');
-    Route::post('/users/{id}/assign-role', [UserController::class, 'assignRole'])->name('api.v1.users.assign_role');
-    Route::post('/users/{id}/assign-permissions', [UserController::class, 'assignRole'])->name('api.v1.users.assign_permissions');
-    Route::post('/users/{id}/assign-role-permission', [UserController::class, 'assignRole'])->name('api.v1.users.assign_role_permission');
-    Route::post('/users/{id}/roles', [UserController::class, 'assignRole']);
-    Route::put('/users/{id}/roles', [UserController::class, 'assignRole']);
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('api.v1.users.destroy');
+        // Users, Roles & Permissions management endpoints (Restricted strictly to super-admin)
+        Route::middleware('role:super-admin')->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('api.v1.users.index');
+            Route::post('/users', [UserController::class, 'store'])->name('api.v1.users.store');
+            Route::get('/roles', [UserController::class, 'roles'])->name('api.v1.roles.index');
+            Route::get('/permissions', [UserController::class, 'permissions'])->name('api.v1.permissions.index');
+            Route::post('/users/{id}/assign-role', [UserController::class, 'assignRole'])->name('api.v1.users.assign_role');
+            Route::post('/users/{id}/assign-permissions', [UserController::class, 'assignRole'])->name('api.v1.users.assign_permissions');
+            Route::post('/users/{id}/assign-role-permission', [UserController::class, 'assignRole'])->name('api.v1.users.assign_role_permission');
+            Route::post('/users/{id}/roles', [UserController::class, 'assignRole']);
+            Route::put('/users/{id}/roles', [UserController::class, 'assignRole']);
+            Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('api.v1.users.destroy');
+        });
+    });
 });

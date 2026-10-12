@@ -6,13 +6,26 @@ use App\Models\Booking;
 use App\Models\BookingDeposit;
 use App\Models\Iphones;
 use App\Models\Payment;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ReturnActiveRentalsApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $user = User::factory()->create(['name' => 'Super Admin']);
+        $user->assignRole('super-admin');
+        Sanctum::actingAs($user);
+    }
 
     public function test_can_list_active_rentals_with_summary(): void
     {

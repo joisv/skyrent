@@ -9,6 +9,7 @@ use App\Http\Resources\ReturnInspectionResource;
 use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\ReturnIphone;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class ReturnController extends Controller
     protected function canAccessBooking(Booking $booking, ?User $user): bool
     {
         if (! $user) {
-            return true;
+            return false;
         }
 
         if (method_exists($user, 'hasRole') && $user->hasRole('super-admin')) {
@@ -77,28 +78,33 @@ class ReturnController extends Controller
         ]);
 
         $user = $this->resolveUser($request);
-        if ($user) {
-            $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
-            $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
-            $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
-            $isStaff = ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
 
-            if ($isStaff) {
-                // Staff: hanya rental aktif booking miliknya sendiri
-                $query->where('user_id', $user->id);
-            } elseif ($isAffiliateAdmin) {
-                if ($user->affiliate_id) {
-                    $query->where(function ($q) use ($user) {
-                        $q->where('affiliate_id', $user->affiliate_id)->orWhere('user_id', $user->id);
-                    });
-                } else {
-                    $query->where('user_id', $user->id);
-                }
-            } elseif ($isAdmin && $user->affiliate_id) {
+        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('super-admin');
+        $isAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $isAffiliateAdmin = method_exists($user, 'hasRole') && $user->hasRole('affiliate-admin');
+        $isStaff = ! $isSuperAdmin && ! $isAdmin && ! $isAffiliateAdmin;
+
+        if ($isStaff) {
+            // Staff: hanya rental aktif booking miliknya sendiri
+            $query->where('user_id', $user->id);
+        } elseif ($isAffiliateAdmin) {
+            if ($user->affiliate_id) {
                 $query->where(function ($q) use ($user) {
                     $q->where('affiliate_id', $user->affiliate_id)->orWhere('user_id', $user->id);
                 });
+            } else {
+                $query->where('user_id', $user->id);
             }
+        } elseif ($isAdmin && $user->affiliate_id) {
+            $query->where(function ($q) use ($user) {
+                $q->where('affiliate_id', $user->affiliate_id)->orWhere('user_id', $user->id);
+            });
         }
 
         // Filter status: default to 'rented' for return workflow
@@ -291,7 +297,14 @@ class ReturnController extends Controller
         }
 
         $user = $this->resolveUser($request);
-        if ($user && ! $this->canAccessBooking($booking, $user)) {
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        if (! $this->canAccessBooking($booking, $user)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak memiliki hak akses untuk memeriksa pengembalian booking ini.',
@@ -560,7 +573,14 @@ class ReturnController extends Controller
         }
 
         $user = $this->resolveUser($request);
-        if ($user && ! $this->canAccessBooking($booking, $user)) {
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        if (! $this->canAccessBooking($booking, $user)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak memiliki hak akses untuk menyelesaikan pengembalian booking ini.',
@@ -642,7 +662,8 @@ class ReturnController extends Controller
             $booking,
             $now,
             $physicalCondition,
-            $totalDeduction
+            $totalDeduction,
+            $user
         ) {
             // 1. Update Booking status to 'returned'
             $booking->update([
@@ -665,19 +686,25 @@ class ReturnController extends Controller
             ]);
             $return->save();
 
-            // 4. Create BookingPayment of type 'penalty' if there is a penalty fee
+            // 4. Create BookingPayment of type 'penalty' if there is a penalty fee and NOT already recorded
             if ($totalDeduction > 0) {
-                BookingPayment::create([
-                    'booking_id' => $booking->id,
-                    'payment_id' => $booking->payment_id ?? 1,
-                    'amount' => $totalDeduction,
-                    'pay' => $totalDeduction,
-                    'change' => 0,
-                    'type' => 'penalty',
-                    'paid_at' => $now,
-                    'user_id' => auth()->id() ?? $booking->user_id,
-                    'note' => 'Denda keterlambatan/kondisi fisik pengembalian unit',
-                ]);
+                $hasExistingPenalty = BookingPayment::where('booking_id', $booking->id)
+                    ->where('type', 'penalty')
+                    ->exists();
+
+                if (! $hasExistingPenalty) {
+                    BookingPayment::create([
+                        'booking_id' => $booking->id,
+                        'payment_id' => $booking->payment_id ?? 1,
+                        'amount' => $totalDeduction,
+                        'pay' => $totalDeduction,
+                        'change' => 0,
+                        'type' => 'penalty',
+                        'paid_at' => $now,
+                        'user_id' => $user?->id ?? auth()->id() ?? $booking->user_id,
+                        'note' => 'Denda keterlambatan/kondisi fisik pengembalian unit',
+                    ]);
+                }
             }
 
             return $return;

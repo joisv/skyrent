@@ -37,6 +37,23 @@ class SettingController extends Controller
      */
     public function updateShopSettings(Request $request): JsonResponse
     {
+        $user = $request->user('sanctum') ?? $request->user();
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => 'Unauthenticated. Sesi tidak ditemukan.',
+            ], 401);
+        }
+
+        if (! method_exists($user, 'hasRole') || ! $user->hasRole('super-admin')) {
+            return response()->json([
+                'success' => false,
+                'status' => 'error',
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk mengubah pengaturan toko.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'shop_name' => ['required', 'string', 'max:255'],
             'outlet_name' => ['required', 'string', 'max:255'],

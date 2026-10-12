@@ -14,11 +14,38 @@ use Spatie\Permission\Models\Permission;
 class UserController extends Controller
 {
     /**
+     * Memastikan request berasal dari user yang terautentikasi dan memiliki role super-admin.
+     */
+    protected function ensureSuperAdmin(Request $request): ?JsonResponse
+    {
+        $user = $request->user('sanctum') ?? $request->user();
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthenticated. Token autentikasi tidak ditemukan atau sudah kedaluwarsa.',
+            ], 401);
+        }
+
+        if (! method_exists($user, 'hasRole') || ! $user->hasRole('super-admin')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk mengelola akun pengguna dan hak akses.',
+            ], 403);
+        }
+
+        return null;
+    }
+
+    /**
      * Mengambil daftar pengguna sistem dengan filter dan relasi roles.
      * GET /api/v1/users
      */
     public function index(Request $request): JsonResponse
     {
+        if ($denied = $this->ensureSuperAdmin($request)) {
+            return $denied;
+        }
+
         $query = User::with(['roles.permissions', 'permissions', 'affiliate']);
 
         if ($request->filled('search')) {
@@ -83,6 +110,10 @@ class UserController extends Controller
      */
     public function roles(Request $request): JsonResponse
     {
+        if ($denied = $this->ensureSuperAdmin($request)) {
+            return $denied;
+        }
+
         $roles = Role::with('permissions')->get()->map(function ($role) {
             return [
                 'id' => $role->id,
@@ -105,6 +136,10 @@ class UserController extends Controller
      */
     public function permissions(Request $request): JsonResponse
     {
+        if ($denied = $this->ensureSuperAdmin($request)) {
+            return $denied;
+        }
+
         $permissions = Permission::all()->map(function ($p) {
             return [
                 'id' => $p->id,
@@ -125,6 +160,10 @@ class UserController extends Controller
      */
     public function assignRole(Request $request, $id): JsonResponse
     {
+        if ($denied = $this->ensureSuperAdmin($request)) {
+            return $denied;
+        }
+
         $request->validate([
             'role' => ['nullable', 'string', Rule::exists('roles', 'name')],
             'permissions' => ['nullable', 'array'],
@@ -173,6 +212,10 @@ class UserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if ($denied = $this->ensureSuperAdmin($request)) {
+            return $denied;
+        }
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
@@ -214,12 +257,17 @@ class UserController extends Controller
      * Menghapus akun pengguna dari sistem.
      * DELETE /api/v1/users/{id}
      */
-    public function destroy($id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
+        if ($denied = $this->ensureSuperAdmin($request)) {
+            return $denied;
+        }
+
         $user = User::findOrFail($id);
+        $currentUser = $request->user('sanctum') ?? $request->user();
 
         // Jangan izinkan user menghapus akunnya sendiri
-        if (auth()->check() && auth()->id() === $user->id) {
+        if ($currentUser && $currentUser->id === $user->id) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Anda tidak dapat menghapus akun Anda sendiri.',
