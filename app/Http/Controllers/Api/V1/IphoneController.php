@@ -348,11 +348,14 @@ class IphoneController extends Controller
                 $st = strtolower($unit->realtime_status ?? 'tersedia');
                 if (in_array($sf, ['ready', 'tersedia', 'available'])) {
                     if (isset($unit->is_available_for_period)) {
-                        return (bool) $unit->is_available_for_period && in_array($st, ['ready', 'tersedia']);
+                        return (bool) $unit->is_available_for_period && !in_array($st, ['maintenance', 'perawatan', 'lost', 'hilang', 'retired', 'nonaktif', 'in_transit', 'transferred', 'mutasi']);
                     }
                     return in_array($st, ['ready', 'tersedia']);
                 } elseif (in_array($sf, ['rented', 'disewa'])) {
-                    return in_array($st, ['rented', 'disewa']) || (isset($unit->is_available_for_period) && !$unit->is_available_for_period);
+                    if (isset($unit->is_available_for_period)) {
+                        return !(bool) $unit->is_available_for_period;
+                    }
+                    return in_array($st, ['rented', 'disewa']);
                 } elseif (in_array($sf, ['terlambat', 'overdue', 'late'])) {
                     return in_array($st, ['terlambat', 'overdue', 'late']);
                 } elseif (in_array($sf, ['maintenance', 'perawatan'])) {
@@ -365,10 +368,11 @@ class IphoneController extends Controller
         // Filter available only
         if ($request->boolean('available_only') || $request->query('only_available') === '1') {
             $allUnits = $allUnits->filter(function ($u) {
+                $st = strtolower($u->realtime_status ?? 'tersedia');
                 if (isset($u->is_available_for_period)) {
-                    return (bool) $u->is_available_for_period;
+                    return (bool) $u->is_available_for_period && !in_array($st, ['maintenance', 'perawatan', 'lost', 'hilang', 'retired', 'nonaktif', 'in_transit', 'transferred', 'mutasi']);
                 }
-                return ($u->realtime_status ?? 'tersedia') === 'tersedia';
+                return in_array($st, ['ready', 'tersedia']);
             })->values();
         }
 

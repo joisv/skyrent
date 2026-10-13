@@ -241,6 +241,14 @@ class Iphones extends Model
                 continue;
             }
 
+            // Skip bookings that have already been returned
+            $hasReturns = $b->relationLoaded('returns')
+                ? $b->returns->isNotEmpty()
+                : ($b->returns()->exists());
+            if ($hasReturns) {
+                continue;
+            }
+
             // Check if pending booking has expired (30 minutes without payment)
             if ($b->status === 'pending') {
                 $bookingCreatedAt = $b->created_at ?: ($b->created ? Carbon::parse($b->created) : null);
