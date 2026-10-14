@@ -493,5 +493,92 @@ class BookingRoleAccessTest extends TestCase
         $this->assertContains($bookingCreatedByAdmin->id, $bookingIds);
         $this->assertNotContains($bookingOther->id, $bookingIds);
     }
+
+    public function test_super_admin_and_admin_see_both_unassigned_and_affiliate_iphones_for_booking(): void
+    {
+        $affiliate = Affiliate::factory()->create(['name' => 'Cabang Bali']);
+
+        $unassignedIphone = Iphones::factory()->create([
+            'name' => 'iPhone Unassigned',
+            'affiliate_id' => null,
+            'status' => 'ready',
+        ]);
+
+        $affiliateIphone = Iphones::factory()->create([
+            'name' => 'iPhone Cabang Bali',
+            'affiliate_id' => $affiliate->id,
+            'status' => 'ready',
+        ]);
+
+        // Super Admin sees both
+        Sanctum::actingAs($this->superAdmin);
+        $resSuper = $this->getJson('/api/v1/iphones?context=booking&for_booking=1');
+        $resSuper->assertStatus(200);
+        $superIds = collect($resSuper->json('data'))->pluck('id')->toArray();
+        $this->assertContains($unassignedIphone->id, $superIds);
+        $this->assertContains($affiliateIphone->id, $superIds);
+
+        // Available endpoint for Super Admin sees both
+        $resSuperAvail = $this->getJson('/api/v1/iphones/available?for_booking=1');
+        $resSuperAvail->assertStatus(200);
+        $superAvailIds = collect($resSuperAvail->json('data'))->pluck('id')->toArray();
+        $this->assertContains($unassignedIphone->id, $superAvailIds);
+        $this->assertContains($affiliateIphone->id, $superAvailIds);
+
+        // Admin sees both
+        Sanctum::actingAs($this->admin);
+        $resAdmin = $this->getJson('/api/v1/iphones?context=booking&for_booking=1');
+        $resAdmin->assertStatus(200);
+        $adminIds = collect($resAdmin->json('data'))->pluck('id')->toArray();
+        $this->assertContains($unassignedIphone->id, $adminIds);
+        $this->assertContains($affiliateIphone->id, $adminIds);
+
+        // Affiliate Admin only sees their affiliate's iPhone
+        $affiliateAdmin = User::factory()->create([
+            'name' => 'Admin Cabang Bali',
+            'affiliate_id' => $affiliate->id,
+        ]);
+        $affiliateAdmin->assignRole('affiliate-admin');
+
+        Sanctum::actingAs($affiliateAdmin);
+        $resAff = $this->getJson('/api/v1/iphones?context=booking&for_booking=1');
+        $resAff->assertStatus(200);
+        $affIds = collect($resAff->json('data'))->pluck('id')->toArray();
+        $this->assertNotContains($unassignedIphone->id, $affIds);
+        $this->assertContains($affiliateIphone->id, $affIds);
+    }
+
+    public function test_super_admin_can_book_affiliate_owned_iphone(): void
+    {
+        $affiliate = Affiliate::factory()->create(['name' => 'Cabang Bandung']);
+        $affiliateIphone = Iphones::factory()->create([
+            'name' => 'iPhone Cabang Bandung',
+            'affiliate_id' => $affiliate->id,
+            'status' => 'ready',
+        ]);
+
+        Sanctum::actingAs($this->superAdmin);
+        $response = $this->postJson('/api/v1/bookings', [
+            'customer_name' => 'Super Customer',
+            'customer_phone' => '081299998888',
+            'customer_email' => 'supercust@test.local',
+            'iphone_id' => $affiliateIphone->id,
+            'start_booking_date' => Carbon::tomorrow()->toDateString(),
+            'end_booking_date' => Carbon::tomorrow()->addDay()->toDateString(),
+            'start_time' => '10:00',
+            'end_time' => '10:00',
+            'duration' => 24,
+            'price' => 150000,
+            'deposit' => 0,
+            'jaminan' => 'KTP Asli',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'status' => 'success',
+                'message' => 'Booking baru berhasil dibuat.',
+            ]);
+    }
 }
+
 

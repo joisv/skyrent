@@ -665,22 +665,19 @@ class BookingController extends Controller
         }
 
         // Security check: If authenticated user belongs to an affiliate, verify that iPhone belongs to their affiliate
+        // Web logic matching RentIphoneWizard:
+        // !$user->hasRole('super-admin') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('admin')))
         $isSuperAdmin = $authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('super-admin');
-        $isGlobalAdmin = $authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('admin') && empty($authUser->affiliate_id);
+        $isAdmin = $authUser && method_exists($authUser, 'hasRole') && $authUser->hasRole('admin');
 
-        $isAffiliateUser = $authUser && (
-            (method_exists($authUser, 'hasRole') && ($authUser->hasRole('affiliate-admin') || $authUser->hasRole('affiliate')))
-            || (!empty($authUser->affiliate_id) && !$isSuperAdmin && !$isGlobalAdmin)
+        $isAffiliateScoped = $authUser && (
+            !$isSuperAdmin && (
+                (method_exists($authUser, 'hasRole') && ($authUser->hasRole('affiliate-admin') || $authUser->hasRole('affiliate')))
+                || (!empty($authUser->affiliate_id) && !$isAdmin)
+            )
         );
 
-        if ($isSuperAdmin && ! is_null($iphone->affiliate_id)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Akses ditolak: Super Admin hanya dapat membuat booking untuk unit iPhone pusat (tanpa cabang/affiliate).',
-            ], 403);
-        }
-
-        if ($isAffiliateUser) {
+        if ($isAffiliateScoped) {
             $userAffiliateId = $authUser->affiliate_id;
             if (! $userAffiliateId || (int) $iphone->affiliate_id !== (int) $userAffiliateId) {
                 return response()->json([

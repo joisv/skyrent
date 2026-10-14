@@ -257,9 +257,6 @@ class IphoneController extends Controller
             }
         } elseif ($affiliateId) {
             $query->where('affiliate_id', $affiliateId);
-        } elseif ($forBooking && $isSuperAdmin) {
-            // For booking context, Super Admin only sees iPhones where affiliate_id IS NULL
-            $query->whereNull('affiliate_id');
         } elseif ($branch = $request->query('branch') ?? $request->query('affiliate') ?? $request->query('branch_name')) {
             $b = trim($branch);
             if (strtolower($b) !== 'semua cabang' && strtolower($b) !== 'semua' && strtolower($b) !== 'all') {
@@ -376,7 +373,7 @@ class IphoneController extends Controller
             })->values();
         }
 
-        $unassignedOnly = ($request->query('affiliate_id') === 'none' || $request->query('affiliate_id') === 'null' || ($forBooking && $isSuperAdmin));
+        $unassignedOnly = ($request->query('affiliate_id') === 'none' || $request->query('affiliate_id') === 'null');
 
         $hasNarrowingFilters = (bool) ($request->query('model')
             || $request->query('model_name')
@@ -477,9 +474,6 @@ class IphoneController extends Controller
             }
         } elseif ($affiliateId) {
             $query->where('affiliate_id', $affiliateId);
-        } elseif ($isSuperAdmin) {
-            // Super Admin in booking availability only sees iPhones where affiliate_id IS NULL
-            $query->whereNull('affiliate_id');
         }
 
         $excludeBookingId = null;
