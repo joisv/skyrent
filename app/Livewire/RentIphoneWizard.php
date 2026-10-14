@@ -320,26 +320,30 @@ class RentIphoneWizard extends Component
 
             $user = auth()->user();
             if ($user && method_exists($user, 'hasRole')) {
-                if ($user->hasRole('super-admin')) {
-                    if (!is_null($iphone->affiliate_id)) {
+                if (
+                    !$user->hasRole('super-admin') &&
+                    (
+                        $user->hasRole('affiliate-admin') ||
+                        $user->hasRole('affiliate') ||
+                        (
+                            !empty($user->affiliate_id) &&
+                            !$user->hasRole('admin')
+                        )
+                    )
+                ) {
+                    if (
+                        $user->affiliate_id &&
+                        $iphone->affiliate_id != $user->affiliate_id
+                    ) {
                         DB::rollBack();
-                        LivewireAlert::title('Akses Ditolak')
-                            ->text('Super Admin hanya dapat membooking unit iPhone pusat (tanpa cabang/affiliate).')
-                            ->error()
-                            ->toast()
-                            ->position('top-end')
-                            ->show();
-                        return;
-                    }
-                } elseif (!$user->hasRole('super-admin') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('admin')))) {
-                    if ($user->affiliate_id && $iphone->affiliate_id != $user->affiliate_id) {
-                        DB::rollBack();
+
                         LivewireAlert::title('Akses Ditolak')
                             ->text('Unit iPhone ini tidak terdaftar pada affiliate Anda.')
                             ->error()
                             ->toast()
                             ->position('top-end')
                             ->show();
+
                         return;
                     }
                 }
