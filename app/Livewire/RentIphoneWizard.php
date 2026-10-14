@@ -115,7 +115,7 @@ class RentIphoneWizard extends Component
 
         return $start->copy()->addHours(max(1, $duration));
     }
-    
+
     #[On('iphone-selected')]
     public function setIphone(int $iphoneId)
     {
@@ -123,12 +123,12 @@ class RentIphoneWizard extends Component
         $this->getDurations();
         $this->dispatch('display-duration-options');
     }
-    
+
     public function testDispatchEvent()
     {
         $this->dispatch('test-event');
     }
-    
+
     protected function rules(): array
     {
         return match ($this->step) {
@@ -171,7 +171,7 @@ class RentIphoneWizard extends Component
             ])->post('https://api.fonnte.com/validate', [
                 'target' => $this->formatPhoneNumber($this->customer_phone),
             ]);
-    
+
             $data = $check->json();
 
             if (!empty($data['not_registered'])) {
@@ -610,26 +610,49 @@ class RentIphoneWizard extends Component
                 'gallery',
                 'durations',
                 'bookings' => function ($query) {
-                    $query->whereIn('status', ['pending', 'confirmed', 'rented', 'disewa'])
-                          ->whereDoesntHave('returns');
+                    $query->whereIn('status', [
+                        'pending',
+                        'confirmed',
+                        'rented',
+                        'disewa',
+                    ])
+                        ->whereDoesntHave('returns');
                 },
             ])
-            ->when($user && method_exists($user, 'hasRole') && $user->hasRole('super-admin'), function ($query) {
-                $query->whereNull('affiliate_id');
-            })
-            ->when($user && method_exists($user, 'hasRole') && !$user->hasRole('super-admin') && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || (!empty($user->affiliate_id) && !$user->hasRole('admin'))), function ($query) use ($user) {
-                $query->where('affiliate_id', $user->affiliate_id);
-            })
+            ->when(
+                $user &&
+                    method_exists($user, 'hasRole') &&
+                    !$user->hasRole('super-admin') &&
+                    (
+                        $user->hasRole('affiliate-admin') ||
+                        $user->hasRole('affiliate') ||
+                        (
+                            !empty($user->affiliate_id) &&
+                            !$user->hasRole('admin')
+                        )
+                    ),
+                function ($query) use ($user) {
+                    $query->where('affiliate_id', $user->affiliate_id);
+                }
+            )
             ->when($this->iphone_search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->iphone_search . '%')
-                        ->orWhere('serial_number', 'like', '%' . $this->iphone_search . '%');
+                    $q->where(
+                        'name',
+                        'like',
+                        '%' . $this->iphone_search . '%'
+                    )
+                        ->orWhere(
+                            'serial_number',
+                            'like',
+                            '%' . $this->iphone_search . '%'
+                        );
                 });
             })
             ->get()
             ->map(function ($iphone) use ($start, $end) {
                 $available = $iphone->isAvailableForPeriod($start, $end);
-                $iphone->is_available = $available;
+
                 $iphone->setAttribute('is_available', $available);
 
                 return $iphone;
