@@ -12,6 +12,13 @@ class IphoneStatusListApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user, 'sanctum');
+    }
+
     public function test_can_list_iphones_with_current_status_and_summary(): void
     {
         $readyUnit = Iphones::factory()->create([

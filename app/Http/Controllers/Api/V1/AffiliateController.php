@@ -39,16 +39,7 @@ class AffiliateController extends Controller
      */
     protected function isPusatAffiliate(Affiliate $affiliate): bool
     {
-        $hasSuperAdmin = $affiliate->relationLoaded('users')
-            ? $affiliate->users->contains(function ($u) {
-                return $u->relationLoaded('roles')
-                    ? $u->roles->contains('name', 'super-admin')
-                    : (method_exists($u, 'hasRole') && $u->hasRole('super-admin'));
-            })
-            : $affiliate->users()->whereHas('roles', fn($r) => $r->where('name', 'super-admin'))->exists();
-
-        $nameCheck = Str::contains(strtolower($affiliate->code . ' ' . $affiliate->name . ' ' . $affiliate->slug), 'pusat');
-        return $hasSuperAdmin || $nameCheck;
+        return $affiliate->isPusat();
     }
 
     /**

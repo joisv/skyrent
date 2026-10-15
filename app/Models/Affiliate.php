@@ -57,8 +57,21 @@ class Affiliate extends Model
     {
         return $this->hasMany(IphoneTransfer::class, 'to_affiliate_id');
     }
-    // public function maintenances()
-    // {
-    //     return $this->hasMany(Maintenance::class);
-    // }
+
+    /**
+     * Menentukan apakah cabang ini adalah cabang pusat (Central Store).
+     */
+    public function isPusat(): bool
+    {
+        $hasSuperAdmin = $this->relationLoaded('users')
+            ? $this->users->contains(function ($u) {
+                return $u->relationLoaded('roles')
+                    ? $u->roles->contains('name', 'super-admin')
+                    : (method_exists($u, 'hasRole') && $u->hasRole('super-admin'));
+            })
+            : $this->users()->whereHas('roles', fn($r) => $r->where('name', 'super-admin'))->exists();
+
+        $nameCheck = \Illuminate\Support\Str::contains(strtolower($this->code . ' ' . $this->name . ' ' . $this->slug), 'pusat');
+        return $hasSuperAdmin || $nameCheck;
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Http\Resources\IphoneResource;
+use App\Models\Affiliate;
 use App\Models\Booking;
 use App\Models\Duration;
 use App\Models\Gallery;
@@ -78,6 +79,18 @@ class IphoneController extends Controller
     }
 
     /**
+     * Memeriksa apakah affiliate_id merujuk pada cabang pusat (Pusat).
+     */
+    private function isPusatAffiliateId(?int $affiliateId): bool
+    {
+        if (!$affiliateId || $affiliateId <= 0) {
+            return false;
+        }
+        $affiliate = Affiliate::find($affiliateId);
+        return $affiliate ? $affiliate->isPusat() : false;
+    }
+
+    /**
      * Determine real-time rental status ('disewa', 'terlambat', or 'tersedia')
      * without loading entire historical booking relationships.
      */
@@ -142,7 +155,7 @@ class IphoneController extends Controller
      * Helper to compute fleet status counts.
      * Guaranteed: total = tersedia + disewa + terlambat (no double counting).
      */
-    private function calculateUnitSummary(?int $affiliateId = null, bool $unassignedOnly = false, $preloadedUnits = null): array
+    private function calculateUnitSummary(?int $affiliateId = null, bool $unassignedOnly = false, $preloadedUnits = null, ?string $branchName = null): array
     {
         $now = Carbon::now('Asia/Jakarta');
         if ($preloadedUnits !== null) {
@@ -152,9 +165,28 @@ class IphoneController extends Controller
             if ($unassignedOnly) {
                 $query->whereNull('affiliate_id');
             } elseif ($affiliateId && $affiliateId > 0) {
-                $query->where('affiliate_id', $affiliateId);
+                if ($this->isPusatAffiliateId($affiliateId)) {
+                    $query->where(function ($q) use ($affiliateId) {
+                        $q->where('affiliate_id', $affiliateId)->orWhereNull('affiliate_id');
+                    });
+                } else {
+                    $query->where('affiliate_id', $affiliateId);
+                }
             } elseif ($affiliateId === -1) {
                 $query->whereRaw('1 = 0');
+            } elseif ($branchName && !in_array(strtolower(trim($branchName)), ['semua cabang', 'semua', 'all'])) {
+                $b = trim($branchName);
+                if (Str::contains(strtolower($b), 'pusat')) {
+                    $query->where(function ($q) use ($b) {
+                        $q->whereHas('affiliate', function ($sq) use ($b) {
+                            $sq->where('name', 'like', "%{$b}%");
+                        })->orWhereNull('affiliate_id');
+                    });
+                } else {
+                    $query->whereHas('affiliate', function ($q) use ($b) {
+                        $q->where('name', 'like', "%{$b}%");
+                    });
+                }
             }
 
             $allUnits = $query->with(['bookings' => function ($bq) {
@@ -251,18 +283,38 @@ class IphoneController extends Controller
             $query->whereNull('affiliate_id');
         } elseif ($isScoped) {
             if ($affiliateId) {
-                $query->where('affiliate_id', $affiliateId);
+                if ($this->isPusatAffiliateId($affiliateId)) {
+                    $query->where(function ($q) use ($affiliateId) {
+                        $q->where('affiliate_id', $affiliateId)->orWhereNull('affiliate_id');
+                    });
+                } else {
+                    $query->where('affiliate_id', $affiliateId);
+                }
             } else {
                 $query->whereRaw('1 = 0');
             }
         } elseif ($affiliateId) {
-            $query->where('affiliate_id', $affiliateId);
+            if ($this->isPusatAffiliateId($affiliateId)) {
+                $query->where(function ($q) use ($affiliateId) {
+                    $q->where('affiliate_id', $affiliateId)->orWhereNull('affiliate_id');
+                });
+            } else {
+                $query->where('affiliate_id', $affiliateId);
+            }
         } elseif ($branch = $request->query('branch') ?? $request->query('affiliate') ?? $request->query('branch_name')) {
             $b = trim($branch);
             if (strtolower($b) !== 'semua cabang' && strtolower($b) !== 'semua' && strtolower($b) !== 'all') {
-                $query->whereHas('affiliate', function ($q) use ($b) {
-                    $q->where('name', 'like', "%{$b}%");
-                });
+                if (Str::contains(strtolower($b), 'pusat')) {
+                    $query->where(function ($q) use ($b) {
+                        $q->whereHas('affiliate', function ($sq) use ($b) {
+                            $sq->where('name', 'like', "%{$b}%");
+                        })->orWhereNull('affiliate_id');
+                    });
+                } else {
+                    $query->whereHas('affiliate', function ($q) use ($b) {
+                        $q->where('name', 'like', "%{$b}%");
+                    });
+                }
             }
         }
 
@@ -379,15 +431,15 @@ class IphoneController extends Controller
             || $request->query('model_name')
             || $request->query('q')
             || $request->query('search')
-            || ($request->query('branch') && !in_array(strtolower(trim($request->query('branch'))), ['semua cabang', 'semua', 'all']))
-            || ($request->query('affiliate') && !in_array(strtolower(trim($request->query('affiliate'))), ['semua cabang', 'semua', 'all']))
-            || ($request->query('branch_name') && !in_array(strtolower(trim($request->query('branch_name'))), ['semua cabang', 'semua', 'all']))
         );
+
+        $branchParam = $request->query('branch') ?? $request->query('affiliate') ?? $request->query('branch_name');
 
         $summary = $this->calculateUnitSummary(
             $isScoped ? ($affiliateId ?? -1) : $affiliateId,
             $unassignedOnly,
-            $hasNarrowingFilters ? null : $unfilteredUnits
+            $hasNarrowingFilters ? null : $unfilteredUnits,
+            $branchParam
         );
 
         // Optional pagination

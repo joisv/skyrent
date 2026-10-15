@@ -555,12 +555,21 @@ class DashboardController extends Controller
         $affiliateId = null;
         if ($isAffiliateAdmin) {
             $affiliateId = $user->affiliate_id;
-        } elseif ($isAdmin && $user->affiliate_id) {
-            $affiliateId = $user->affiliate_id;
+        } elseif ($isAdmin) {
+            $isCentralAdmin = ($user->affiliate_id == 4 || $user->affiliate_id === null);
+            if ($isCentralAdmin) {
+                $affiliateId = $request->query('affiliate_id');
+            } else {
+                $affiliateId = $user->affiliate_id;
+            }
         } elseif ($isSuperAdmin) {
             $affiliateId = $request->query('affiliate_id');
         } else {
             $affiliateId = $user->affiliate_id;
+        }
+
+        if ($affiliateId === 'all' || $affiliateId === '0' || $affiliateId === '') {
+            $affiliateId = null;
         }
 
         // Base BookingPayments query
@@ -573,9 +582,22 @@ class DashboardController extends Controller
             });
         } elseif ($isAffiliateAdmin) {
             if ($affiliateId) {
-                $paymentsQuery->whereHas('booking', function ($bq) use ($affiliateId, $user) {
-                    $bq->where('affiliate_id', $affiliateId)
-                       ->orWhere('user_id', $user->id);
+                $isCentral = ((int) $affiliateId === 4);
+                $paymentsQuery->whereHas('booking', function ($bq) use ($affiliateId, $user, $isCentral) {
+                    $bq->where(function ($sub) use ($affiliateId, $user, $isCentral) {
+                        $sub->where('user_id', $user->id)
+                            ->orWhere('affiliate_id', $affiliateId)
+                            ->orWhere(function ($q) use ($affiliateId, $isCentral) {
+                                $q->whereNull('affiliate_id')
+                                  ->whereHas('iphone', function ($iq) use ($affiliateId, $isCentral) {
+                                      if ($isCentral) {
+                                          $iq->where('affiliate_id', $affiliateId)->orWhereNull('affiliate_id');
+                                      } else {
+                                          $iq->where('affiliate_id', $affiliateId);
+                                      }
+                                  });
+                            });
+                    });
                 });
             } else {
                 $paymentsQuery->whereHas('booking', function ($bq) use ($user) {
@@ -583,8 +605,19 @@ class DashboardController extends Controller
                 });
             }
         } elseif ($affiliateId) {
-            $paymentsQuery->whereHas('booking', function ($bq) use ($affiliateId) {
-                $bq->where('affiliate_id', $affiliateId);
+            $isCentral = ((int) $affiliateId === 4);
+            $paymentsQuery->whereHas('booking', function ($bq) use ($affiliateId, $isCentral) {
+                $bq->where('affiliate_id', $affiliateId)
+                   ->orWhere(function ($q) use ($affiliateId, $isCentral) {
+                       $q->whereNull('affiliate_id')
+                         ->whereHas('iphone', function ($iq) use ($affiliateId, $isCentral) {
+                             if ($isCentral) {
+                                 $iq->where('affiliate_id', $affiliateId)->orWhereNull('affiliate_id');
+                             } else {
+                                 $iq->where('affiliate_id', $affiliateId);
+                             }
+                         });
+                   });
             });
         }
 
@@ -812,6 +845,8 @@ class DashboardController extends Controller
             'model_revenue' => empty($modelRevenue) ? (object)[] : $modelRevenue,
             'affiliateBreakdown' => $affiliateBreakdown,
             'affiliate_breakdown' => $affiliateBreakdown,
+            'affiliate_id' => $affiliateId ? (int) $affiliateId : null,
+            'branch_name' => $affiliateId ? (\App\Models\Affiliate::find($affiliateId)?->name ?? 'Cabang') : 'Semua Cabang',
             'pagination' => [
                 'current_page' => $paginated->currentPage(),
                 'last_page' => $paginated->lastPage(),
@@ -858,12 +893,13 @@ class DashboardController extends Controller
         $heldDep = number_format((float) ($summary['totalDepositsHeld'] ?? 0), 0, ',', '.');
         $refundDep = number_format((float) ($summary['totalDepositsRefunded'] ?? 0), 0, ',', '.');
         $txCount = $summary['transactionCount'] ?? 0;
+        $outletName = strtoupper($reportData['branch_name'] ?? 'SEMUA CABANG');
 
         $lines = [];
         $lines[] = $divider;
         $lines[] = $center('SKYRENTAL OUTLET');
         $lines[] = $center('LAPORAN PENUTUPAN KASIR');
-        $lines[] = $center('OUTLET MALIOBORO');
+        $lines[] = $center('OUTLET ' . $outletName);
         $lines[] = $divider;
 
         $now = Carbon::now('Asia/Jakarta');
