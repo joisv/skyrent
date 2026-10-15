@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AffiliateController;
+use App\Http\Controllers\Api\V1\AppReleaseController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -37,6 +38,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/settings/shop', [SettingController::class, 'getShopSettings'])->name('api.v1.settings.shop');
     Route::get('/shop-settings', [SettingController::class, 'getShopSettings'])->name('api.v1.shop_settings.get');
     Route::get('/settings', [SettingController::class, 'getShopSettings'])->name('api.v1.settings.index');
+
+    // SkyMobile Release & Internal Update endpoints (Publicly accessible for both logged in & logged out app states)
+    Route::get('/app/check-update', [AppReleaseController::class, 'checkUpdate'])->name('api.v1.app.check_update');
+    Route::middleware('throttle:30,1')->get('/app/download/{buildNumber}', [AppReleaseController::class, 'download'])->name('api.v1.app.download');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.v1.auth.logout');
