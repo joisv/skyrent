@@ -37,6 +37,9 @@
                     :active="request()->routeIs('settings.users')" />
 
                 <x-mary-menu-item title="Slider" icon="o-photo" wire:navigate :href="route('settings.sliders')" :active="request()->routeIs('settings.sliders')" />
+                @role('super-admin|admin')
+                    <x-mary-menu-item title="Pembaruan SkyMobile" icon="o-arrow-up-tray" wire:navigate :href="route('settings.app-updates')" :active="request()->routeIs('settings.app-updates')" />
+                @endrole
 
             </x-mary-menu-sub>
             <x-mary-menu-separator />

@@ -55,6 +55,10 @@ Route::middleware(['auth', 'role:super-admin|admin|staff|affiliate-admin'])->pre
 
         Route::view('settings/sliders', 'settings.sliders')->name('settings.sliders');
 
+        Route::view('settings/app-updates', 'settings.app-updates')
+            ->name('settings.app-updates')
+            ->middleware('role:super-admin|admin');
+
         Route::view('faq', 'faq')
             ->name('faq');
 
