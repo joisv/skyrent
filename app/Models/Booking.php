@@ -160,9 +160,9 @@ class Booking extends Model
     public function getTotalPaidAttribute(): float
     {
         if ($this->relationLoaded('paymentTransactions')) {
-            return (float) $this->paymentTransactions->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
+            return (float) $this->paymentTransactions->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
         }
-        return (float) $this->paymentTransactions()->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
+        return (float) $this->paymentTransactions()->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
     }
 
     public function getRemainingPaymentAttribute(): float

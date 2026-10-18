@@ -6,13 +6,27 @@ use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\Iphones;
 use App\Models\Payment;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class SalesReportApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $this->user = User::factory()->create();
+        $this->user->assignRole('super-admin');
+        Sanctum::actingAs($this->user);
+    }
 
     public function test_can_get_sales_report_with_breakdowns(): void
     {

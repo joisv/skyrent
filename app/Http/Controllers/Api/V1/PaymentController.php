@@ -493,6 +493,7 @@ class PaymentController extends Controller
 
         $paymentRecord = BookingPayment::create([
             'booking_id' => $booking->id,
+            'affiliate_id' => $booking->affiliate_id,
             'payment_id' => $paymentId,
             'amount' => $amount,
             'pay' => $pay,
@@ -505,6 +506,7 @@ class PaymentController extends Controller
 
         // Recalculate financial totals on booking
         $newTotalPaid = (float) $booking->paymentTransactions()
+            ->where('is_void', false)
             ->whereIn('type', ['dp', 'payment', 'pelunasan'])
             ->sum('amount');
         $newRemaining = max(0, (float) $booking->price - $newTotalPaid);

@@ -3,7 +3,7 @@
 namespace App\Livewire\Analytics;
 
 use App\Models\Booking;
-use App\Models\Revenue;
+use App\Models\BookingPayment;
 use Carbon\Carbon;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -15,24 +15,30 @@ class Dashboard extends Component
 
     public function mount()
     {
-        $this->total_revenues = Revenue::sum('amount');
+        $user = auth()->user();
+        $isAffiliateScoped = ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin'))));
+        $affiliateId = $isAffiliateScoped ? $user->affiliate_id : null;
+
+        $query = BookingPayment::active();
+        if ($isAffiliateScoped && $affiliateId) {
+            $query->where('affiliate_id', $affiliateId);
+        }
+
+        $this->total_revenues = (float) $query->sum('amount');
     }
 
     public function getRevenues()
     {
-        $this->bookings = Booking::whereDate('created', Carbon::today())->with('iphone')->get();
-        //  if ($property == 'days') {
-        //     // Hari ini
-        // } elseif ($property == 'weeks') {
-        //     // Minggu ini (dari Senin sampai hari ini)
-        //     $this->bookings = Booking::whereBetween('created', [
-        //         Carbon::now()->startOfWeek(Carbon::MONDAY),
-        //         Carbon::now()->endOfDay()
-        //     ])->get();
-        // } elseif ($property == 'year') {
-        //     // Tahun ini
-        //     $this->bookings = Booking::whereYear('created', Carbon::now()->year)->get();
-        // }
+        $user = auth()->user();
+        $isAffiliateScoped = ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin'))));
+        $affiliateId = $isAffiliateScoped ? $user->affiliate_id : null;
+
+        $query = Booking::whereDate('created', Carbon::today())->with('iphone');
+        if ($isAffiliateScoped && $affiliateId) {
+            $query->where('affiliate_id', $affiliateId);
+        }
+
+        $this->bookings = $query->get();
     }
 
     #[On('update-revenues')]
@@ -40,7 +46,6 @@ class Dashboard extends Component
     {
         $this->getRevenues();
     }
-
 
     public function render()
     {

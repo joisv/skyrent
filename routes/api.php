@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceTokenController;
+use App\Http\Controllers\Api\V1\ExpenseController;
 use App\Http\Controllers\Api\V1\IphoneController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ReceiptController;
@@ -80,6 +81,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/dashboard/export/closing', [DashboardController::class, 'exportClosingEscPos'])->name('api.v1.dashboard.export.closing');
     Route::get('/reports/closing', [DashboardController::class, 'exportClosingEscPos'])->name('api.v1.reports.closing');
     Route::get('/dashboard', [DashboardController::class, 'dailySummary'])->name('api.v1.dashboard.index');
+
+    // Branch Operating Expenses endpoints
+    Route::get('/expenses', [ExpenseController::class, 'index'])->name('api.v1.expenses.index');
+    Route::post('/expenses', [ExpenseController::class, 'store'])->name('api.v1.expenses.store');
+    Route::delete('/expenses/{id}', [ExpenseController::class, 'destroy'])->name('api.v1.expenses.destroy');
 
     // Bookings endpoints
     Route::get('/bookings/today', [BookingController::class, 'today'])->name('api.v1.bookings.today');

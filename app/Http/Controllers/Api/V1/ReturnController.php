@@ -695,6 +695,7 @@ class ReturnController extends Controller
                 if (! $hasExistingPenalty) {
                     BookingPayment::create([
                         'booking_id' => $booking->id,
+                        'affiliate_id' => $booking->affiliate_id,
                         'payment_id' => $booking->payment_id ?? 1,
                         'amount' => $totalDeduction,
                         'pay' => $totalDeduction,

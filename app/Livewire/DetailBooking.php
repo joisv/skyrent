@@ -7,7 +7,6 @@ use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\Payment;
 use App\Models\ReturnIphone;
-use App\Models\Revenue;
 use Carbon\Carbon;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
 use Livewire\Attributes\On;
@@ -211,6 +210,7 @@ class DetailBooking extends Component
 
         BookingPayment::create([
             'booking_id' => $this->bookingId,
+            'affiliate_id' => $this->booking->affiliate_id,
             'payment_id' => $payment->id,
             'amount' => $this->penaltyFee,
             'pay' => $this->pay,

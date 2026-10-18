@@ -730,12 +730,23 @@ class BookingController extends Controller
             ->first();
 
         $now = Carbon::now('Asia/Jakarta');
-        if (($isRented || $activeRental) && $startDt->lte($now)) {
-            $renterInfo = $activeRental ? " oleh pelanggan '{$activeRental->customer_name}' (Kode Booking: {$activeRental->booking_code})" : '';
-            return response()->json([
-                'status' => 'error',
-                'message' => "Unit iPhone '{$iphone->name}' ({$iphone->asset_code}) saat ini sedang disewa{$renterInfo} dan tidak dapat disewa lagi. Silakan pilih unit iPhone yang berstatus Tersedia.",
-            ], 422);
+        if ($isRented || $activeRental) {
+            $isOverdue = false;
+            if ($activeRental) {
+                $rawEnd = $activeRental->end_booking_date . ' ' . ($activeRental->end_time ?: '23:59');
+                try {
+                    $isOverdue = Carbon::parse($rawEnd, 'Asia/Jakarta')->lt($now);
+                } catch (\Exception $e) {
+                    $isOverdue = false;
+                }
+            }
+            if ($startDt->lte($now) || $isOverdue) {
+                $renterInfo = $activeRental ? " oleh pelanggan '{$activeRental->customer_name}' (Kode Booking: {$activeRental->booking_code})" : '';
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Unit iPhone '{$iphone->name}' ({$iphone->serial_number}) saat ini sedang disewa{$renterInfo} dan tidak dapat disewa lagi. Silakan pilih unit iPhone yang berstatus Tersedia.",
+                ], 422);
+            }
         }
 
         // Generate unique booking code: SKY + ymd + 4 random uppercase chars
@@ -827,6 +838,7 @@ class BookingController extends Controller
             BookingPayment::create([
                 'payment_code' => 'PAY' . Carbon::now()->format('ymd') . strtoupper(Str::random(4)),
                 'booking_id' => $booking->id,
+                'affiliate_id' => $booking->affiliate_id,
                 'payment_id' => $payment->id,
                 'amount' => $amountPaid,
                 'type' => $amountPaid >= $price ? 'payment' : 'dp',
@@ -1281,6 +1293,7 @@ class BookingController extends Controller
 
             BookingPayment::create([
                 'booking_id' => $booking->id,
+                'affiliate_id' => $booking->affiliate_id,
                 'payment_id' => $payment?->id ?? 1,
                 'amount' => $price,
                 'pay' => $pay,

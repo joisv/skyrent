@@ -5,8 +5,8 @@ namespace App\Livewire;
 use Illuminate\Support\Str;
 use App\Models\Affiliate;
 use App\Models\Booking;
+use App\Models\BookingPayment;
 use App\Models\Iphones;
-use App\Models\Revenue;
 use App\Models\User;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -158,60 +158,34 @@ class Affiliates extends Component
                         });
                 });
             },
-            'bookings.revenue',
+            'bookings.paymentTransactions',
         ])->findOrFail($affiliateId);
 
         $this->selectedUsers = $this->detailAffiliate->users->pluck('id')->toArray();
 
         $user = $this->detailAffiliate->users->first();
 
-        if (!empty($user)) {
-            # code...
-            $this->revenues = Revenue::whereDate('created_at', today())
-                ->whereHas('booking', function ($query) use ($user) {
-                    $query->where(function ($q) use ($user) {
-                        $q->where('affiliate_id', $user->affiliate_id)
-                            ->orWhere(function ($sub) use ($user) {
-                                $sub->whereNull('affiliate_id')
-                                    ->where('user_id', $user->id);
-                            });
-                    });
-                })
-                ->with(['booking', 'booking.iphone'])
-                ->get();
+        $targetAffId = $this->detailAffiliate->id;
 
-            $this->totalRevenue = Revenue::whereHas('booking', function ($query) use ($user) {
-                $query->where(function ($q) use ($user) {
-                    $q->where('affiliate_id', $user->affiliate_id)
-                        ->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('affiliate_id')
-                                ->where('user_id', $user->id);
-                        });
-                });
-            })->with([
-                'booking',
-                'booking.iphone',
-            ])
-                ->get();
+        $this->revenues = BookingPayment::active()
+            ->where('affiliate_id', $targetAffId)
+            ->whereDate('paid_at', today())
+            ->with(['booking.iphone', 'payment', 'user'])
+            ->get();
 
-            $this->allBookings = Booking::where(function ($query) use ($user) {
-                $query->where('affiliate_id', $this->detailAffiliate->id)
-                    ->orWhere(function ($q) use ($user) {
-                        $q->whereNull('affiliate_id')
-                            ->where('user_id', $user->id);
-                    });
-            })->with(['iphone', 'revenue'])->get();
+        $this->totalRevenue = BookingPayment::active()
+            ->where('affiliate_id', $targetAffId)
+            ->with(['booking.iphone', 'payment', 'user'])
+            ->get();
 
-            $this->bookingsToday = Booking::whereDate('created_at', today())
-                ->where(function ($query) use ($user) {
-                    $query->where('affiliate_id', $user->affiliate_id)
-                        ->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('affiliate_id')
-                                ->where('user_id', $user->id);
-                        });
-                })
-                ->with(['revenue', 'iphone'])
-                ->get();
+        $this->allBookings = Booking::where('affiliate_id', $targetAffId)
+            ->with(['iphone', 'paymentTransactions'])
+            ->get();
+
+        $this->bookingsToday = Booking::whereDate('created_at', today())
+            ->where('affiliate_id', $targetAffId)
+            ->with(['iphone', 'paymentTransactions'])
+            ->get();
 
             $query = Iphones::query();
 

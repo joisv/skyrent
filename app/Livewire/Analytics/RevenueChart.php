@@ -2,13 +2,28 @@
 
 namespace App\Livewire\Analytics;
 
-use App\Models\Revenue;
+use App\Models\BookingPayment;
 use Carbon\Carbon;
 use Livewire\Component;
 
 class RevenueChart extends Component
 {
     public $postBy = 'days';
+
+    protected function getPaymentBaseQuery()
+    {
+        $query = BookingPayment::query()->active();
+        $user = auth()->user();
+        if ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin')))) {
+            $affiliateId = $user->affiliate_id;
+            if ($affiliateId) {
+                $query->where('booking_payments.affiliate_id', $affiliateId);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+        return $query;
+    }
 
     public function updatedPostBy($properyName)
     {
@@ -17,7 +32,6 @@ class RevenueChart extends Component
     
     public function render()
     {
-        // $this->updatedPostBy($this->postBy);
         $revenues =  $this->postBy === 'days' ? $this->postViewByDays() : (
             $this->postBy === 'weeks' ? $this->postViewByWeeks() :
             $this->postViewByMonth()
@@ -38,13 +52,13 @@ class RevenueChart extends Component
         for ($date = $sixDaysAgo->copy(); $date <= $today; $date->addDay()) {
             $startOfDay = $date->copy()->startOfDay();
             $endOfDay = $date->copy()->endOfDay();
-            $views = Revenue::whereBetween('created_at', [$startOfDay, $endOfDay])
+            $views = $this->getPaymentBaseQuery()
+                ->whereBetween('paid_at', [$startOfDay, $endOfDay])
                 ->sum('amount');
             $dates[] = $date->format('l');
             $viewsData[] = round($views);
         }
         return [
-
             'date' => $dates,
             'data' => $viewsData
         ];
@@ -62,12 +76,13 @@ class RevenueChart extends Component
             $startOfWeek = $startWeek->copy()->addWeeks($i)->startOfWeek();
             $endOfWeek = $startOfWeek->copy()->endOfWeek();
 
-            $views = Revenue::whereBetween('created_at', [$startOfWeek, $endOfWeek])->sum('amount');
+            $views = $this->getPaymentBaseQuery()
+                ->whereBetween('paid_at', [$startOfWeek, $endOfWeek])
+                ->sum('amount');
 
-            $dates[] = 'Week ' . $startOfWeek->format('W'); // Nomor minggu
+            $dates[] = 'Week ' . $startOfWeek->format('W');
             $viewsData[] = round($views);
         }
-        // dd($dates, $viewsData);
 
         return [
             'date' => $dates,
@@ -75,11 +90,10 @@ class RevenueChart extends Component
         ];
     }
 
-
     public function postViewByMonth()
     {
         $today = Carbon::today();
-        $startMonth = $today->copy()->subMonths(11)->startOfMonth(); // 12 bulan ke belakang termasuk bulan ini
+        $startMonth = $today->copy()->subMonths(11)->startOfMonth();
 
         $dates = [];
         $viewsData = [];
@@ -88,9 +102,11 @@ class RevenueChart extends Component
             $startOfMonth = $startMonth->copy()->addMonths($i)->startOfMonth();
             $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
-            $views = Revenue::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('amount');
+            $views = $this->getPaymentBaseQuery()
+                ->whereBetween('paid_at', [$startOfMonth, $endOfMonth])
+                ->sum('amount');
 
-            $dates[] = $startOfMonth->format('M Y'); // Contoh: Jan 2025
+            $dates[] = $startOfMonth->format('M Y');
             $viewsData[] = round($views);
         }
 

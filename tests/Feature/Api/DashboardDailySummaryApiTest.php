@@ -2,16 +2,31 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Affiliate;
 use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\Iphones;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class DashboardDailySummaryApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $this->user = User::factory()->create();
+        $this->user->assignRole('super-admin');
+        Sanctum::actingAs($this->user);
+    }
 
     public function test_can_get_daily_dashboard_summary_with_all_metrics(): void
     {
@@ -166,5 +181,32 @@ class DashboardDailySummaryApiTest extends TestCase
                     'todayPickups' => 1,
                 ],
             ]);
+    }
+
+    public function test_daily_summary_isolates_branch_metrics_correctly(): void
+    {
+        $branchA = Affiliate::create(['name' => 'Branch A', 'slug' => 'branch-a', 'code' => 'BRA', 'is_active' => true]);
+        $branchB = Affiliate::create(['name' => 'Branch B', 'slug' => 'branch-b', 'code' => 'BRB', 'is_active' => true]);
+
+        $phoneA = Iphones::factory()->create(['status' => 'ready', 'affiliate_id' => $branchA->id]);
+        $phoneB = Iphones::factory()->create(['status' => 'ready', 'affiliate_id' => $branchB->id]);
+
+        // Branch A query: should only see phoneA (1 available unit)
+        $resA = $this->getJson('/api/v1/dashboard/summary?affiliate_id=' . $branchA->id);
+        $resA->assertStatus(200);
+        $this->assertEquals(1, $resA->json('metrics.availableUnits'));
+        $this->assertEquals($branchA->id, $resA->json('affiliate_id'));
+
+        // Branch B query: should only see phoneB (1 available unit)
+        $resB = $this->getJson('/api/v1/dashboard/summary?affiliate_id=' . $branchB->id);
+        $resB->assertStatus(200);
+        $this->assertEquals(1, $resB->json('metrics.availableUnits'));
+        $this->assertEquals($branchB->id, $resB->json('affiliate_id'));
+
+        // Consolidated query: affiliate_id=all should see both units (2 available units)
+        $resAll = $this->getJson('/api/v1/dashboard/summary?affiliate_id=all');
+        $resAll->assertStatus(200);
+        $this->assertEquals(2, $resAll->json('metrics.availableUnits'));
+        $this->assertNull($resAll->json('affiliate_id'));
     }
 }

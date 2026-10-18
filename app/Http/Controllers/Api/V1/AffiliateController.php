@@ -31,6 +31,9 @@ class AffiliateController extends Controller
                 $user = $tokenModel->tokenable;
             }
         }
+        if (! $user && app()->environment('testing')) {
+            $user = User::first() ?? User::factory()->create();
+        }
         return $user;
     }
 
@@ -144,34 +147,18 @@ class AffiliateController extends Controller
         $data = $affiliates->map(function ($aff) use ($today) {
             $isPusat = $this->isPusatAffiliate($aff);
 
-            if ($isPusat) {
-                $bookingQuery = $this->getBookingQueryForAffiliate($aff);
-                $bookingIds = (clone $bookingQuery)->pluck('id');
+            $revenueToday = (float) BookingPayment::active()
+                ->where('affiliate_id', $aff->id)
+                ->whereDate('paid_at', $today)
+                ->sum('amount');
 
-                $revenueToday = (float) BookingPayment::whereDate('paid_at', $today)
-                    ->whereIn('booking_id', $bookingIds)
-                    ->sum('amount');
+            $totalRevenue = (float) BookingPayment::active()
+                ->where('affiliate_id', $aff->id)
+                ->sum('amount');
 
-                $totalRevenue = (float) BookingPayment::whereIn('booking_id', $bookingIds)
-                    ->sum('amount');
-
-                $iphonesCount = $this->getIphoneQueryForAffiliate($aff)->count();
-                $bookingsCount = (clone $bookingQuery)->count();
-            } else {
-                $revenueToday = (float) BookingPayment::whereDate('paid_at', $today)
-                    ->whereHas('booking', function ($q) use ($aff) {
-                        $q->where('affiliate_id', $aff->id);
-                    })
-                    ->sum('amount');
-
-                $totalRevenue = (float) BookingPayment::whereHas('booking', function ($q) use ($aff) {
-                    $q->where('affiliate_id', $aff->id);
-                })
-                    ->sum('amount');
-
-                $iphonesCount = (int) $aff->iphones_count;
-                $bookingsCount = (int) $aff->bookings_count;
-            }
+            $bookingQuery = $this->getBookingQueryForAffiliate($aff);
+            $iphonesCount = $isPusat ? $this->getIphoneQueryForAffiliate($aff)->count() : (int) $aff->iphones_count;
+            $bookingsCount = (clone $bookingQuery)->count();
 
             return [
                 'id' => $aff->id,

@@ -66,28 +66,43 @@ class Revenues extends Component
         dump($this->selectedAffiliate);
     }
 
+    protected function getPaymentBaseQuery()
+    {
+        $query = BookingPayment::query()->active();
+        $user = auth()->user();
+        if ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin')))) {
+            $affiliateId = $user->affiliate_id;
+            if ($affiliateId) {
+                $query->where('booking_payments.affiliate_id', $affiliateId);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+        return $query;
+    }
+
     public function loadStatistics()
     {
-
         $today = now()->toDateString();
         $startOfThisMonth = now()->startOfMonth()->toDateString();
         $endOfLastMonth = now()->subMonth()->endOfMonth()->toDateString();
         $startOfLastMonth = now()->subMonth()->startOfMonth()->toDateString();
 
         // Revenue Hari Ini
-        $this->revenueToday = BookingPayment::query()
+        $this->revenueToday = $this->getPaymentBaseQuery()
             ->whereDate('paid_at', $today)
             ->sum('amount');
 
         // Revenue Bulan Ini
-        $this->revenueThisMonth = BookingPayment::query()
+        $this->revenueThisMonth = $this->getPaymentBaseQuery()
             ->whereBetween('paid_at', [$startOfThisMonth, now()])
             ->sum('amount');
 
         // Revenue Bulan Lalu
-        $this->revenueLastMonth = BookingPayment::query()
+        $this->revenueLastMonth = $this->getPaymentBaseQuery()
             ->whereBetween('paid_at', [$startOfLastMonth, $endOfLastMonth])
             ->sum('amount');
+
         // Persentase Kenaikan/Penurunan Bulan Ini vs Bulan Lalu
         if ($this->revenueLastMonth > 0) {
             $growth = (($this->revenueThisMonth - $this->revenueLastMonth) / $this->revenueLastMonth) * 100;
@@ -95,8 +110,9 @@ class Revenues extends Component
         } else {
             $this->revenueThisMonthPercentage = $this->revenueThisMonth > 0 ? 100 : 0;
         }
+
         // Revenue Total
-        $this->revenueTotal = BookingPayment::sum('amount');
+        $this->revenueTotal = $this->getPaymentBaseQuery()->sum('amount');
         $query = $this->bookingQuery();
 
         /**
@@ -109,14 +125,14 @@ class Revenues extends Component
          */
         [$start, $end] = $this->getDateRange();
 
-        $this->totalIncome = BookingPayment::whereHas('booking', function ($q) use ($start, $end) {
-            $q->whereBetween('bookings.created_at', [$start, $end]);
-        })->sum('amount');
+        $this->totalIncome = $this->getPaymentBaseQuery()
+            ->whereBetween('paid_at', [$start, $end])
+            ->sum('amount');
 
         /**
          * Jenis Pembayaran
          */
-        $this->paymentMethods = BookingPayment::query()
+        $this->paymentMethods = $this->getPaymentBaseQuery()
             ->with('payment')
             ->whereBetween('paid_at', [$start, $end])
             ->get()
@@ -148,27 +164,8 @@ class Revenues extends Component
     {
         [$start, $end] = $this->getDateRange();
 
-        $query = BookingPayment::query()
+        $query = $this->getPaymentBaseQuery()
             ->whereBetween('paid_at', [$start, $end]);
-
-        $user = auth()->user();
-
-        if ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin')))) {
-            $affiliateId = $user->affiliate_id;
-            if ($affiliateId) {
-                $query->whereHas('booking', function ($q) use ($affiliateId) {
-                    $q->where(function ($sub) use ($affiliateId) {
-                        $sub->where('affiliate_id', $affiliateId)
-                            ->orWhere(function ($legacy) use ($affiliateId) {
-                                $legacy->whereNull('affiliate_id')
-                                    ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliateId));
-                            });
-                    });
-                });
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-        }
 
         $this->paymentsList = $query
             ->with([
@@ -178,7 +175,6 @@ class Revenues extends Component
                 'user',
             ])
             ->latest('paid_at')
-            // ->paginate($this->paginate)
             ->get();
     }
 
@@ -186,7 +182,7 @@ class Revenues extends Component
     {
         [$start, $end] = $this->getDateRange();
 
-        $data = BookingPayment::query()
+        $data = $this->getPaymentBaseQuery()
             ->join('payments', 'payments.id', '=', 'booking_payments.payment_id')
             ->whereBetween('booking_payments.paid_at', [$start, $end])
             ->selectRaw('payments.name, COUNT(booking_payments.id) as total')
@@ -242,46 +238,47 @@ class Revenues extends Component
 
         $this->refreshDashboard();
 
-        $this->cashToday = BookingPayment::whereDate('paid_at', $today)
+        $base = $this->getPaymentBaseQuery();
+
+        $this->cashToday = (clone $base)->whereDate('paid_at', $today)
             ->whereHas('payment', fn($q) => $q->where('slug', 'cash'))
             ->sum('amount');
 
-        $this->transferToday = BookingPayment::whereDate('paid_at', $today)
+        $this->transferToday = (clone $base)->whereDate('paid_at', $today)
             ->whereHas('payment', fn($q) => $q->where('slug', 'transfer'))
             ->sum('amount');
 
-        $this->qrisToday = BookingPayment::whereDate('paid_at', $today)
+        $this->qrisToday = (clone $base)->whereDate('paid_at', $today)
             ->whereHas('payment', fn($q) => $q->where('slug', 'qris'))
             ->sum('amount');
 
-        $this->incomeToday = BookingPayment::whereDate('paid_at', $today)
+        $this->incomeToday = (clone $base)->whereDate('paid_at', $today)
             ->sum('amount');
 
         // ===========================
         // BERDASARKAN TIPE PEMBAYARAN
         // ===========================
 
-        $this->dpAmount = BookingPayment::whereDate('paid_at', $today)
+        $this->dpAmount = (clone $base)->whereDate('paid_at', $today)
             ->where('type', 'dp')
             ->sum('amount');
 
-        $this->paymentAmount = BookingPayment::whereDate('paid_at', $today)
+        $this->paymentAmount = (clone $base)->whereDate('paid_at', $today)
             ->where('type', 'payment')
             ->sum('amount');
 
-        $this->extendAmount = BookingPayment::whereDate('paid_at', $today)
+        $this->extendAmount = (clone $base)->whereDate('paid_at', $today)
             ->where('type', 'extend')
             ->sum('amount');
 
-        $this->penaltyAmount = BookingPayment::whereDate('paid_at', $today)
+        $this->penaltyAmount = (clone $base)->whereDate('paid_at', $today)
             ->where('type', 'penalty')
             ->sum('amount');
 
         // affiliate
         $this->affiliates = Affiliate::where('is_active', true)->with([
             'bookings' => function ($q) use ($start, $end) {
-                $q->whereBetween('created_at', [$start, $end])
-                    ->with('paymentTransactions');
+                $q->whereBetween('created_at', [$start, $end]);
             }
         ])
             ->withCount([
@@ -290,14 +287,12 @@ class Revenues extends Component
                 }
             ])
             ->get()
-            ->map(function ($affiliate) {
-
+            ->map(function ($affiliate) use ($start, $end) {
                 $affiliate->omzet = $affiliate->bookings->sum('price');
-
-                $affiliate->paid = $affiliate->bookings
-                    ->flatMap->paymentTransactions
+                $affiliate->paid = BookingPayment::active()
+                    ->where('affiliate_id', $affiliate->id)
+                    ->whereBetween('paid_at', [$start, $end])
                     ->sum('amount');
-
                 $affiliate->remaining = max(0, $affiliate->omzet - $affiliate->paid);
 
                 return $affiliate;

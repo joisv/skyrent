@@ -3,8 +3,8 @@
 namespace App\Livewire\Reports;
 
 use App\Models\Booking;
+use App\Models\BookingPayment;
 use App\Models\Iphones;
-use App\Models\Revenue;
 use Livewire\Component;
 
 class TopDevice extends Component
@@ -16,7 +16,6 @@ class TopDevice extends Component
 
     public $mySelected = [];
     public $selectedAll = false;
-    // public $devices = [];
 
     public $totalBookings;
     public $totalDevices;
@@ -26,30 +25,47 @@ class TopDevice extends Component
 
     public function getDataDevice()
     {
+        $user = auth()->user();
+        $isAffiliateScoped = ($user && ($user->hasRole('affiliate-admin') || $user->hasRole('affiliate') || ($user->affiliate_id && !$user->hasRole('super-admin'))));
+        $affiliateId = $isAffiliateScoped ? $user->affiliate_id : null;
+
         // Ambil query dasar dengan eager loading
         $query = Iphones::withCount('bookings')
-            ->with(['revenues', 'bookings']);
+            ->with(['bookings.paymentTransactions']);
+
+        if ($isAffiliateScoped && $affiliateId) {
+            $query->where('affiliate_id', $affiliateId);
+        }
 
         // 🔍 SEARCH
         if ($this->search) {
-            $query->search([
-                'name', // nama iPhone
-                'revenues.amount', // total revenue relasi
-                'bookings.customer_name',
-                'bookings.customer_phone',
-            ], $this->search);
+            $search = $this->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('serial_number', 'like', "%{$search}%")
+                    ->orWhereHas('bookings', function ($bq) use ($search) {
+                        $bq->where('customer_name', 'like', "%{$search}%")
+                            ->orWhere('customer_phone', 'like', "%{$search}%");
+                    });
+            });
         }
 
         // Eksekusi query
         $devices = $query->get();
 
-        // 💰 Hitung total revenue keseluruhan
-        $totalRevenue = Revenue::sum('amount');
+        // 💰 Hitung total revenue keseluruhan dari ledger BookingPayment aktif
+        $totalRevenueQuery = BookingPayment::active();
+        if ($isAffiliateScoped && $affiliateId) {
+            $totalRevenueQuery->where('affiliate_id', $affiliateId);
+        }
+        $totalRevenue = (float) $totalRevenueQuery->sum('amount');
         $this->revenueTotal = $totalRevenue;
 
         // 🔄 Map ke data siap tampil
         $devices = $devices->map(function ($device) use ($totalRevenue) {
-            $totalPendapatan = $device->revenues->sum('amount');
+            $totalPendapatan = (float) $device->bookings->flatMap->paymentTransactions
+                ->where('is_void', false)
+                ->sum('amount');
             $totalDisewa = $device->bookings->sum('duration');
 
             return [
@@ -84,17 +100,21 @@ class TopDevice extends Component
         $this->topDevice = $devices->sortByDesc('kontribusi')->first();
 
         // 📊 Statistik tambahan
-        $this->totalBookings = Booking::count();
-        $this->totalDevices = Iphones::count();
-        $this->totalAvailable = Iphones::whereDoesntHave('bookings', function ($q) {
-            $q->where('status', 'confirmed');
+        $bookingBase = Booking::query();
+        $iphoneBase = Iphones::query();
+        if ($isAffiliateScoped && $affiliateId) {
+            $bookingBase->where('affiliate_id', $affiliateId);
+            $iphoneBase->where('affiliate_id', $affiliateId);
+        }
+
+        $this->totalBookings = $bookingBase->count();
+        $this->totalDevices = $iphoneBase->count();
+        $this->totalAvailable = (clone $iphoneBase)->whereDoesntHave('bookings', function ($q) {
+            $q->whereIn('status', ['confirmed', 'rented', 'disewa']);
         })->count();
 
         return $devices;
     }
-
-
-
 
     public function render()
     {

@@ -8,8 +8,6 @@ use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\Iphones;
 use App\Models\Payment;
-use Illuminate\Support\Facades\Http;
-use App\Models\Revenue;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Jantinnerezo\LivewireAlert\Facades\LivewireAlert;
@@ -243,6 +241,7 @@ class BookingPage extends Component
         if (!$recentDuplicate) {
             BookingPayment::create([
                 'booking_id' => $this->booking->id,
+                'affiliate_id' => $this->booking->affiliate_id,
                 'payment_id' => $payment->id,
                 'amount' => $this->amount,
                 'pay' => $this->pay,

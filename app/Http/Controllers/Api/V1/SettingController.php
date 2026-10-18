@@ -46,11 +46,12 @@ class SettingController extends Controller
             ], 401);
         }
 
-        if (! method_exists($user, 'hasRole') || ! $user->hasRole('super-admin')) {
+        $canEdit = method_exists($user, 'hasRole') && ($user->hasRole('super-admin') || $user->hasRole('admin'));
+        if (! $canEdit) {
             return response()->json([
                 'success' => false,
                 'status' => 'error',
-                'message' => 'Akses ditolak: Hanya Super Admin yang memiliki izin untuk mengubah pengaturan toko.',
+                'message' => 'Akses ditolak: Hanya Super Admin dan Admin yang memiliki izin untuk mengubah pengaturan toko.',
             ], 403);
         }
 
@@ -65,14 +66,6 @@ class SettingController extends Controller
         ]);
 
         $shop = ShopSetting::updatePrimary($validated);
-
-        // Keep key-value store in sync as well
-        foreach ($validated as $key => $value) {
-            Setting::updateOrCreate(
-                ['key' => $key],
-                ['value' => (string) $value, 'group' => 'shop']
-            );
-        }
 
         return response()->json([
             'success' => true,

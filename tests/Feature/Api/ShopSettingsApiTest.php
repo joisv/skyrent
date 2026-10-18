@@ -61,9 +61,29 @@ class ShopSettingsApiTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_unauthorized_user_cannot_update_shop_settings(): void
+    {
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'staff', 'guard_name' => 'web']);
+        $user = User::factory()->create();
+        $user->assignRole('staff');
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->putJson('/api/v1/settings/shop', [
+                'shop_name' => 'Attempted Edit',
+                'outlet_name' => 'Attempted Outlet',
+                'address' => 'Jl. Test No. 1',
+                'phone_number' => '0811-0000',
+            ]);
+
+        $response->assertStatus(403);
+    }
+
     public function test_update_shop_settings_validates_required_fields(): void
     {
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
         $user = User::factory()->create();
+        $user->assignRole('super-admin');
         $token = $user->createToken('test')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
@@ -76,8 +96,10 @@ class ShopSettingsApiTest extends TestCase
     public function test_authenticated_user_can_update_shop_settings(): void
     {
         $this->seed(ShopSettingsSeeder::class);
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
 
         $user = User::factory()->create();
+        $user->assignRole('super-admin');
         $token = $user->createToken('test')->plainTextToken;
 
         $payload = [
@@ -121,8 +143,10 @@ class ShopSettingsApiTest extends TestCase
     public function test_can_update_shop_settings_via_post_alias(): void
     {
         $this->seed(ShopSettingsSeeder::class);
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
         $user = User::factory()->create();
+        $user->assignRole('admin');
         $token = $user->createToken('test')->plainTextToken;
 
         $payload = [
