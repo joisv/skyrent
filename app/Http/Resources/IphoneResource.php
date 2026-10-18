@@ -69,7 +69,7 @@ class IphoneResource extends JsonResource
             'affiliate_id' => $this->affiliate_id,
             'affiliate_name' => $this->affiliate?->name ?? ($this->affiliate_id ? null : 'Genteng Pusat'),
             'branch_name' => $this->affiliate?->name ?? ($this->affiliate_id ? null : 'Genteng Pusat'),
-            'storage' => $this->storage ?? '128GB',
+            'storage' => $this->storage ?? null,
             'color' => $this->color ?? 'Titanium / Standar',
             'battery_health' => $this->battery_health ?? 100,
             'physical_condition' => $this->physical_condition ?? 'Mulus / Normal',

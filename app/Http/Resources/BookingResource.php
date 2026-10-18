@@ -155,7 +155,7 @@ class BookingResource extends JsonResource
                 return [
                     'id' => $this->iphone?->id,
                     'name' => $this->iphone?->name,
-                    'storage' => $this->iphone?->storage ?? '128GB',
+                    'storage' => $this->iphone?->storage ?? null,
                     'color' => $this->iphone?->color ?? 'Default',
                     'serial_number' => $this->iphone?->serial_number,
                     'asset_code' => $this->iphone?->asset_code,

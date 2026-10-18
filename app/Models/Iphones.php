@@ -307,9 +307,11 @@ class Iphones extends Model
             }
 
             // If unit is currently rented/disewa and not returned, and current time passed scheduled end,
-            // the unit remains physically out until now.
-            if (in_array($b->status, ['rented', 'disewa']) && $bEnd->lt($now)) {
-                $bEnd = $now;
+            // the unit remains physically out and overdue; it cannot be booked for any period until returned.
+            if (in_array($b->status, ['rented', 'disewa'])) {
+                if ($bEnd->lt($now)) {
+                    return false;
+                }
             }
 
             // Check interval overlap: [bStart, bEnd] overlaps with [startDt, endDt]
