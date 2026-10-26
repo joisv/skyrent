@@ -160,26 +160,57 @@ class Booking extends Model
     public function getTotalPaidAttribute(): float
     {
         if ($this->relationLoaded('paymentTransactions')) {
-            return (float) $this->paymentTransactions->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
+            $paid = (float) $this->paymentTransactions->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
+        } else {
+            $paid = (float) $this->paymentTransactions()->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
         }
-        return (float) $this->paymentTransactions()->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount');
+
+        // If no explicit rental payment transactions exist, but booking was recorded as 'paid',
+        // preserve the verified settled contract amount to prevent false outstanding balance.
+        if ($paid == 0 && $this->payment_status === 'paid' && (float) $this->price > 0) {
+            return (float) $this->price;
+        }
+
+        return $paid;
+    }
+
+    public function getTotalExtendPaidAttribute(): float
+    {
+        if ($this->relationLoaded('paymentTransactions')) {
+            return (float) $this->paymentTransactions->where('is_void', false)->where('type', 'extend')->sum('amount');
+        }
+        return (float) $this->paymentTransactions()->where('is_void', false)->where('type', 'extend')->sum('amount');
     }
 
     public function getRemainingPaymentAttribute(): float
     {
         return max(0.0, (float) $this->price - (float) $this->total_paid);
     }
+
     public function updatePaymentStatus(): void
     {
         $this->unsetRelation('paymentTransactions');
-        $totalPaid = $this->total_paid;
 
-        if ($totalPaid <= 0) {
-            $status = 'unpaid';
-        } elseif ($totalPaid < $this->price) {
-            $status = 'partial';
+        $rentalPayments = $this->paymentTransactions()
+            ->where('is_void', false)
+            ->whereIn('type', ['dp', 'payment', 'pelunasan'])
+            ->get();
+
+        $rentalPaid = (float) $rentalPayments->sum('amount');
+
+        if ($rentalPayments->isNotEmpty()) {
+            if ($rentalPaid <= 0) {
+                $status = 'unpaid';
+            } elseif ($rentalPaid < (float) $this->price) {
+                $status = 'partial';
+            } else {
+                $status = 'paid';
+            }
         } else {
-            $status = 'paid';
+            // When no explicit rental payment transactions exist in paymentTransactions,
+            // preserve existing verified payment_status (e.g. 'paid') so recording an
+            // extension or secondary transaction does not reset it to 'unpaid' or 'partial'.
+            $status = $this->payment_status ?: 'unpaid';
         }
 
         $this->update([

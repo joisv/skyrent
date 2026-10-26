@@ -466,8 +466,8 @@ class PaymentController extends Controller
                     'customer_name' => $booking->customer_name,
                     'customer_phone' => $booking->customer_phone,
                     'unit_name' => $booking->iphone ? "{$booking->iphone->name} ({$booking->iphone->serial_number})" : 'Unit iPhone',
-                    'price' => (float) $booking->price,
-                    'total_amount' => (float) $booking->price,
+                    'price' => $isExtendPayment ? (float) $recentDuplicate->amount : (float) $booking->price,
+                    'total_amount' => $isExtendPayment ? (float) $recentDuplicate->amount : (float) $booking->price,
                     'amount_paid' => (float) $recentDuplicate->amount,
                     'amount' => (float) $recentDuplicate->amount,
                     'cash_received' => (float) ($recentDuplicate->pay ?? $recentDuplicate->amount),
@@ -481,10 +481,10 @@ class PaymentController extends Controller
                         'penalty' => 'Denda Keterlambatan',
                         default => ucfirst($recentDuplicate->type),
                     },
-                    'total_paid' => $currentPaid,
-                    'remaining_payment' => $currentRemaining,
+                    'total_paid' => $isExtendPayment ? (float) $recentDuplicate->amount : $currentPaid,
+                    'remaining_payment' => $isExtendPayment ? 0.0 : $currentRemaining,
                     'payment_status' => $booking->payment_status,
-                    'is_settled' => $booking->payment_status === 'paid',
+                    'is_settled' => $isExtendPayment ? true : ($booking->payment_status === 'paid'),
                     'paid_at' => $recentDuplicate->paid_at->toIso8601String(),
                     'paid_at_formatted' => $recentDuplicate->paid_at->format('d M Y, H:i'),
                 ],
@@ -504,22 +504,18 @@ class PaymentController extends Controller
             'note' => $request->input('note') ?? $request->input('notes'),
         ]);
 
-        // Recalculate financial totals on booking
-        $newTotalPaid = (float) $booking->paymentTransactions()
-            ->where('is_void', false)
-            ->whereIn('type', ['dp', 'payment', 'pelunasan'])
-            ->sum('amount');
-        $newRemaining = max(0, (float) $booking->price - $newTotalPaid);
-        $newPaymentStatus = ($newTotalPaid >= (float) $booking->price)
-            ? 'paid'
-            : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
-
-        $booking->payment_status = $newPaymentStatus;
         if (! $booking->payment_id && $paymentId) {
             $booking->payment_id = $paymentId;
+            $booking->save();
         }
-        $booking->save();
+
+        // Recalculate financial totals on booking
         $booking->updatePaymentStatus();
+        $booking->refresh();
+
+        $newTotalPaid = $booking->total_paid;
+        $newRemaining = $booking->remaining_payment;
+        $newPaymentStatus = $booking->payment_status;
 
         // Kirim WhatsApp bukti pembayaran jika send_whatsapp aktif
         $sendWhatsapp = $request->boolean('send_whatsapp', true);
@@ -605,8 +601,8 @@ class PaymentController extends Controller
                 'customer_name' => $booking->customer_name,
                 'customer_phone' => $booking->customer_phone,
                 'unit_name' => $booking->iphone ? "{$booking->iphone->name} ({$booking->iphone->serial_number})" : 'Unit iPhone',
-                'price' => (float) $booking->price,
-                'total_amount' => (float) $booking->price,
+                'price' => $isExtendPayment ? (float) $amount : (float) $booking->price,
+                'total_amount' => $isExtendPayment ? (float) $amount : (float) $booking->price,
                 'amount_paid' => $amount,
                 'amount' => $amount,
                 'cash_received' => $pay,
@@ -620,10 +616,10 @@ class PaymentController extends Controller
                     'penalty' => 'Denda Keterlambatan',
                     default => ucfirst($type),
                 },
-                'total_paid' => $newTotalPaid,
-                'remaining_payment' => $newRemaining,
+                'total_paid' => $isExtendPayment ? (float) $amount : $newTotalPaid,
+                'remaining_payment' => $isExtendPayment ? 0.0 : $newRemaining,
                 'payment_status' => $newPaymentStatus,
-                'is_settled' => $newPaymentStatus === 'paid',
+                'is_settled' => $isExtendPayment ? true : ($newPaymentStatus === 'paid'),
                 'paid_at' => $paymentRecord->paid_at->toIso8601String(),
                 'paid_at_formatted' => $paymentRecord->paid_at->format('d M Y, H:i'),
             ],

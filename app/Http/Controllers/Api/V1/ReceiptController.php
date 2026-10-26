@@ -288,6 +288,7 @@ class ReceiptController extends Controller
             'return', 'returnunit', 'pengembalian' => 'returnUnit',
             'payment', 'paymentsettlement', 'pelunasan' => 'paymentSettlement',
             'deposit', 'depositrefund', 'refund' => 'depositRefund',
+            'extend', 'extension', 'tambah_jam', 'tambahjam' => 'extend',
             default => $this->detectReceiptType($booking),
         };
 
@@ -296,6 +297,7 @@ class ReceiptController extends Controller
             'returnUnit' => 'PENGEMBALIAN UNIT',
             'paymentSettlement' => 'PELUNASAN SEWA',
             'depositRefund' => 'REFUND DEPOSIT',
+            'extend' => 'TAMBAH JAM (EXTEND)',
             default => 'BUKTI TRANSAKSI',
         };
 
@@ -327,45 +329,69 @@ class ReceiptController extends Controller
         $finesFee = (float) ($booking->latestReturn?->penalty_fee ?? 0);
         $discountFee = 0.0;
 
-        // Total amount based on receipt context
-        $totalAmount = match ($receiptType) {
-            'pickup' => $rentFee,
-            'paymentSettlement' => $rentFee,
-            'depositRefund' => 0.0,
-            'returnUnit' => $rentFee + $finesFee,
-            default => $rentFee,
-        };
+        $extendPayment = $booking->paymentTransactions()
+            ->where('is_void', false)
+            ->where('type', 'extend')
+            ->latest('id')
+            ->first();
 
-        // Paid & remaining
-        $totalRentalPaid = (float) $booking->paymentTransactions()
-            ->whereIn('type', ['dp', 'payment', 'pelunasan'])
-            ->sum('amount');
-        if ($totalRentalPaid == 0 && $booking->payment_status === 'paid') {
-            $totalRentalPaid = $rentFee;
+        $originalRentalPrice = $rentFee;
+        $extendFee = (float) ($extendPayment?->amount ?? 0);
+
+        if ($receiptType === 'extend') {
+            $totalAmount = $extendFee;
+            $paidAmount = $extendFee;
+            $remainingAmount = 0.0;
+            $paymentMethod = $extendPayment?->payment?->name ?? $booking->payment?->name ?? 'Tunai (Cash)';
+            $cashGiven = (float) ($extendPayment?->pay ?? $paidAmount);
+            $cashChange = (float) ($extendPayment?->change ?? 0);
+            if ($extendPayment?->paid_at) {
+                $date = Carbon::parse($extendPayment->paid_at);
+            }
+            $notes = $extendPayment?->note ?? 'Penambahan durasi sewa iPhone (Tambah Jam).';
+        } else {
+            // Total amount based on receipt context
+            $totalAmount = match ($receiptType) {
+                'pickup' => $rentFee,
+                'paymentSettlement' => $rentFee,
+                'depositRefund' => 0.0,
+                'returnUnit' => $rentFee + $finesFee,
+                default => $rentFee,
+            };
+
+            // Paid & remaining
+            $totalRentalPaid = (float) $booking->paymentTransactions()
+                ->where('is_void', false)
+                ->whereIn('type', ['dp', 'payment', 'pelunasan'])
+                ->sum('amount');
+            if ($totalRentalPaid == 0 && $booking->payment_status === 'paid') {
+                $totalRentalPaid = $rentFee;
+            }
+
+            $depositPaid = 0.0;
+            $paidAmount = $totalRentalPaid;
+            $remainingAmount = max(0, (float) ($rentFee - $totalRentalPaid));
+
+            // Latest payment details
+            $latestPayment = $booking->paymentTransactions()->where('is_void', false)->latest('id')->first();
+            $paymentMethod = $latestPayment?->payment?->name ?? $booking->payment?->name ?? 'Tunai (Cash)';
+
+            $cashGiven = (float) ($latestPayment?->pay ?? $paidAmount);
+            $cashChange = (float) ($latestPayment?->change ?? 0);
+
+            $notes = match ($receiptType) {
+                'pickup' => "Jaminan " . ($booking->jaminan_type ?? 'KTP Asli') . " fisik telah diverifikasi dan disimpan.",
+                'returnUnit' => "Unit diterima kembali dalam kondisi baik. Pemeriksaan selesai.",
+                'depositRefund' => "Uang jaminan deposit telah dikembalikan ke pelanggan.",
+                default => "Terima kasih telah mempercayakan rental di SKYRental.",
+            };
         }
 
-        $depositPaid = 0.0;
-        $paidAmount = $totalRentalPaid;
-        $remainingAmount = max(0, (float) ($rentFee - $totalRentalPaid));
-
-        // Latest payment details
-        $latestPayment = $booking->paymentTransactions()->latest('id')->first();
-        $paymentMethod = $latestPayment?->payment?->name ?? $booking->payment?->name ?? 'Tunai (Cash)';
         $paymentStatus = strtoupper($booking->payment_status ?? 'paid');
-
-        $cashGiven = (float) ($latestPayment?->pay ?? $paidAmount);
-        $cashChange = (float) ($latestPayment?->change ?? 0);
 
         // Deposit status & refund
         $depositStatus = 'TIDAK ADA';
         $refundAmount = 0.0;
-
-        $notes = match ($receiptType) {
-            'pickup' => "Jaminan " . ($booking->jaminan_type ?? 'KTP Asli') . " fisik telah diverifikasi dan disimpan.",
-            'returnUnit' => "Unit diterima kembali dalam kondisi baik. Pemeriksaan selesai.",
-            'depositRefund' => "Uang jaminan deposit telah dikembalikan ke pelanggan.",
-            default => "Terima kasih telah mempercayakan rental di SKYRental.",
-        };
 
         $terms = 'Harap simpan struk ini sebagai bukti transaksi resmi.';
 
@@ -385,7 +411,9 @@ class ReceiptController extends Controller
             'asset_code' => $assetCode,
             'rental_duration' => $durationLabel,
             'rental_dates' => $rentalDates,
-            'rent_fee' => $rentFee,
+            'rent_fee' => $receiptType === 'extend' ? $extendFee : $rentFee,
+            'original_rent_fee' => $originalRentalPrice,
+            'extend_fee' => $extendFee,
             'deposit_fee' => $depositFee,
             'fines_fee' => $finesFee,
             'discount_fee' => $discountFee,
@@ -409,6 +437,10 @@ class ReceiptController extends Controller
 
     private function detectReceiptType(Booking $booking): string
     {
+        $latestPayment = $booking->paymentTransactions()->where('is_void', false)->latest('id')->first();
+        if ($latestPayment && $latestPayment->type === 'extend') {
+            return 'extend';
+        }
         if ($booking->status === 'returned') {
             return 'returnUnit';
         }
@@ -430,6 +462,52 @@ class ReceiptController extends Controller
         $lines = [];
         $lines[] = $this->center('SKYRENTAL IPHONE', $w);
         $lines[] = $this->center($d['branch_name'] ?? 'SKYRENTAL YOGYAKARTA', $w);
+
+        if (($d['type'] ?? '') === 'extend') {
+            $lines[] = $this->center('STRUK PERPANJANGAN SEWA', $w);
+            $lines[] = $div;
+
+            $lines[] = $this->twoCol('No. Resi  :', $d['receipt_number'] ?? '-', $w);
+            $lines[] = $this->twoCol('Tanggal   :', $d['date_formatted'] ?? date('d/m/Y H:i'), $w);
+            $lines[] = $this->twoCol('Kasir     :', $d['admin_name'] ?? 'Admin', $w);
+            $lines[] = $this->twoCol('Tipe      :', 'TAMBAH JAM (EXTEND)', $w);
+            $lines[] = $sub;
+
+            $lines[] = $this->twoCol('Pelanggan :', $d['customer_name'] ?? '-', $w);
+            $lines[] = $this->twoCol('Kontak    :', $d['customer_phone'] ?? '-', $w);
+            $lines[] = $this->twoCol('Kode Book :', $d['booking_code'] ?? '-', $w);
+            $lines[] = $this->twoCol('Unit      :', $d['unit_name'] ?? '-', $w);
+            if (! empty($d['serial_number'])) {
+                $lines[] = $this->twoCol('Serial No :', $d['serial_number'], $w);
+            }
+            if (! empty($d['rental_duration'])) {
+                $lines[] = $this->twoCol('Total Jam :', $d['rental_duration'], $w);
+            }
+            if (! empty($d['rental_dates'])) {
+                $lines[] = $this->twoCol('Periode   :', $d['rental_dates'], $w);
+            }
+            $lines[] = $sub;
+
+            $lines[] = $this->twoCol('Biaya Ext :', 'Rp ' . number_format($d['total_amount'] ?? 0, 0, ',', '.'), $w);
+            $lines[] = $this->twoCol('TOTAL     :', 'Rp ' . number_format($d['total_amount'] ?? 0, 0, ',', '.'), $w);
+            $lines[] = $this->twoCol('Terbayar  :', 'Rp ' . number_format($d['paid_amount'] ?? 0, 0, ',', '.'), $w);
+            $lines[] = $this->twoCol('Metode    :', $d['payment_method'] ?? 'Tunai', $w);
+            $lines[] = $this->twoCol('Status    :', 'LUNAS', $w);
+            if (($d['cash_given'] ?? 0) > 0) {
+                $lines[] = $this->twoCol('Diterima  :', 'Rp ' . number_format($d['cash_given'], 0, ',', '.'), $w);
+                $lines[] = $this->twoCol('Kembalian :', 'Rp ' . number_format($d['cash_change'] ?? 0, 0, ',', '.'), $w);
+            }
+            $lines[] = $sub;
+            $lines[] = $this->twoCol('Sewa Awal :', 'Rp ' . number_format($d['original_rent_fee'] ?? 0, 0, ',', '.'), $w);
+            $lines[] = $div;
+
+            $lines[] = $this->center('Harap simpan bukti transaksi', $w);
+            $lines[] = $this->center('CS: 0812-3456-7890 (WA)', $w);
+            $lines[] = $div;
+
+            return implode("\n", $lines);
+        }
+
         $lines[] = $this->center('Rental iPhone Terbaik & Terpercaya', $w);
         $lines[] = $div;
 

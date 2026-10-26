@@ -81,7 +81,16 @@ class BookingResource extends JsonResource
             }
         }
 
-        $totalPaid = (float) ($this->relationLoaded('paymentTransactions') ? $this->paymentTransactions->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount') : ($this->payment_status === 'paid' ? $this->price : 0));
+        $rentalPaid = (float) ($this->relationLoaded('paymentTransactions')
+            ? $this->paymentTransactions->where('is_void', false)->whereIn('type', ['dp', 'payment', 'pelunasan'])->sum('amount')
+            : $this->total_paid);
+
+        // Fallback to contract price if marked paid with no explicit partial transactions
+        if ($rentalPaid == 0 && $this->payment_status === 'paid') {
+            $rentalPaid = (float) $this->price;
+        }
+
+        $totalPaid = $rentalPaid;
         $remainingPayment = max(0, (float) $this->price - $totalPaid);
 
         return [

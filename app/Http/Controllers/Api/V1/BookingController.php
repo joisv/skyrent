@@ -1276,10 +1276,8 @@ class BookingController extends Controller
         ]);
 
         $price = (float) $request->input('price', 0);
-        if ($price > 0) {
-            $booking->price += $price;
-            $booking->saveQuietly();
-        }
+        // Note: Do not overwrite original rental contract price ($booking->price) with extension charges.
+        // Original rental contract price must remain intact to preserve contract settlement semantics.
 
         // Catat transaksi pembayaran jika disediakan
         if ($request->filled('payment_method') || $request->filled('pay') || $request->boolean('paid')) {
@@ -1291,18 +1289,28 @@ class BookingController extends Controller
             $pay = (float) $request->input('pay', $price);
             $change = max(0, $pay - $price);
 
-            BookingPayment::create([
-                'booking_id' => $booking->id,
-                'affiliate_id' => $booking->affiliate_id,
-                'payment_id' => $payment?->id ?? 1,
-                'amount' => $price,
-                'pay' => $pay,
-                'change' => $change,
-                'type' => 'extend',
-                'paid_at' => Carbon::now('Asia/Jakarta'),
-                'user_id' => $user?->id ?? User::first()?->id,
-                'note' => $request->input('note', "Penambahan durasi sewa {$hours} jam"),
-            ]);
+            // Cegah duplikasi transaksi pembayaran jika sudah dicatat (misal melalui endpoint /payments dalam 30 detik terakhir)
+            $recentDuplicate = BookingPayment::where('booking_id', $booking->id)
+                ->where('amount', $price)
+                ->where('type', 'extend')
+                ->where('created_at', '>=', now()->subSeconds(30))
+                ->first();
+
+            if (! $recentDuplicate && $price > 0) {
+                BookingPayment::create([
+                    'payment_code' => 'PAY' . Carbon::now()->format('ymd') . strtoupper(Str::random(4)),
+                    'booking_id' => $booking->id,
+                    'affiliate_id' => $booking->affiliate_id,
+                    'payment_id' => $payment?->id ?? 1,
+                    'amount' => $price,
+                    'pay' => $pay,
+                    'change' => $change,
+                    'type' => 'extend',
+                    'paid_at' => Carbon::now('Asia/Jakarta'),
+                    'user_id' => $user?->id ?? User::first()?->id,
+                    'note' => $request->input('note', "Penambahan durasi sewa {$hours} jam"),
+                ]);
+            }
 
             $booking->updatePaymentStatus();
         }

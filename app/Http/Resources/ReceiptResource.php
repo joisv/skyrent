@@ -31,6 +31,8 @@ class ReceiptResource extends JsonResource
             'rental_duration' => $this->resource['rental_duration'],
             'rental_dates' => $this->resource['rental_dates'],
             'rent_fee' => (float) $this->resource['rent_fee'],
+            'original_rent_fee' => isset($this->resource['original_rent_fee']) ? (float) $this->resource['original_rent_fee'] : (float) $this->resource['rent_fee'],
+            'extend_fee' => isset($this->resource['extend_fee']) ? (float) $this->resource['extend_fee'] : 0.0,
             'deposit_fee' => (float) $this->resource['deposit_fee'],
             'fines_fee' => (float) $this->resource['fines_fee'],
             'discount_fee' => (float) $this->resource['discount_fee'],
