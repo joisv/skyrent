@@ -117,6 +117,11 @@ class BookingResource extends JsonResource
             'end_time' => $this->end_time,
             'duration' => (int) $this->duration,
             'price' => (float) $this->price,
+            'addon_devices' => $this->addon_devices ?? [],
+            'addon_items' => $this->addon_devices ?? [],
+            'addon_subtotal' => (float) ($this->addon_subtotal ?? 0),
+            'primary_subtotal' => max(0.0, (float) $this->price - (float) ($this->addon_subtotal ?? 0)),
+            'has_addons' => !empty($this->addon_devices) || ((float) ($this->addon_subtotal ?? 0) > 0),
             'deposit' => 0.0,
             'total_bill' => (float) $this->price,
             'total_paid' => $totalPaid,
@@ -172,7 +177,14 @@ class BookingResource extends JsonResource
                     'battery_health' => $this->iphone?->battery_health ?? 100,
                     'physical_condition' => $this->iphone?->physical_condition ?? 'Mulus (Sempurna)',
                     'photo_url' => ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo)
-                        ? asset('storage/' . ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo))
+                        ? (filter_var(($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo), FILTER_VALIDATE_URL)
+                            ? ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo)
+                            : asset('storage/' . ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo)))
+                        : null,
+                    'thumbnail_url' => ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo)
+                        ? (filter_var(($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo), FILTER_VALIDATE_URL)
+                            ? ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo)
+                            : asset('storage/' . ($this->iphone?->gallery?->image ?? $this->iphone?->gallery?->photo)))
                         : null,
                     'durations' => ($this->iphone && $this->iphone->relationLoaded('durations'))
                         ? $this->iphone->durations->map(function ($d) {

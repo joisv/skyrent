@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ReceiptController;
 use App\Http\Controllers\Api\V1\ReturnController;
 use App\Http\Controllers\Api\V1\SettingController;
+use App\Http\Controllers\Api\V1\ShiftController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,16 @@ Route::prefix('v1')->group(function () {
         Route::get('/user', [AuthController::class, 'me'])->name('api.v1.user');
         Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->name('api.v1.auth.change_password');
         Route::post('/change-password', [AuthController::class, 'changePassword'])->name('api.v1.change_password');
+
+        // Cashier Shift & Drawer Management endpoints
+        Route::prefix('cashier/shift')->group(function () {
+            Route::get('/current', [ShiftController::class, 'currentShift'])->name('api.v1.cashier.shift.current');
+            Route::post('/open', [ShiftController::class, 'openShift'])->name('api.v1.cashier.shift.open');
+            Route::post('/close', [ShiftController::class, 'closeShift'])->name('api.v1.cashier.shift.close');
+            Route::get('/history', [ShiftController::class, 'history'])->name('api.v1.cashier.shift.history');
+            Route::get('/schedule', [ShiftController::class, 'getSchedule'])->name('api.v1.cashier.shift.schedule.get');
+            Route::put('/schedule', [ShiftController::class, 'updateSchedule'])->name('api.v1.cashier.shift.schedule.update');
+        });
 
         // Shop Settings modification (Requires Authentication)
         Route::put('/settings/shop', [SettingController::class, 'updateShopSettings'])->name('api.v1.settings.shop.update');

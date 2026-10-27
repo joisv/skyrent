@@ -14,6 +14,8 @@ class Booking extends Model
 
     protected $fillable = [
         'iphone_id',
+        'addon_devices',
+        'addon_subtotal',
         'customer_id',
         'customer_name',
         'customer_phone',
@@ -39,6 +41,18 @@ class Booking extends Model
         'affiliate_id',
         'payment_status',
     ];
+
+    protected $casts = [
+        'addon_devices' => 'array',
+        'addon_subtotal' => 'float',
+        'price' => 'float',
+        'kia' => 'boolean',
+    ];
+
+    public function getPrimarySubtotalAttribute(): float
+    {
+        return max(0.0, (float) $this->price - (float) ($this->addon_subtotal ?? 0));
+    }
 
     public function user()
     {

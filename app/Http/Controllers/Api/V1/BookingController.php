@@ -652,6 +652,10 @@ class BookingController extends Controller
             'amount_paid' => ['nullable', 'numeric', 'min:0'],
             'payment_method' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'addon_asset_ids' => ['nullable', 'array'],
+            'addon_asset_ids.*' => ['integer', 'exists:iphones,id'],
+            'addon_ids' => ['nullable', 'array'],
+            'addon_ids.*' => ['integer', 'exists:iphones,id'],
         ]);
 
         $iphone = Iphones::findOrFail($validated['iphone_id']);
@@ -756,6 +760,43 @@ class BookingController extends Controller
         $deposit = (float) ($validated['deposit_amount'] ?? $validated['deposit'] ?? 200000);
         $clientPrice = (float) ($validated['price'] ?? 0);
 
+        // Process Add-on devices if selected
+        $rawAddonIds = $request->input('addon_asset_ids', $request->input('addon_ids', []));
+        $addonDevicesData = [];
+        $addonSubtotal = 0.0;
+        if (!empty($rawAddonIds) && is_array($rawAddonIds)) {
+            $addonUnits = Iphones::whereIn('id', $rawAddonIds)->get();
+            foreach ($addonUnits as $addonUnit) {
+                $addonDuration = $addonUnit->durations()->where('hours', $duration)->first();
+                $addonPrice = 0.0;
+                if ($addonDuration && isset($addonDuration->pivot->price) && (float) $addonDuration->pivot->price > 0) {
+                    $addonPrice = (float) $addonDuration->pivot->price;
+                } elseif ($duration >= 24 && ($duration % 24 === 0)) {
+                    $dailyPackage = $addonUnit->durations()->where('hours', 24)->first();
+                    if ($dailyPackage && isset($dailyPackage->pivot->price) && (float) $dailyPackage->pivot->price > 0) {
+                        $days = (int) ($duration / 24);
+                        $addonPrice = (float) $dailyPackage->pivot->price * $days;
+                    }
+                }
+                if ($addonPrice <= 0) {
+                    $firstDuration = $addonUnit->durations()->first();
+                    $addonPrice = $firstDuration && isset($firstDuration->pivot->price) ? (float) $firstDuration->pivot->price : 10000.0;
+                }
+
+                $addonSubtotal += $addonPrice;
+                $addonDevicesData[] = [
+                    'id' => $addonUnit->id,
+                    'name' => $addonUnit->name,
+                    'asset_code' => $addonUnit->asset_code,
+                    'serial_number' => $addonUnit->serial_number,
+                    'price' => $addonPrice,
+                ];
+
+                // Update status of addon unit to 'rented' or 'dibooking'
+                $addonUnit->update(['status' => 'rented', 'is_booked' => 1]);
+            }
+        }
+
         // Server-side pricing calculation based on official duration packages
         $serverPrice = 0;
         $matchedDuration = $iphone->durations()->where('hours', $duration)->first();
@@ -767,6 +808,10 @@ class BookingController extends Controller
                 $days = (int) ($duration / 24);
                 $serverPrice = (float) $dailyPackage->pivot->price * $days;
             }
+        }
+
+        if ($serverPrice > 0) {
+            $serverPrice += $addonSubtotal;
         }
 
         // Enforce server-side pricing if computed, preventing client-side price tampering
@@ -809,6 +854,8 @@ class BookingController extends Controller
             'customer_email' => $validated['customer_email'] ?? null,
             'address' => $validated['address'] ?? 'Datang Langsung (Walk-in Outlet)',
             'iphone_id' => $iphone->id,
+            'addon_devices' => !empty($addonDevicesData) ? $addonDevicesData : null,
+            'addon_subtotal' => $addonSubtotal,
             'start_booking_date' => $startDate,
             'end_booking_date' => $endDate,
             'start_time' => $validated['start_time'] ?? '09:00',

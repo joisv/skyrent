@@ -242,8 +242,8 @@ class DashboardController extends Controller
         $totalHeldDeposit = 0;
         $totalRefundedDeposit = 0;
 
-        // 4. Action Items (Urgent attention)
-        $actionItemsQuery = Booking::with(['iphone', 'payment', 'user']);
+        // 4. Action Items (Urgent attention) with eager-loaded iphone gallery to prevent N+1 queries
+        $actionItemsQuery = Booking::with(['iphone.gallery', 'payment', 'user']);
         $applyBookingAffiliateScope($actionItemsQuery);
         $actionItems = $actionItemsQuery
             ->where(function ($q) use ($todayDate, $now) {
@@ -282,8 +282,8 @@ class DashboardController extends Controller
             ->take(15)
             ->get();
 
-        // 5. All Bookings for transaction queue table matching booking-page.blade.php
-        $allBookingsQuery = Booking::with(['iphone', 'payment', 'user'])->latest('id');
+        // 5. All Bookings for transaction queue table with eager-loaded iphone gallery
+        $allBookingsQuery = Booking::with(['iphone.gallery', 'payment', 'user'])->latest('id');
         $applyBookingAffiliateScope($allBookingsQuery);
         $allBookings = $allBookingsQuery->take(100)->get();
         $recentBookings = $allBookings->take(5);
@@ -376,6 +376,9 @@ class DashboardController extends Controller
             'Kode Booking',
             'Nama Pelanggan',
             'Unit iPhone',
+            'Sewa iPhone (Pokok)',
+            'Item Add-on',
+            'Sewa Add-on',
             'Metode Pembayaran',
             'Nominal Bayar',
             'Deposit',
@@ -391,6 +394,9 @@ class DashboardController extends Controller
                 $t['booking_code'],
                 $t['customer_name'],
                 $t['iphone_name'],
+                (int) ($t['primary_rent_fee'] ?? $t['paid_amount']),
+                $t['addon_name'] ?? '-',
+                (int) ($t['addon_fee'] ?? 0),
                 $t['payment_method'],
                 (int) $t['paid_amount'],
                 (int) $t['deposit_amount'],
@@ -637,11 +643,20 @@ class DashboardController extends Controller
         }
 
         // 4. Direct database aggregation: Model rental count & model revenue via SQL GROUP BY
+        // Exclude add-on devices from most popular iPhone models ranking, and calculate revenue strictly for iPhone units
         $modelRows = (clone $paymentsQuery)
             ->join('bookings', 'booking_payments.booking_id', '=', 'bookings.id')
             ->join('iphones', 'bookings.iphone_id', '=', 'iphones.id')
+            ->where(function ($q) {
+                $q->whereNull('iphones.asset_code')
+                  ->orWhere('iphones.asset_code', 'not like', 'ADDON%');
+            })
+            ->where(function ($q) {
+                $q->whereNull('iphones.serial_number')
+                  ->orWhere('iphones.serial_number', 'not like', 'ACC%');
+            })
             ->groupBy('iphones.name')
-            ->selectRaw('iphones.name, COUNT(booking_payments.id) as count, SUM(booking_payments.amount) as revenue')
+            ->selectRaw('iphones.name, COUNT(booking_payments.id) as count, SUM(GREATEST(0, COALESCE(bookings.price - COALESCE(bookings.addon_subtotal, 0), booking_payments.amount))) as revenue')
             ->orderByDesc('revenue')
             ->get();
 
@@ -668,6 +683,18 @@ class DashboardController extends Controller
             $amt = (float) $p->amount;
             $methodName = $p->payment?->name ?? 'Tunai Kasir';
             $iphoneName = $p->booking?->iphone?->name ?? 'iPhone';
+            $booking = $p->booking;
+
+            $addonSubtotal = (float) ($booking?->addon_subtotal ?? 0.0);
+            $totalRent = (float) ($booking?->price ?? $amt);
+            $primaryRentFee = max(0.0, $totalRent - $addonSubtotal);
+
+            $addonNames = [];
+            if (!empty($booking?->addon_devices) && is_array($booking->addon_devices)) {
+                $addonNames = array_values(array_filter(array_column($booking->addon_devices, 'name')));
+            }
+            $addonNameStr = !empty($addonNames) ? implode(', ', $addonNames) : null;
+            $hasAddons = !empty($addonNames) || $addonSubtotal > 0;
 
             $typeLabel = match (strtolower($p->type ?? 'payment')) {
                 'dp' => 'DP',
@@ -675,23 +702,28 @@ class DashboardController extends Controller
                 'penalty' => 'Penalty/Denda',
                 default => 'Pelunasan',
             };
-            $jaminan = $p->booking?->jaminan_type ? "Jaminan {$p->booking->jaminan_type}" : 'KTP Terverifikasi';
+            $jaminan = $booking?->jaminan_type ? "Jaminan {$booking->jaminan_type}" : 'KTP Terverifikasi';
 
             $transactionList[] = [
                 'id' => $p->id,
                 'booking_id' => $p->booking_id ?? 0,
-                'payment_code' => 'PAY-' . ($p->booking?->booking_code ?? $p->id),
-                'booking_code' => $p->booking?->booking_code ?? '-',
-                'customer_name' => $p->booking?->customer_name ?? 'Pelanggan',
-                'customer_phone' => $p->booking?->customer_phone ?? '-',
+                'payment_code' => 'PAY-' . ($booking?->booking_code ?? $p->id),
+                'booking_code' => $booking?->booking_code ?? '-',
+                'customer_name' => $booking?->customer_name ?? 'Pelanggan',
+                'customer_phone' => $booking?->customer_phone ?? '-',
                 'iphone_name' => $iphoneName,
                 'payment_method' => $methodName,
                 'paid_amount' => $amt,
-                'rent_total' => (float) ($p->booking?->price ?? $amt),
-                'remaining_amount' => max(0.0, (float) (($p->booking?->price ?? $amt) - $amt)),
+                'rent_total' => $totalRent,
+                'primary_rent_fee' => $primaryRentFee,
+                'addon_fee' => $addonSubtotal,
+                'addon_name' => $addonNameStr,
+                'addon_names' => $addonNames,
+                'has_addons' => $hasAddons,
+                'remaining_amount' => max(0.0, (float) ($totalRent - $amt)),
                 'deposit_amount' => 0.0,
                 'deposit_status' => 'none',
-                'payment_status' => $p->booking?->payment_status ?? 'paid',
+                'payment_status' => $booking?->payment_status ?? 'paid',
                 'transaction_date' => $p->paid_at?->toIso8601String() ?? $p->created_at?->toIso8601String(),
                 'type' => $p->type ?? 'payment',
                 'notes' => "{$typeLabel}|{$jaminan}",

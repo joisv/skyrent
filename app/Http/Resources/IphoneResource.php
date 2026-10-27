@@ -66,6 +66,11 @@ class IphoneResource extends JsonResource
                 default => ucfirst($status),
             },
             'is_available' => $isAvailable,
+            'is_addon' => (bool) (
+                str_starts_with(strtoupper($this->asset_code ?? ''), 'ADDON') ||
+                str_starts_with(strtoupper($this->serial_number ?? ''), 'ACC') ||
+                (isset($this->is_addon) && $this->is_addon)
+            ),
             'affiliate_id' => $this->affiliate_id,
             'affiliate_name' => $this->affiliate?->name ?? ($this->affiliate_id ? null : 'Genteng Pusat'),
             'branch_name' => $this->affiliate?->name ?? ($this->affiliate_id ? null : 'Genteng Pusat'),
