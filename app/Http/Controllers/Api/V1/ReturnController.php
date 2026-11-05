@@ -107,10 +107,14 @@ class ReturnController extends Controller
             });
         }
 
-        // Filter status: default to 'rented' for return workflow
+        // Filter status: default to active bookings for return workflow ('active', 'rented', 'confirmed', 'disewa')
         $status = $request->query('status', 'rented');
         if ($status !== 'all' && $status !== 'semua') {
-            $query->where('status', $status);
+            if ($status === 'rented' || $status === 'active') {
+                $query->whereIn('status', ['active', 'rented', 'confirmed', 'disewa']);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         // Multi-criteria keyword search (?q=, ?search=, ?query=)
@@ -134,6 +138,7 @@ class ReturnController extends Controller
         $isOverdueParam = filter_var($request->query('is_overdue', $request->query('isOverdueOnly')), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         $isDueTodayParam = filter_var($request->query('is_due_today', $request->query('isDueTodayOnly')), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         $isUpcomingParam = filter_var($request->query('is_upcoming', $request->query('isUpcomingOnly')), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        $isUnreturnedParam = filter_var($request->query('is_unreturned', $request->query('unreturned')), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         $timingFilter = strtolower($request->query('filter', ''));
 
         if ($isOverdueParam === true || in_array($timingFilter, ['overdue', 'terlambat'])) {
@@ -149,6 +154,8 @@ class ReturnController extends Controller
             $query->where('end_booking_date', $todayDate);
         } elseif ($isUpcomingParam === true || in_array($timingFilter, ['upcoming', 'mendatang'])) {
             $query->where('end_booking_date', '>', $todayDate);
+        } elseif ($isUnreturnedParam === true || in_array($timingFilter, ['unreturned', 'belum_kembali', 'semua_kembali'])) {
+            $query->whereDate('end_booking_date', '<=', $todayDate);
         }
 
         // Filter by iPhone model (?model= or ?modelFilter=)
@@ -232,7 +239,7 @@ class ReturnController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $todayDate = $now->toDateString();
 
-        $activeQuery = Booking::where('status', 'rented');
+        $activeQuery = Booking::whereIn('status', ['active', 'rented', 'confirmed', 'disewa']);
 
         $totalActive = (clone $activeQuery)->count();
 
@@ -246,6 +253,7 @@ class ReturnController extends Controller
         })->count();
 
         $totalDueToday = (clone $activeQuery)->where('end_booking_date', $todayDate)->count();
+        $totalUnreturned = (clone $activeQuery)->whereDate('end_booking_date', '<=', $todayDate)->count();
 
         $totalDeposit = 0.0;
 
@@ -253,11 +261,14 @@ class ReturnController extends Controller
             'total_active_rentals' => $totalActive,
             'total_overdue' => $totalOverdue,
             'total_due_today' => $totalDueToday,
+            'total_unreturned' => $totalUnreturned,
             'total_active_deposit' => $totalDeposit,
             // Flutter camelCase compatibility
             'totalActiveRentals' => $totalActive,
             'totalOverdue' => $totalOverdue,
             'totalDueToday' => $totalDueToday,
+            'totalUnreturned' => $totalUnreturned,
+            'unreturnedUnits' => $totalUnreturned,
             'totalActiveDeposit' => $totalDeposit,
         ];
     }
@@ -658,6 +669,20 @@ class ReturnController extends Controller
         $refundMethod = $validated['refund_method'] ?? 'Tunai (Kasir)';
         $accessories = $validated['accessories_returned'] ?? ['kabel', 'adaptor', 'box', 'case', 'tempered_glass'];
 
+        // Shift Guard: Pastikan shift kasir aktif terbuka sebelum memproses pengembalian unit
+        $branchId = $booking->affiliate_id ?? $user->affiliate_id;
+        $activeShift = \App\Models\CashDrawerShift::where('status', 'open')
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->latest('opened_at')
+            ->first();
+
+        if (! $activeShift) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Shift Kasir Belum Dibuka: Anda harus membuka shift kasir terlebih dahulu sebelum menerima pembayaran denda atau memproses pengembalian unit',
+            ], 422);
+        }
+
         $result = DB::transaction(function () use (
             $booking,
             $now,
@@ -674,7 +699,20 @@ class ReturnController extends Controller
             if ($booking->iphone) {
                 $booking->iphone->update([
                     'status' => 'ready',
+                    'is_booked' => 0,
                 ]);
+            }
+
+            // 3. Restore linked add-on devices status to 'ready' (available)
+            $addonDevices = $booking->addon_devices;
+            if (!empty($addonDevices) && is_array($addonDevices)) {
+                $addonIds = collect($addonDevices)->pluck('id')->filter()->all();
+                if (!empty($addonIds)) {
+                    \App\Models\Iphones::whereIn('id', $addonIds)->update([
+                        'status' => 'ready',
+                        'is_booked' => 0,
+                    ]);
+                }
             }
 
             // 3. Create or complete ReturnIphone record

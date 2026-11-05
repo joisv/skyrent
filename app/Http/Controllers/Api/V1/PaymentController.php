@@ -306,6 +306,20 @@ class PaymentController extends Controller
         $isPenaltyPayment = ($requestedType === 'penalty');
 
         if ($isPenaltyPayment) {
+            // Shift Guard: Pastikan shift kasir aktif terbuka untuk menerima pembayaran denda
+            $branchId = $booking->affiliate_id ?? $authUser->affiliate_id;
+            $activeShift = \App\Models\CashDrawerShift::where('status', 'open')
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                ->latest('opened_at')
+                ->first();
+
+            if (! $activeShift) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Shift Kasir Belum Dibuka: Anda harus membuka shift kasir terlebih dahulu sebelum menerima pembayaran denda atau memproses pengembalian unit',
+                ], 422);
+            }
+
             if (! in_array($booking->status, ['confirmed', 'rented', 'disewa', 'returned'])) {
                 return response()->json([
                     'status' => 'error',

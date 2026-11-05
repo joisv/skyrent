@@ -192,12 +192,12 @@ class DashboardController extends Controller
         $rentedUnits = $disewaUnits;
 
         // Active rentals (sedang disewa)
-        $activeRentalsQuery = Booking::whereIn('status', ['rented', 'disewa']);
+        $activeRentalsQuery = Booking::whereIn('status', ['rented', 'disewa', 'active']);
         $applyBookingAffiliateScope($activeRentalsQuery);
         $activeRentals = $activeRentalsQuery->count();
 
-        // Overdue returns (melewati jadwal pengembalian)
-        $overdueReturnsQuery = Booking::whereIn('status', ['rented', 'disewa'])
+        // Overdue returns (melewati jadwal pengembalian: deadline sebelum hari ini ATAU hari ini tapi jam telah lewat)
+        $overdueReturnsQuery = Booking::whereIn('status', ['active', 'rented', 'confirmed', 'disewa'])
             ->where(function ($sub) use ($todayDate, $now) {
                 $sub->where('end_booking_date', '<', $todayDate)
                     ->orWhere(function ($timeSub) use ($todayDate, $now) {
@@ -208,12 +208,20 @@ class DashboardController extends Controller
             });
         $applyBookingAffiliateScope($overdueReturnsQuery);
         $overdueReturns = $overdueReturnsQuery->count();
-        $unreturnedUnits = $overdueReturns;
 
         // Returns due today (jadwal kembali hari ini)
-        $todayReturnsQuery = Booking::whereIn('status', ['rented', 'disewa'])->whereDate('end_booking_date', $todayDate);
+        $todayReturnsQuery = Booking::whereIn('status', ['active', 'rented', 'confirmed', 'disewa'])
+            ->whereDate('end_booking_date', $todayDate);
         $applyBookingAffiliateScope($todayReturnsQuery);
         $todayReturns = $todayReturnsQuery->count();
+
+        // Total Unreturned Units (Pending Returns hari ini + Overdue Returns dari hari-hari sebelumnya)
+        $unreturnedReturnsQuery = Booking::whereIn('status', ['active', 'rented', 'confirmed', 'disewa'])
+            ->where(function ($sub) use ($todayDate) {
+                $sub->whereDate('end_booking_date', '<=', $todayDate);
+            });
+        $applyBookingAffiliateScope($unreturnedReturnsQuery);
+        $unreturnedUnits = $unreturnedReturnsQuery->count();
 
         // Booking Hari Ini: Booking yang dibuat pada hari ini (created_at = todayDate)
         $bookingTodayQuery = Booking::whereDate('created_at', $todayDate);
@@ -249,7 +257,7 @@ class DashboardController extends Controller
             ->where(function ($q) use ($todayDate, $now) {
                 // Overdue
                 $q->where(function ($overdue) use ($todayDate, $now) {
-                    $overdue->whereIn('status', ['rented', 'disewa'])
+                    $overdue->whereIn('status', ['active', 'rented', 'confirmed', 'disewa'])
                         ->where(function ($sub) use ($todayDate, $now) {
                             $sub->where('end_booking_date', '<', $todayDate)
                                 ->orWhere(function ($timeSub) use ($todayDate, $now) {
@@ -261,7 +269,7 @@ class DashboardController extends Controller
                 })
                 // Returns due today
                 ->orWhere(function ($dueToday) use ($todayDate) {
-                    $dueToday->whereIn('status', ['rented', 'disewa'])
+                    $dueToday->whereIn('status', ['active', 'rented', 'confirmed', 'disewa'])
                         ->whereDate('end_booking_date', $todayDate);
                 })
                 // Pickups scheduled for today
@@ -273,8 +281,8 @@ class DashboardController extends Controller
                 ->orWhere('status', 'pending');
             })
             ->orderByRaw("CASE
-                WHEN status IN ('rented', 'disewa') AND end_booking_date < '{$todayDate}' THEN 1
-                WHEN status IN ('rented', 'disewa') AND end_booking_date = '{$todayDate}' THEN 2
+                WHEN status IN ('active', 'rented', 'confirmed', 'disewa') AND end_booking_date < '{$todayDate}' THEN 1
+                WHEN status IN ('active', 'rented', 'confirmed', 'disewa') AND end_booking_date = '{$todayDate}' THEN 2
                 WHEN status = 'confirmed' AND start_booking_date = '{$todayDate}' THEN 3
                 WHEN status = 'pending' THEN 4
                 ELSE 5
