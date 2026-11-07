@@ -187,19 +187,19 @@ class Affiliates extends Component
             ->with(['iphone', 'paymentTransactions'])
             ->get();
 
-            $query = Iphones::query();
+        $query = Iphones::query();
 
-            if ($user?->hasRole('affiliate-admin')) {
-                $query->where('affiliate_id', $user->affiliate_id);
-            } elseif ($user?->hasRole('super-admin')) {
-                $query->whereNull('affiliate_id');
-            }
-
-            $this->iphones = $query->get();
+        if ($user?->hasRole('affiliate-admin')) {
+            $query->where('affiliate_id', $user->affiliate_id);
+        } elseif ($user?->hasRole('super-admin')) {
+            $query->whereNull('affiliate_id');
         }
+
+        $this->iphones = $query->get();
 
         $this->selectedAffiliateId = $affiliateId;
     }
+
 
     public function assignAffiliateToUser($affiliateId)
     {
