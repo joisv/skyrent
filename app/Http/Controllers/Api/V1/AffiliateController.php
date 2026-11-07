@@ -67,19 +67,11 @@ class AffiliateController extends Controller
     protected function getBookingQueryForAffiliate(Affiliate $affiliate)
     {
         $query = Booking::query();
-        $userIds = $affiliate->relationLoaded('users')
-            ? $affiliate->users->pluck('id')->toArray()
-            : $affiliate->users()->pluck('id')->toArray();
 
         if ($this->isPusatAffiliate($affiliate)) {
-            $query->where(function ($q) use ($affiliate, $userIds) {
+            $query->where(function ($q) use ($affiliate) {
                 $q->where('affiliate_id', $affiliate->id)
-                    ->orWhere(function ($sub) use ($userIds) {
-                        $sub->whereNull('affiliate_id');
-                        if (!empty($userIds)) {
-                            $sub->whereIn('user_id', $userIds);
-                        }
-                    });
+                    ->orWhereNull('affiliate_id');
             });
         } else {
             $query->where(function ($q) use ($affiliate) {
@@ -878,11 +870,44 @@ class AffiliateController extends Controller
 
         $affiliate = Affiliate::findOrFail($id);
 
-        $startDate = $request->input('start_date', now()->subDays(6)->toDateString());
-        $endDate = $request->input('end_date', now()->toDateString());
+        $timezone = 'Asia/Jakarta';
+        $period = strtolower(trim((string) $request->input('period', '')));
+        $startDateInput = $request->input('start_date');
+        $endDateInput = $request->input('end_date');
 
-        $start = Carbon::parse($startDate)->startOfDay();
-        $end = Carbon::parse($endDate)->endOfDay();
+        $isAllPeriod = in_array($period, ['all', 'semua'], true)
+            || (empty($startDateInput) && empty($endDateInput) && !in_array($period, ['today', 'hari ini', 'week', 'this_week', 'minggu ini', 'month', 'this_month', 'bulan ini'], true));
+
+        if ($isAllPeriod) {
+            $start = Carbon::create(2020, 1, 1, 0, 0, 0, $timezone);
+            $end = Carbon::now($timezone)->endOfDay();
+            $startDate = $start->toDateString();
+            $endDate = $end->toDateString();
+        } elseif ($period === 'today' || $period === 'hari ini') {
+            $start = Carbon::today($timezone)->startOfDay();
+            $end = Carbon::today($timezone)->endOfDay();
+            $startDate = $startDateInput ?: $start->toDateString();
+            $endDate = $endDateInput ?: $end->toDateString();
+        } elseif ($period === 'week' || $period === 'this_week' || $period === 'minggu ini') {
+            $start = Carbon::now($timezone)->subDays(6)->startOfDay();
+            $end = Carbon::now($timezone)->endOfDay();
+            $startDate = $startDateInput ?: $start->toDateString();
+            $endDate = $endDateInput ?: $end->toDateString();
+            $start = Carbon::parse($startDate, $timezone)->startOfDay();
+            $end = Carbon::parse($endDate, $timezone)->endOfDay();
+        } elseif ($period === 'month' || $period === 'this_month' || $period === 'bulan ini') {
+            $start = Carbon::now($timezone)->startOfMonth()->startOfDay();
+            $end = Carbon::now($timezone)->endOfDay();
+            $startDate = $startDateInput ?: $start->toDateString();
+            $endDate = $endDateInput ?: $end->toDateString();
+            $start = Carbon::parse($startDate, $timezone)->startOfDay();
+            $end = Carbon::parse($endDate, $timezone)->endOfDay();
+        } else {
+            $startDate = $startDateInput ?: Carbon::now($timezone)->subDays(6)->toDateString();
+            $endDate = $endDateInput ?: Carbon::now($timezone)->toDateString();
+            $start = Carbon::parse($startDate, $timezone)->startOfDay();
+            $end = Carbon::parse($endDate, $timezone)->endOfDay();
+        }
 
         $isPusat = $this->isPusatAffiliate($affiliate);
         $bookingQuery = $this->getBookingQueryForAffiliate($affiliate);
@@ -890,49 +915,66 @@ class AffiliateController extends Controller
 
         if ($isPusat) {
             $query = BookingPayment::query()
+                ->active()
                 ->whereBetween('paid_at', [$start, $end])
-                ->whereIn('booking_id', $bookingIds);
+                ->where(function ($q) use ($affiliate, $bookingIds) {
+                    $q->where('affiliate_id', $affiliate->id)
+                        ->orWhereNull('affiliate_id')
+                        ->orWhereIn('booking_id', $bookingIds);
+                });
         } else {
             $query = BookingPayment::query()
+                ->active()
                 ->whereBetween('paid_at', [$start, $end])
-                ->whereHas('booking', function ($q) use ($affiliate) {
-                    $q->where(function ($sub) use ($affiliate) {
-                        $sub->where('affiliate_id', $affiliate->id)
-                            ->orWhere(function ($legacy) use ($affiliate) {
-                                $legacy->whereNull('affiliate_id')
-                                    ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
-                            });
-                    });
+                ->where(function ($q) use ($affiliate) {
+                    $q->where('affiliate_id', $affiliate->id)
+                        ->orWhereHas('booking', function ($sub) use ($affiliate) {
+                            $sub->where('affiliate_id', $affiliate->id)
+                                ->orWhere(function ($legacy) use ($affiliate) {
+                                    $legacy->whereNull('affiliate_id')
+                                        ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
+                                });
+                        });
                 });
         }
 
         $payments = $query->with([
             'booking.iphone',
             'user:id,name,email',
+            'payment',
         ])
             ->latest('paid_at')
             ->get();
 
-        $today = Carbon::today('Asia/Jakarta');
+        $today = Carbon::today($timezone);
 
         if ($isPusat) {
-            $revenueToday = (float) BookingPayment::whereDate('paid_at', $today)
-                ->whereIn('booking_id', $bookingIds)
+            $revenueToday = (float) BookingPayment::query()
+                ->active()
+                ->whereDate('paid_at', $today)
+                ->where(function ($q) use ($affiliate, $bookingIds) {
+                    $q->where('affiliate_id', $affiliate->id)
+                        ->orWhereNull('affiliate_id')
+                        ->orWhereIn('booking_id', $bookingIds);
+                })
                 ->sum('amount');
 
             $bookingToday = (clone $bookingQuery)
                 ->whereDate('created_at', $today)
                 ->count();
         } else {
-            $revenueToday = (float) BookingPayment::whereDate('paid_at', $today)
-                ->whereHas('booking', function ($q) use ($affiliate) {
-                    $q->where(function ($sub) use ($affiliate) {
-                        $sub->where('affiliate_id', $affiliate->id)
-                            ->orWhere(function ($legacy) use ($affiliate) {
-                                $legacy->whereNull('affiliate_id')
-                                    ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
-                            });
-                    });
+            $revenueToday = (float) BookingPayment::query()
+                ->active()
+                ->whereDate('paid_at', $today)
+                ->where(function ($q) use ($affiliate) {
+                    $q->where('affiliate_id', $affiliate->id)
+                        ->orWhereHas('booking', function ($sub) use ($affiliate) {
+                            $sub->where('affiliate_id', $affiliate->id)
+                                ->orWhere(function ($legacy) use ($affiliate) {
+                                    $legacy->whereNull('affiliate_id')
+                                        ->whereHas('iphone', fn($iq) => $iq->where('affiliate_id', $affiliate->id));
+                                });
+                        });
                 })
                 ->sum('amount');
 
@@ -952,7 +994,7 @@ class AffiliateController extends Controller
                 'customer_name' => $p->booking?->customer_name ?? 'Pelanggan',
                 'iphone_name' => $p->booking?->iphone?->name ?? 'iPhone',
                 'amount' => (float) $p->amount,
-                'payment_method' => $p->payment_method,
+                'payment_method' => $p->payment?->name ?? $p->booking?->payment?->name ?? $p->payment_method ?? 'Tunai',
                 'type' => $p->type,
                 'paid_at' => $p->paid_at,
                 'staff_name' => $p->user?->name ?? 'Admin',

@@ -51,15 +51,16 @@ class Revenue extends Component
     public function mount()
     {
         $today = now()->toDateString();
-        $startOfThisMonth = now()->startOfMonth()->toDateString();
-        $endOfLastMonth = now()->subMonth()->endOfMonth()->toDateString();
-        $startOfLastMonth = now()->subMonth()->startOfMonth()->toDateString();
+        $startOfThisMonth = now()->startOfMonth()->startOfDay();
+        $endOfThisMonth = now()->endOfDay();
+        $startOfLastMonth = now()->subMonth()->startOfMonth()->startOfDay();
+        $endOfLastMonth = now()->subMonth()->endOfMonth()->endOfDay();
 
         // Revenue Hari Ini
         $this->revenueToday = $this->getPaymentBaseQuery()->whereDate('paid_at', $today)->sum('amount');
 
         // Revenue Bulan Ini
-        $this->revenueThisMonth = $this->getPaymentBaseQuery()->whereBetween('paid_at', [$startOfThisMonth, now()])->sum('amount');
+        $this->revenueThisMonth = $this->getPaymentBaseQuery()->whereBetween('paid_at', [$startOfThisMonth, $endOfThisMonth])->sum('amount');
 
         // Revenue Bulan Lalu
         $this->revenueLastMonth = $this->getPaymentBaseQuery()->whereBetween('paid_at', [$startOfLastMonth, $endOfLastMonth])->sum('amount');

@@ -84,9 +84,10 @@ class Revenues extends Component
     public function loadStatistics()
     {
         $today = now()->toDateString();
-        $startOfThisMonth = now()->startOfMonth()->toDateString();
-        $endOfLastMonth = now()->subMonth()->endOfMonth()->toDateString();
-        $startOfLastMonth = now()->subMonth()->startOfMonth()->toDateString();
+        $startOfThisMonth = now()->startOfMonth()->startOfDay();
+        $endOfThisMonth = now()->endOfDay();
+        $startOfLastMonth = now()->subMonth()->startOfMonth()->startOfDay();
+        $endOfLastMonth = now()->subMonth()->endOfMonth()->endOfDay();
 
         // Revenue Hari Ini
         $this->revenueToday = $this->getPaymentBaseQuery()
@@ -95,7 +96,7 @@ class Revenues extends Component
 
         // Revenue Bulan Ini
         $this->revenueThisMonth = $this->getPaymentBaseQuery()
-            ->whereBetween('paid_at', [$startOfThisMonth, now()])
+            ->whereBetween('paid_at', [$startOfThisMonth, $endOfThisMonth])
             ->sum('amount');
 
         // Revenue Bulan Lalu

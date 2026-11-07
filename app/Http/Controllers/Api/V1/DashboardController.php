@@ -571,6 +571,12 @@ class DashboardController extends Controller
         if ($isStaff) {
             // Staff hanya boleh melihat pembayaran dan omzet dari booking miliknya sendiri
             $paymentsQuery->where('booking_payments.user_id', $user->id);
+        } elseif ((int) $affiliateId === 4) {
+            // Central Store (Genteng Pusat ID 4): akomodasi transaksi legacy sebelum migrasi yang memiliki affiliate_id NULL
+            $paymentsQuery->where(function ($q) use ($affiliateId) {
+                $q->where('booking_payments.affiliate_id', $affiliateId)
+                  ->orWhereNull('booking_payments.affiliate_id');
+            });
         } elseif ($affiliateId) {
             $paymentsQuery->where('booking_payments.affiliate_id', $affiliateId);
         }
@@ -744,7 +750,12 @@ class DashboardController extends Controller
 
         // Branch operating expenses in period
         $expenseQuery = \App\Models\Expense::whereBetween('spent_at', [$startDate, $endDate]);
-        if ($affiliateId) {
+        if ((int) $affiliateId === 4) {
+            $expenseQuery->where(function ($q) use ($affiliateId) {
+                $q->where('affiliate_id', $affiliateId)
+                  ->orWhereNull('affiliate_id');
+            });
+        } elseif ($affiliateId) {
             $expenseQuery->where('affiliate_id', $affiliateId);
         }
         $totalExpenses = (float) $expenseQuery->sum('amount');
@@ -764,11 +775,26 @@ class DashboardController extends Controller
             $today = Carbon::today('Asia/Jakarta');
 
             foreach ($affiliates as $aff) {
-                $affRev = (float) \App\Models\BookingPayment::active()
-                    ->where('affiliate_id', $aff->id)
+                $isCentralAff = ((int) $aff->id === 4);
+                $affPaymentQuery = \App\Models\BookingPayment::active();
+                if ($isCentralAff) {
+                    $affPaymentQuery->where(function ($q) use ($aff) {
+                        $q->where('affiliate_id', $aff->id)->orWhereNull('affiliate_id');
+                    });
+                } else {
+                    $affPaymentQuery->where('affiliate_id', $aff->id);
+                }
+
+                $affRev = (float) (clone $affPaymentQuery)
                     ->whereBetween('paid_at', [$startDate, $endDate])
                     ->sum('amount');
-                $affTxCount = \App\Models\Booking::where('affiliate_id', $aff->id)
+                $affTxCount = \App\Models\Booking::where(function ($bq) use ($aff, $isCentralAff) {
+                    if ($isCentralAff) {
+                        $bq->where('affiliate_id', $aff->id)->orWhereNull('affiliate_id');
+                    } else {
+                        $bq->where('affiliate_id', $aff->id);
+                    }
+                })
                     ->whereBetween('created_at', [$startDate, $endDate])
                     ->count();
 
@@ -782,12 +808,10 @@ class DashboardController extends Controller
                     'booking_count' => $affTxCount,
                     'is_active' => (bool)$aff->is_active,
                     'iphones_count' => (int)$aff->iphones()->count(),
-                    'revenue_today' => (float) \App\Models\BookingPayment::active()
-                        ->where('affiliate_id', $aff->id)
+                    'revenue_today' => (float) (clone $affPaymentQuery)
                         ->whereDate('paid_at', $today)
                         ->sum('amount'),
-                    'total_revenue' => (float) \App\Models\BookingPayment::active()
-                        ->where('affiliate_id', $aff->id)
+                    'total_revenue' => (float) (clone $affPaymentQuery)
                         ->sum('amount'),
                 ];
             }

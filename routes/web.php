@@ -97,30 +97,30 @@ Route::middleware(['auth', 'role:admin|super-admin|affiliate-admin|affiliate'])-
     });
 
 // vcf export
-Route::get('/export-vcf', function () {
+// Route::get('/export-vcf', function () {
 
-    return response()->streamDownload(function () {
+//     return response()->streamDownload(function () {
 
-        Booking::selectRaw('MIN(customer_name) as customer_name, customer_phone')
-            ->groupBy('customer_phone')
-            ->cursor()
-            ->each(function ($booking) {
+//         Booking::selectRaw('MIN(customer_name) as customer_name, customer_phone')
+//             ->groupBy('customer_phone')
+//             ->cursor()
+//             ->each(function ($booking) {
 
-                $phone = preg_replace('/[^0-9]/', '', $booking->customer_phone);
+//                 $phone = preg_replace('/[^0-9]/', '', $booking->customer_phone);
 
-                if (str_starts_with($phone, '0')) {
-                    $phone = '62' . substr($phone, 1);
-                }
+//                 if (str_starts_with($phone, '0')) {
+//                     $phone = '62' . substr($phone, 1);
+//                 }
 
-                echo "BEGIN:VCARD\r\n";
-                echo "VERSION:3.0\r\n";
-                echo "FN:{$booking->customer_name} (SkyRental)\r\n";
-                echo "TEL;TYPE=CELL:{$phone}\r\n";
-                echo "END:VCARD\r\n";
-            });
-    }, 'customers.vcf', [
-        'Content-Type' => 'text/vcard',
-    ]);
-});
+//                 echo "BEGIN:VCARD\r\n";
+//                 echo "VERSION:3.0\r\n";
+//                 echo "FN:{$booking->customer_name} (SkyRental)\r\n";
+//                 echo "TEL;TYPE=CELL:{$phone}\r\n";
+//                 echo "END:VCARD\r\n";
+//             });
+//     }, 'customers.vcf', [
+//         'Content-Type' => 'text/vcard',
+//     ]);
+// });
 
 require __DIR__ . '/auth.php';

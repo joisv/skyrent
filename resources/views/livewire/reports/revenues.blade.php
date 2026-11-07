@@ -69,11 +69,11 @@
 
                 $iphone = $affiliate->iphones_count ?? $affiliate->iphones->count();
 
-                $omzet = $affiliate->bookings->sum('price');
+                $omzet = $affiliate->omzet ?? $affiliate->bookings->sum('price');
 
-                $paid = $affiliate->bookings->flatMap->paymentTransactions->sum('amount');
+                $paid = $affiliate->paid ?? $affiliate->bookings->flatMap->paymentTransactions->sum('amount');
 
-                $remaining = max(0, $omzet - $paid);
+                $remaining = $affiliate->remaining ?? max(0, $omzet - $paid);
 
                 $progress = $omzet > 0 ? round(($paid / $omzet) * 100) : 0;
 
